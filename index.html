@@ -1,471 +1,1322 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Joydeep Bhattacharjee is a Principal Engineer working for Nineleaps. He works primarily in developing intelligent systems that can parse, process and data to solve challenging problems at work.">
-    <meta name="author" content="Andreas Mueller">
+    <meta name="description" content="Joydeep Bhattacharjee — Lead ML Engineer at Adobe, published author of 2 ML books, and mentor. Specializing in LLM inference, NLP, and ML systems at scale.">
+    <meta name="author" content="Joydeep Bhattacharjee">
 
-    <title>Joydeep Bhattacharjee - Team Lead, Machine Learning Platform</title>
+    <!-- Open Graph -->
+    <meta property="og:title" content="Joydeep Bhattacharjee — Lead ML Engineer · Author · Mentor">
+    <meta property="og:description" content="Lead ML Engineer at Adobe, author of 2 published ML books, and mentor. Specializing in LLM inference, NLP, and ML systems.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://infinite-joy.github.io">
 
-    <!-- Global site tag (gtag.js) - Google Analytics -->
-    <!-- inpiration http://amueller.github.io/ -->
+    <title>Joydeep Bhattacharjee — Lead ML Engineer · Author · Mentor</title>
+
+    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113098568-1"></script>
     <script>
-  window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
         gtag('config', 'UA-113098568-1');
     </script>
 
-    <!-- Bootstrap Core CSS - Uses Bootswatch Flatly Theme: http://bootswatch.com/flatly/ -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <!-- <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"> -->
-    <!-- <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" rel="stylesheet"> -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-    <!-- Custom CSS -->
-    <link href="css/freelancer.css" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+    <style>
+        :root {
+            --bg: #08090b;
+            --surface: #12141a;
+            --surface-2: #1a1d26;
+            --text: #e4e2de;
+            --text-muted: #8a8880;
+            --accent: #e8c547;
+            --accent-dim: rgba(232, 197, 71, 0.12);
+            --green: #4ade80;
+            --blue: #60a5fa;
+            --border: rgba(255, 255, 255, 0.08);
+            --nav-bg: rgba(8, 9, 11, 0.88);
+            --grain-opacity: 0.4;
+            --font-display: 'Instrument Serif', Georgia, serif;
+            --font-body: 'Outfit', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+            --radius: 12px;
+        }
 
-    <!-- Custom Fonts -->
-    <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+        [data-theme="light"] {
+            --bg: #f5f4f0;
+            --surface: #ffffff;
+            --surface-2: #ece9e3;
+            --text: #1a1815;
+            --text-muted: #6b6860;
+            --accent: #b8941a;
+            --accent-dim: rgba(184, 148, 26, 0.12);
+            --green: #16a34a;
+            --blue: #2563eb;
+            --border: rgba(0, 0, 0, 0.1);
+            --nav-bg: rgba(245, 244, 240, 0.9);
+            --grain-opacity: 0.15;
+        }
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
 
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-body);
+            font-size: 16px;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+            opacity: var(--grain-opacity);
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+        .section { padding: 72px 0; }
+
+        .section-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: clamp(28px, 4vw, 44px);
+            font-weight: 400;
+            line-height: 1.15;
+            margin-bottom: 48px;
+        }
+
+        a { color: var(--accent); text-decoration: none; transition: opacity 0.2s; }
+        a:hover { opacity: 0.8; }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: var(--font-body);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            border: none;
+        }
+        .btn-primary { background: var(--accent); color: #0a0a0a; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); color: #0a0a0a; }
+        .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        .card:hover { border-color: rgba(232, 197, 71, 0.25); transform: translateY(-2px); }
+
+        /* NAV */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            background: var(--nav-bg);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            transition: background 0.3s;
+        }
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+        }
+        .nav-brand {
+            font-family: var(--font-display);
+            font-size: 18px;
+            color: var(--text);
+            text-decoration: none;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            list-style: none;
+        }
+        .nav-links a {
+            color: var(--text-muted);
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); }
+        .nav-links .nav-cta {
+            background: var(--accent);
+            color: #0a0a0a;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 6px;
+        }
+        .nav-links .nav-cta:hover { opacity: 0.9; color: #0a0a0a; }
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        /* HERO */
+        #hero { padding: 120px 0 56px; }
+        .hero-inner {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 56px;
+            align-items: center;
+        }
+        .hero-image img {
+            width: 100%;
+            aspect-ratio: 4/5;
+            object-fit: cover;
+            object-position: top;
+            border-radius: 20px;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.25);
+        }
+        .hero-eyebrow {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+        .hero-name {
+            font-family: var(--font-display);
+            font-size: clamp(44px, 7vw, 80px);
+            font-weight: 400;
+            line-height: 1.05;
+            margin-bottom: 22px;
+        }
+        .hero-title {
+            font-size: clamp(16px, 2vw, 20px);
+            color: var(--text-muted);
+            margin-bottom: 36px;
+            font-weight: 300;
+            max-width: 560px;
+        }
+        .hero-title .highlight { color: var(--text); font-weight: 500; }
+        .hero-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 32px;
+            margin-bottom: 40px;
+        }
+        .hero-stat { display: flex; flex-direction: column; }
+        .hero-stat-value {
+            font-family: var(--font-display);
+            font-size: 32px;
+            color: var(--accent);
+            line-height: 1;
+        }
+        .hero-stat-label { font-size: 12px; color: var(--text-muted); margin-top: 5px; }
+        .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+        /* ABOUT */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 16px;
+        }
+        .bento-bio { grid-column: span 7; }
+        .bento-photo { grid-column: span 5; }
+        .bento-focus { grid-column: span 4; }
+        .bento-current { grid-column: span 4; }
+        .bento-stats { grid-column: span 4; }
+
+        .bento-photo .card {
+            padding: 0;
+            overflow: hidden;
+            height: 100%;
+            min-height: 280px;
+        }
+        .bento-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .focus-tag {
+            display: inline-block;
+            background: var(--accent-dim);
+            color: var(--accent);
+            font-size: 12px;
+            font-family: var(--font-mono);
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin: 3px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 11px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-row-label { font-size: 13px; color: var(--text-muted); }
+        .stat-row-value { font-family: var(--font-mono); color: var(--accent); font-size: 13px; }
+
+        .current-badge {
+            display: inline-block;
+            background: rgba(74, 222, 128, 0.12);
+            color: var(--green);
+            font-size: 11px;
+            font-family: var(--font-mono);
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-top: 8px;
+        }
+
+        /* BOOKS */
+        #books { background: var(--surface); }
+        .book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+        .book-card { display: flex; flex-direction: column; }
+        .book-cover {
+            width: 110px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+        .book-title {
+            font-family: var(--font-display);
+            font-size: 22px;
+            margin-bottom: 12px;
+        }
+        .book-meta { display: flex; gap: 16px; margin-bottom: 16px; flex-wrap: wrap; }
+        .book-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+        .book-stat i { color: var(--accent); font-size: 11px; }
+        .book-desc {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            flex: 1;
+        }
+        .book-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+
+        /* WRITING */
+        .writing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .writing-card { display: flex; flex-direction: column; }
+        .writing-date {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            letter-spacing: 0.05em;
+        }
+        .writing-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            line-height: 1.35;
+            color: var(--text);
+        }
+        .writing-desc { font-size: 14px; color: var(--text-muted); line-height: 1.6; flex: 1; }
+        .writing-read {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: var(--accent);
+            margin-top: 16px;
+            font-weight: 500;
+        }
+        .writing-footer { text-align: center; margin-top: 40px; }
+
+        /* VIDEOS */
+        #videos { background: var(--surface); }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .video-card { display: flex; flex-direction: column; }
+        .video-thumb {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: var(--surface-2);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 14px;
+            flex-shrink: 0;
+        }
+        .video-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .video-duration {
+            position: absolute;
+            bottom: 8px; right: 8px;
+            background: rgba(0,0,0,0.82);
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        .video-play-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0);
+            transition: background 0.2s;
+        }
+        .video-card:hover .video-play-overlay { background: rgba(0,0,0,0.35); }
+        .video-play-overlay i {
+            font-size: 40px;
+            color: rgba(255,255,255,0);
+            transition: color 0.2s;
+        }
+        .video-card:hover .video-play-overlay i { color: rgba(255,255,255,0.9); }
+        .video-title {
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.35;
+            color: var(--text);
+            margin-bottom: 8px;
+            flex: 1;
+        }
+        .video-meta {
+            display: flex;
+            gap: 12px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+        .video-footer { text-align: center; margin-top: 40px; }
+
+        /* PROJECTS */
+        #projects { background: var(--surface); }
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .project-card { display: flex; flex-direction: column; }
+        .project-name {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            color: var(--accent);
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+        .project-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            flex: 1;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+        .project-stats { display: flex; gap: 16px; margin-bottom: 16px; }
+        .project-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 13px;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+        }
+        .project-stat i { color: var(--accent); }
+        .project-links { display: flex; gap: 8px; }
+        .ghost-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 180px;
+            border-style: dashed;
+        }
+
+        /* EXPERIENCE */
+        .timeline { display: flex; flex-direction: column; }
+        .timeline-item {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 32px;
+            padding: 32px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .timeline-item:last-child { border-bottom: none; }
+        .timeline-period {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .timeline-company { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+        .timeline-role { font-size: 13px; color: var(--text-muted); }
+        .timeline-current {
+            display: inline-block;
+            background: rgba(74, 222, 128, 0.12);
+            color: var(--green);
+            font-size: 11px;
+            font-family: var(--font-mono);
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-top: 6px;
+        }
+        .timeline-desc {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+        .timeline-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag {
+            display: inline-block;
+            background: var(--surface-2);
+            color: var(--text-muted);
+            font-size: 12px;
+            font-family: var(--font-mono);
+            padding: 3px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        /* STACK */
+        #stack { background: var(--surface); }
+        .stack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 20px;
+        }
+        .stack-category-title {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 14px;
+        }
+        .stack-items { display: flex; flex-wrap: wrap; gap: 6px; }
+        .stack-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 13px;
+            padding: 5px 12px;
+            border-radius: 6px;
+        }
+
+        /* MENTORSHIP */
+        .mentorship-inner {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            align-items: center;
+        }
+        .mentorship-title {
+            font-family: var(--font-display);
+            font-size: clamp(26px, 3vw, 38px);
+            margin-bottom: 18px;
+        }
+        .mentorship-desc {
+            font-size: 15px;
+            line-height: 1.75;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+        .mentorship-services { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+        .mentorship-service {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+        }
+        .mentorship-service i { color: var(--accent); width: 16px; }
+        .mentorship-card { text-align: center; padding: 40px; background: var(--surface-2); }
+        .mentorship-card h3 {
+            font-family: var(--font-display);
+            font-size: 26px;
+            margin-bottom: 12px;
+        }
+        .mentorship-card p { color: var(--text-muted); margin-bottom: 28px; font-size: 15px; line-height: 1.6; }
+
+        /* CONTACT */
+        #contact { background: var(--bg); text-align: center; }
+        .contact-title {
+            font-family: var(--font-display);
+            font-size: clamp(34px, 5vw, 58px);
+            margin-bottom: 14px;
+        }
+        .contact-subtitle { color: var(--text-muted); margin-bottom: 40px; font-size: 16px; }
+        .contact-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+        }
+        .contact-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .contact-link:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+        .contact-link i { font-size: 16px; }
+
+        /* FOOTER */
+        footer {
+            background: var(--bg);
+            border-top: 1px solid var(--border);
+            padding: 28px 0;
+            text-align: center;
+        }
+        .footer-text { font-size: 13px; color: var(--text-muted); }
+
+        /* ANIMATIONS */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(18px);
+            transition: opacity 0.55s ease, transform 0.55s ease;
+        }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+        /* THEME TOGGLE */
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.2s, color 0.2s;
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* Smooth color transitions */
+        body, nav, .card, .btn-outline, .contact-link, .stack-item, .tag {
+            transition: background 0.3s, border-color 0.3s, color 0.3s;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 900px) {
+            .hero-inner { grid-template-columns: 1fr; }
+            .hero-image { order: -1; max-width: 280px; }
+            .bento-bio { grid-column: span 12; }
+            .bento-photo { grid-column: span 12; }
+            .bento-focus, .bento-current, .bento-stats { grid-column: span 12; }
+            .mentorship-inner { grid-template-columns: 1fr; }
+            .timeline-item { grid-template-columns: 1fr; gap: 10px; }
+        }
+
+        @media (max-width: 640px) {
+            .nav-links { display: none; }
+            .nav-links.open {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 60px; left: 0; right: 0;
+                background: rgba(8, 9, 11, 0.98);
+                border-bottom: 1px solid var(--border);
+                padding: 16px;
+                gap: 4px;
+            }
+            .nav-toggle { display: block; }
+            .hero-stats { gap: 20px; }
+        }
+
+        @media (max-width: 400px) {
+            .contact-links { flex-direction: column; align-items: center; }
+        }
+    </style>
 </head>
 
-<body id="page-top" class="index">
+<body>
 
-    <nav class="navbar navbar-default navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header page-scroll">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-          <a class="navbar-brand" href="#page-top">Joydeep Bhattacharjee</a>
+    <!-- NAV -->
+    <nav>
+        <div class="container">
+            <div class="nav-inner">
+                <a href="#hero" class="nav-brand">Joydeep B.</a>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Toggle navigation">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#writing">Writing</a></li>
+                    <li><a href="#videos">Videos</a></li>
+                    <li><a href="#books">Books</a></li>
+                    <li><a href="#experience">Experience</a></li>
+                    <li><a href="#mentorship">Mentorship</a></li>
+                    <li><a href="https://topmate.io/joydeep_bhattacharjee" class="nav-cta" target="_blank" rel="noopener">Book a Call</a></li>
+                </ul>
+            </div>
         </div>
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <!-- <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1"> -->
-        <div class="active navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav navbar-right">
-                <li class="hidden">
-                    <a href="#page-top"></a>
-                </li>
-                <li class="page-scroll">
-                    <a href="#cv">About me</a>
-                </li>
-                <li class="page-scroll">
-                    <a href="#book">My book</a>
-                </li>
-                <li class="page-scroll">
-                    <a href="#software">Professional Experience</a>
-                </li>
-                <!-- <li class="page-scroll"><a href="#petprojects">Pet Projects</a></li> -->
-            </ul>
-        </div>
-      </div>
     </nav>
 
-    <!-- Header -->
-    <header>
-    <section id="cv" class="success">
+    <!-- HERO -->
+    <section id="hero">
         <div class="container">
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="intro-text">
-                        <span class="skills">Team Lead, Machine Learning Platform</span>
-                        <hr class="star-light">
+            <div class="hero-inner">
+                <div class="hero-content">
+                    <p class="hero-eyebrow">Lead ML Engineer · Author · Mentor</p>
+                    <h1 class="hero-name">Joydeep<br>Bhattacharjee</h1>
+                    <p class="hero-title">
+                        <span class="highlight">Lead ML Engineer @ Adobe</span> — building intelligent systems at scale.<br>
+                        Author of 2 published ML books. Bengaluru, India.
+                    </p>
+                    <div class="hero-stats">
+                        <div class="hero-stat">
+                            <span class="hero-stat-value">2</span>
+                            <span class="hero-stat-label">Published Books</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-value">670+</span>
+                            <span class="hero-stat-label">Medium Followers</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-value">94</span>
+                            <span class="hero-stat-label">GitHub Repos</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-value">13+</span>
+                            <span class="hero-stat-label">Years in Tech</span>
+                        </div>
+                    </div>
+                    <div class="hero-actions">
+                        <a href="https://topmate.io/joydeep_bhattacharjee" class="btn btn-primary" target="_blank" rel="noopener">
+                            <i class="fa-solid fa-calendar-check"></i> Book a Call
+                        </a>
+                        <a href="https://github.com/infinite-Joy/infinite-Joy.github.io/raw/master/docs/joydeep_resume.pdf" class="btn btn-outline" target="_blank" rel="noopener">
+                            <i class="fa-solid fa-download"></i> Download Resume
+                        </a>
                     </div>
                 </div>
-            </div>
-            <div class="row">   
-                <div class="col-sm-3">
-                    <img src="images/IMG-20171218-WA0020.jpg" alt="portrait" class="img-responsive img-rounded" alt="Cinque Terre" style="width:80%">
-                </div>
-                <div class="col-sm-8 text-left">
-                    <p>
-                        I am currently an Engineering Manager at yellow.ai and my expertise is in machine learning and natural language processing. 
-                        You can find my <a href="https://github.com/infinite-Joy/infinite-Joy.github.io/raw/master/docs/joydeep_resume.pdf">full cv here</a>.
-                    </p>
-                    <p>
-                        My mission is to create software and tools that help business leverage machine learning
-                        to bring next generation products and services to the market.
-                    </p>
-                    <p>
-                    	Skills: machine learning, natural language processing, python, tensorflow, pytorch
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-    </header>
-
-    <section id="book1">
-        <div class="container">
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="text-center">
-                        <h3>Practical Machine Learning with Rust</h3>
-                        <hr class="star-primary">
-                    </div>
-                </div>
-            </div>
-            <div class="row">   
-                <div class="col-sm-3">
-                    <img src="https://images-na.ssl-images-amazon.com/images/I/41DTUUR59fL._SX331_BO1,204,203,200_.jpg" alt="portrait" class="img-responsive img-rounded" alt="Cinque Terre" style="width:80%">
-                </div>
-                <div class="col-sm-8 text-left">
-                    <p>
-                    Explore machine learning in Rust and learn about the intricacies of creating machine learning applications. This book begins by covering the important concepts of machine learning such as supervised, unsupervised, and reinforcement learning, and the basics of Rust. Further, you’ll dive into the more specific fields of machine learning, such as computer vision and natural language processing, and look at the Rust libraries that help create applications for those domains. We will also look at how to deploy these applications either on site or over the cloud.
-                    </p>
-                    <p>
-                    	After reading Practical Machine Learning with Rust, you will have a solid understanding of creating high computation libraries using Rust. Armed with the knowledge of this amazing language, you will be able to create applications that are more performant, memory safe, and less resource heavy.
-                    </p>
-                    <p>
-                    <a class="btn btn-primary" href="https://link.springer.com/book/10.1007/978-1-4842-5121-8">Book website<span
-                            class="glyphicon glyphicon-chevron-right">
-                    </span></a>
-                    <a class="btn btn-primary" href="https://github.com/Apress/practical-machine-learning-w-rust">Github repository with all code <span
-                            class="glyphicon glyphicon-chevron-right">
-                    </span></a>
-                    <a class="btn btn-primary" href="https://www.amazon.in/Practical-Machine-Learning-Rust-Applications/dp/1484251202">Buy on Amazon<span
-                            class="glyphicon glyphicon-chevron-right">
-                    </span></a>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-    <section id="book2">
-        <div class="container">
-            <div class="row">
-                <div class="col-sm-12">
-                    <div class="text-center">
-                        <h3>fastText Quick Start Guide</h3>
-                        <hr class="star-primary">
-                    </div>
-                </div>
-            </div>
-            <div class="row">   
-                <div class="col-sm-3">
-                    <img src="https://images-na.ssl-images-amazon.com/images/I/51cx2IzvnzL.jpg" alt="portrait" class="img-responsive img-rounded" alt="Cinque Terre" style="width:80%">
-                </div>
-                <div class="col-sm-8 text-left">
-                    <p>
-                    Facebook's fastText library handles text representation and classification, used for Natural Language Processing (NLP). Most organizations have to deal with enormous amounts of text data on a daily basis, and efficient data insights requires powerful NLP tools like fastText.
-                    </p>
-                    <p>
-                    	This book is your ideal introduction to fastText. You will learn to create fastText models from the command line, without the need for complicated code. You will explore the algorithms that fastText is built on and how to use them for word representation and text classification.
-                    </p>
-                    <p>
-                    	Next, you will use fastText in conjunction with other popular libraries and frameworks such as Keras, TensorFlow and PyTorch.
-                    </p>
-                    <p>
-                    	Finally, you will deploy the fastText models to mobile. By the end of this book, you will have all the required knowledge to use fastText in your own applications at work or projects.
-                    </p>
-                    <p>
-                    <a class="btn btn-primary" href="https://www.packtpub.com/big-data-and-business-intelligence/fasttext-quick-start-guide">Book website<span
-                            class="glyphicon glyphicon-chevron-right">
-                    </span></a>
-                    <a class="btn btn-primary" href="https://github.com/PacktPublishing/fastText-Quick-Start-Guide">Github repository with all code <span
-                            class="glyphicon glyphicon-chevron-right">
-                    </span></a>
-                    <a class="btn btn-primary" href="https://www.amazon.com/fastText-Quick-Start-Guide-representation-ebook/dp/B07FNY4KH7">Buy on Amazon<span
-                            class="glyphicon glyphicon-chevron-right">
-                    </span></a>
-                    </p>
+                <div class="hero-image">
+                    <img src="images/joydeep_dubai_single_lightroom.jpg" alt="Joydeep Bhattacharjee">
                 </div>
             </div>
         </div>
     </section>
 
-
-    <section id="software" class="success">
+    <!-- ABOUT -->
+    <section id="about" class="section">
         <div class="container">
-            <div class="row">
-                <div class="col-sm-12 text-center">
-                    <h2>Professional Experience</h2>
-                    <hr class="star-light">
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-12">
-                    <h3>Yellow.ai</h3>
-                    <p>role: Engineering Manager - NLP</p>
-                    <p>Jan 2021 → current</p>
-                    <p>
-                    	<ul style="list-style-type:disc">
-                    		<li>
-                    			Design and implement next generation AI/NLP infrastructure for building and deploying thousands of models at scale in conversational AI.
-                    		</li>
-                    		<li>
-                    			Responsible for research, development, production, and scaling of full pipeline of message flow and other intelligent NLP systems in multi‐lingual and multi‐modal contexts.
-                    		</li>
-                    		<li>
-                    			Research, implementation, benchmark existing literature for various purposes.
-                    		</li>
-                    		<li>
-                    			Leading the team which works in parallel and in collaboration to produce custom‐made algorithms using machine learning/Deep learning frameworks‐libraries like torch/hugging face/TensorFlow.
-                    		</li>
-                    		<li>
-                    			Prepare production‐ready code with pre/postprocessing and native scaling in Kubernetes or on‐prem environment.
-                    		</li>
-                    		<li>
-                    			Responsible for all MLOps, Cloud infra management for ML‐related service.
-                    		</li>
-                    		<li>
-                    			As a lead, I am answerable for client issues ﴾ explanation on models prediction and performance﴿, custom
-requirements, new product feature exploration, POCs, architecture and design discussion, problem solving,
-hiring, mentorship and other decision making tasks.
-                    		</li>
-                    	</ul>
+            <p class="section-label">About</p>
+            <h2 class="section-title">Engineer, author,<br><em>and lifelong learner.</em></h2>
+            <div class="bento-grid">
+                <div class="card bento-bio fade-in" style="grid-column: span 12;">
+                    <p style="font-size:16px; line-height:1.8; color:var(--text-muted)">
+                        I'm a Lead ML Engineer at Adobe with over 13 years in the industry, building systems where machine learning meets real-world scale. My career spans TCS, HackerEarth, Nineleaps, Yellow.ai, and now Adobe — each chapter sharpening my focus on where systems meet intelligence.
                     </p>
-                    <p>
-                    <a class="btn btn-primary" href="https://yellow.ai/">Company Website<span
-                            class="glyphicon glyphicon-chevron-right">
-                    </span></a>
+                    <br>
+                    <p style="font-size:16px; line-height:1.8; color:var(--text-muted)">
+                        I've authored two published books — <em>Practical Machine Learning with Rust</em> (Apress) and <em>fastText Quick Start Guide</em> (Packt) — and I write regularly on Medium about LLMs, ML system design, and the math behind modern deep learning.
+                    </p>
+                    <br>
+                    <p style="font-size:16px; line-height:1.8; color:var(--text-muted)">
+                        Currently focused on LLM inference optimization, Flash Attention, quantization, and large-scale NLP pipelines. Available for 1:1 mentorship on Topmate.
                     </p>
                 </div>
-            </div>
-            <hr>
-            <div class="row">
-                <div class="col-sm-12">
-                    <h3>Nineleaps</h3>
-                    <p>role: Team Lead - Machine Learning Platform</p>
-                    <p>May 2017 → Dec 2020</p>
-                    <p>
-                    	As an individual contributor.
-                    </p>
-                    <p>
-                    	<ul style="list-style-type:disc">
-                    		<li>
-                    			Develop, Optimize and improve existing data pipelines to support our growth, initiatives around performance and
-scalability.
-                    		</li>
-                    		<li>
-                    			Thoroughly understand software requirements, deliverables and timelines.
-                    		</li>
-                    		<li>
-                    			Unit and system test new services, releases and software upgrades.
-                    		</li>
-                    		<li>
-                    			Develop initiatives on ensuring data quality, accuracy and reliability.
-                    		</li>
-                    		<li>
-                    			Researching, prototyping and developing machine learning and statistical models to more accurately forecast, mine and segment data.
-                    		</li>
-                    		<li>
-                    			Researching, prototyping and developing machine learning and statistical models to more accurately forecast, mine and segment data.
-                    		</li>
-                    		<li>
-                    			Evaluate emerging datasets and technologies that may contribute to our analytical platform.
-                    		</li>
-                    	</ul>
-                    </p>
-                    <p>
-                    	As a technical lead.
-                    </p>
-                    <p>
-                    	<ul style="list-style-type:disc">
-                    		<li>
-                    			Ensure that all software developed within the team satisfies the business requirements as specified.
-                    		</li>
-                    		<li>
-                    			Participate and lead discussion in sprint plannings, design reviews and all team related matters.
-                    		</li>
-                    		<li>
-                    			Assume a high level of ownership of all software developed by the members of the team.
-                    		</li>
-                    		<li>
-                    			Actively contribute to the process of continual improvement, with regard to self, team members and process using various methods such as effective retrospections, discussions and one-on-ones.
-                    		</li>
-                    	</ul>
-                    </p>
-                    <p>
-                    <a class="btn btn-primary" href="https://www.nineleaps.com/">Company Website<span
-                            class="glyphicon glyphicon-chevron-right">
-                    </span></a>
-                    </p>
+                <div class="card bento-focus fade-in">
+                    <p class="stack-category-title">Current Focus</p>
+                    <div>
+                        <span class="focus-tag">LLM Inference</span>
+                        <span class="focus-tag">Flash Attention</span>
+                        <span class="focus-tag">Quantization</span>
+                        <span class="focus-tag">NLP Pipelines</span>
+                        <span class="focus-tag">ML System Design</span>
+                        <span class="focus-tag">Diffusion Models</span>
+                        <span class="focus-tag">Rust + ML</span>
+                    </div>
                 </div>
-            </div>
-            <hr>
-            <div class="row">
-                <div class="col-sm-12">
-                    <h3>HackerEarth</h3>
-                    <p>role: Category Head - Python</p>
-                    <p>Nov 2016 → May 2017</p>
-                    <p>
-                    	<ul>
-                    		<li>
-                    			Planning and Requirement Analysis
-                    		</li>
-                    		<li>
-                    			Development of python practise section for B2C engagement.
-                    		</li>
-                    		<li>
-					Coding, Prototyping and testing applications.
-                    		</li>
-                    		<li>
-					Creating software for high user engagement.
-                    		</li>
-                    	</ul>
-                    </p>
-		    <p>
-                    <a class="btn btn-primary" href="https://www.hackerearth.com/">Company Website<span
-                            class="glyphicon glyphicon-chevron-right">
-                    </span></a>
-                    </p>
+                <div class="card bento-current fade-in">
+                    <p class="stack-category-title">Currently at</p>
+                    <p style="font-size:26px; font-family:var(--font-display); margin-bottom:6px;">Adobe</p>
+                    <p style="font-size:13px; color:var(--text-muted); margin-bottom:4px;">Lead ML Engineer</p>
+                    <span class="current-badge">&#11044; Active</span>
                 </div>
-            </div>
-            <hr>
-            <div class="row">
-                <div class="col-sm-12">
-                    <h3>SLK Software Services Pvt Ltd.</h3>
-                    <p>role: Software Engineer</p>
-                    <p>Aug 2015 → Oct 2016</p>
-                    <p>
-                    	<ul>
-                    		<li>
-                    			Design, develop and implement applications appropriate to business needs and requirements.
-                    		</li>
-                    		<li>
-                    			Interface with customers to identify and understand their business goals.
-                    		</li>
-                    		<li>
-                    			Troubleshooting and error detection in various applications.
-                    		</li>
-                    		<li>
-                    			Provide strategic organizational direction in developing applications.
-                    		</li>
-                    		<li>
-                    			Identify and define plans, methodologies and deliverables for assigned projects and releases.
-                    		</li>
-                    		<li>
-                    			Develop system documentation protocols.
-                    		</li>
-                    	</ul>
-                    </p>
-                    <p>
-                    <a class="btn btn-primary" href="http://www.slkgroup.com/">Company website<span
-                            class="glyphicon glyphicon-chevron-right">
-                    </span></a>
-                    </p>
-                </div>
-            </div>
-            <hr>
-            <div class="row">
-                <div class="col-sm-12">
-                    <h3>Tata Consultancy Services.</h3>
-                    <p>role: Systems Engineer</p>
-                    <p>Dec 2011 → Jul 2015</p>
-                    <p>
-                    	<ul>
-                    		<li>
-                    			Developed various custom automation tools for various tasks.
-                    		</li>
-                    		<li>
-                    			Configuration and other administration of J2EE applications
-                    		</li>
-                    		<li>
-                    			Researching technology options for customer needs.
-                    		</li>
-                    		<li>
-                    			Provided good documentation for use by other team members.
-                    		</li>
-                    		<li>
-                    			Troubleshooting and error detection in various applications.
-                    		</li>
-                    	</ul>
-                    </p>
-                    <p>
-                    <a class="btn btn-primary" href="https://www.tcs.com/">Company website<span
-                            class="glyphicon glyphicon-chevron-right">
-                    </span></a>
-                    </p>
+                <div class="card bento-stats fade-in">
+                    <p class="stack-category-title">Quick Stats</p>
+                    <div class="stat-row">
+                        <span class="stat-row-label">GitHub Stars</span>
+                        <span class="stat-row-value">133+</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-row-label">Published Books</span>
+                        <span class="stat-row-value">2</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-row-label">Medium Followers</span>
+                        <span class="stat-row-value">670+</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-row-label">Open Source Repos</span>
+                        <span class="stat-row-value">94</span>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="text-center">
-        <div class="footer-above">
-            <div class="container">
-                <div class="row">
-                    <div class="footer-col col-md-4">
-                        <h3>Location</h3>
-                        <p>Bengaluru, India</p>
+    <!-- WRITING -->
+    <section id="writing" class="section">
+        <div class="container">
+            <p class="section-label">Writing</p>
+            <h2 class="section-title">Recent Articles</h2>
+            <div class="writing-grid">
+                <div class="card writing-card fade-in">
+                    <span class="writing-date">March 2026</span>
+                    <h3 class="writing-title">Understanding Flash Attention</h3>
+                    <p class="writing-desc">A deep dive into Flash Attention — the algorithm that made training large transformers feasible by rethinking how attention is computed in memory.</p>
+                    <a href="https://joydeep31415.medium.com/flash-attention-b16b93314695" class="writing-read" target="_blank" rel="noopener">Read on Medium <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="card writing-card fade-in">
+                    <span class="writing-date">March 2026</span>
+                    <h3 class="writing-title">Vera Rubin and the Future of AI</h3>
+                    <p class="writing-desc">Exploring what the Vera Rubin Observatory teaches us about scale, data, and the infrastructure choices that will define the next generation of AI systems.</p>
+                    <a href="https://joydeep31415.medium.com/vera-rubin-and-the-future-of-ai-28f925257d8b" class="writing-read" target="_blank" rel="noopener">Read on Medium <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="card writing-card fade-in">
+                    <span class="writing-date">September 2025</span>
+                    <h3 class="writing-title">The Math Behind Diffusion Models — DDPM</h3>
+                    <p class="writing-desc">Breaking down Denoising Diffusion Probabilistic Models from first principles — the forward process, reverse process, and the loss function that ties it together.</p>
+                    <a href="https://joydeep31415.medium.com/the-math-behind-diffusion-models-ddpm-9fabe9c9f1d9" class="writing-read" target="_blank" rel="noopener">Read on Medium <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="card writing-card fade-in">
+                    <span class="writing-date">August 2025</span>
+                    <h3 class="writing-title">LLM Quantization Techniques</h3>
+                    <p class="writing-desc">A practical overview of quantization strategies for large language models — INT8, GPTQ, AWQ — and how each affects inference speed and model quality in production.</p>
+                    <a href="https://joydeep31415.medium.com/llm-quantization-techniques-4229b7eac20c" class="writing-read" target="_blank" rel="noopener">Read on Medium <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="card writing-card fade-in">
+                    <span class="writing-date">July 2025</span>
+                    <h3 class="writing-title">Design: Harmful Ad Detection System</h3>
+                    <p class="writing-desc">ML system design walkthrough for a scalable harmful ad detection pipeline — covering data flows, model selection, and trade-offs at production scale.</p>
+                    <a href="https://joydeep31415.medium.com/design-harmful-advertisements-detection-system-mlsd-youtube-instagram-005679995c89" class="writing-read" target="_blank" rel="noopener">Read on Medium <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="card writing-card fade-in">
+                    <span class="writing-date">June 2025</span>
+                    <h3 class="writing-title">Design: Comment Ranking System</h3>
+                    <p class="writing-desc">End-to-end ML system design for ranking comments at scale — feature engineering, model architecture, online/offline evaluation, and serving infrastructure.</p>
+                    <a href="https://joydeep31415.medium.com/design-an-improved-comment-ranking-system-for-instagram-youtube-reddit-mlsd-ffa37ab70a3e" class="writing-read" target="_blank" rel="noopener">Read on Medium <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="card writing-card fade-in">
+                    <span class="writing-date">2024</span>
+                    <h3 class="writing-title">LLM Quantization Explained</h3>
+                    <p class="writing-desc">Shrinking AI models from feast to fit — a clear explanation of quantization fundamentals, why it matters, and how it reduces memory and inference cost without sacrificing accuracy.</p>
+                    <a href="https://joydeep31415.medium.com/llm-quantization-explained-4c7ebc7ed4ab" class="writing-read" target="_blank" rel="noopener">Read on Medium <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+            </div>
+            <div class="writing-footer">
+                <a href="https://joydeep31415.medium.com/" class="btn btn-outline" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-medium"></i> Read all posts on Medium
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- VIDEOS -->
+    <section id="videos" class="section">
+        <div class="container">
+            <p class="section-label">YouTube</p>
+            <h2 class="section-title">Videos</h2>
+            <div class="video-grid">
+
+                <a href="https://www.youtube.com/watch?v=qmdh8EDcXhM" class="card video-card fade-in" target="_blank" rel="noopener" style="text-decoration:none;">
+                    <div class="video-thumb">
+                        <img src="https://img.youtube.com/vi/qmdh8EDcXhM/mqdefault.jpg" alt="Flash Attention">
+                        <div class="video-play-overlay"><i class="fa-solid fa-circle-play"></i></div>
+                        <span class="video-duration">2:32:57</span>
                     </div>
-                    <div class="footer-col col-md-4">
-                        <h3>Contact</h3>
-                        <ul class="list-inline">
-                            <li>
-                                <a href="mailto:joydeepubuntu@gmail.com" class="btn-social btn-outline"><i class="fa fa-envelope pr-1"></i> Email</button></a>
-                            </li>
-                            <li>
-                                <a href="https://github.com/infinite-Joy" class="btn-social btn-outline"><i class="fa fa-github pr-1"></i> Github</button></a>
-                            </li>
-                            <li>
-				                <a href="https://twitter.com/alt227Joydeep" class="btn-social btn-outline"><i class="fa fa-twitter pr-1"></i> Twitter</button></a>
-                            </li>
-                            <li>
-                                <a href="https://www.linkedin.com/in/joydeep-bhattacharjee-934a1157/" class="btn-social btn-outline"><i class="fa fa-linkedin pr-1"></i> Linkedin</button></a>
-                            </li>
-                        </ul>
+                    <p class="video-title">Deriving Flash Attention: The Math, the Hardware, and the Triton Implementation</p>
+                    <div class="video-meta"><span>75 views</span><span>11 days ago</span></div>
+                </a>
+
+                <a href="https://www.youtube.com/watch?v=auVC7K1xN_Y" class="card video-card fade-in" target="_blank" rel="noopener" style="text-decoration:none;">
+                    <div class="video-thumb">
+                        <img src="https://img.youtube.com/vi/auVC7K1xN_Y/mqdefault.jpg" alt="Diffusion Models">
+                        <div class="video-play-overlay"><i class="fa-solid fa-circle-play"></i></div>
+                        <span class="video-duration">51:43</span>
                     </div>
-                    <div class="footer-col col-md-4">
-                        <h3>Blog</h3>
-                        <p>I irregularly blog at <br><a href="https://medium.com/@joydeepubuntu/latest"><button type="button" class="btn btn-primary btn-md">Medium</button></a></p>
+                    <p class="video-title">The MATH behind Diffusion Models DDPM</p>
+                    <div class="video-meta"><span>334 views</span><span>5 months ago</span></div>
+                </a>
+
+                <a href="https://www.youtube.com/watch?v=0pF6GdbwMo4" class="card video-card fade-in" target="_blank" rel="noopener" style="text-decoration:none;">
+                    <div class="video-thumb">
+                        <img src="https://img.youtube.com/vi/0pF6GdbwMo4/mqdefault.jpg" alt="LLM Quantization">
+                        <div class="video-play-overlay"><i class="fa-solid fa-circle-play"></i></div>
+                        <span class="video-duration">59:04</span>
+                    </div>
+                    <p class="video-title">LLM Quantization Techniques Explained — GPTQ AWQ GGUF HQQ BitNet</p>
+                    <div class="video-meta"><span>619 views</span><span>10 months ago</span></div>
+                </a>
+
+                <a href="https://www.youtube.com/watch?v=jygIliDVYbY" class="card video-card fade-in" target="_blank" rel="noopener" style="text-decoration:none;">
+                    <div class="video-thumb">
+                        <img src="https://img.youtube.com/vi/jygIliDVYbY/mqdefault.jpg" alt="LLM Quantization Explained">
+                        <div class="video-play-overlay"><i class="fa-solid fa-circle-play"></i></div>
+                        <span class="video-duration">31:23</span>
+                    </div>
+                    <p class="video-title">LLM Quantization Explained</p>
+                    <div class="video-meta"><span>448 views</span><span>1 year ago</span></div>
+                </a>
+
+                <a href="https://www.youtube.com/watch?v=2IRLJbTXWmI" class="card video-card fade-in" target="_blank" rel="noopener" style="text-decoration:none;">
+                    <div class="video-thumb">
+                        <img src="https://img.youtube.com/vi/2IRLJbTXWmI/mqdefault.jpg" alt="DeepSeek R1">
+                        <div class="video-play-overlay"><i class="fa-solid fa-circle-play"></i></div>
+                        <span class="video-duration">18:12</span>
+                    </div>
+                    <p class="video-title">The AI Breakthrough Nobody Expected: Inside DeepSeek R1</p>
+                    <div class="video-meta"><span>240 views</span><span>1 year ago</span></div>
+                </a>
+
+                <a href="https://www.youtube.com/watch?v=_SkeqSsLZTg" class="card video-card fade-in" target="_blank" rel="noopener" style="text-decoration:none;">
+                    <div class="video-thumb">
+                        <img src="https://img.youtube.com/vi/_SkeqSsLZTg/mqdefault.jpg" alt="Finetune Llama 3.2">
+                        <div class="video-play-overlay"><i class="fa-solid fa-circle-play"></i></div>
+                        <span class="video-duration">35:40</span>
+                    </div>
+                    <p class="video-title">Easily Finetune Llama 3.2 for Your Use Case | Upload to Ollama | Unsloth</p>
+                    <div class="video-meta"><span>1.7k views</span><span>1 year ago</span></div>
+                </a>
+
+                <a href="https://www.youtube.com/watch?v=9nunG2vdGcc" class="card video-card fade-in" target="_blank" rel="noopener" style="text-decoration:none;">
+                    <div class="video-thumb">
+                        <img src="https://img.youtube.com/vi/9nunG2vdGcc/mqdefault.jpg" alt="Multimodal AI">
+                        <div class="video-play-overlay"><i class="fa-solid fa-circle-play"></i></div>
+                        <span class="video-duration">24:02</span>
+                    </div>
+                    <p class="video-title">Meta's LLaMA 3.2: Big Leap into Multimodal AI | RUN LOCALLY</p>
+                    <div class="video-meta"><span>120 views</span><span>1 year ago</span></div>
+                </a>
+
+                <a href="https://www.youtube.com/watch?v=a4j1F_D9VVU" class="card video-card fade-in" target="_blank" rel="noopener" style="text-decoration:none;">
+                    <div class="video-thumb">
+                        <img src="https://img.youtube.com/vi/a4j1F_D9VVU/mqdefault.jpg" alt="GraphRAG">
+                        <div class="video-play-overlay"><i class="fa-solid fa-circle-play"></i></div>
+                        <span class="video-duration">23:14</span>
+                    </div>
+                    <p class="video-title">GraphRAG from Microsoft. Is it good? Implementation with Ollama + Llama 3.1</p>
+                    <div class="video-meta"><span>510 views</span><span>1 year ago</span></div>
+                </a>
+
+                <a href="https://www.youtube.com/watch?v=hdBnxlqnstg" class="card video-card fade-in" target="_blank" rel="noopener" style="text-decoration:none;">
+                    <div class="video-thumb">
+                        <img src="https://img.youtube.com/vi/hdBnxlqnstg/mqdefault.jpg" alt="CrewAI">
+                        <div class="video-play-overlay"><i class="fa-solid fa-circle-play"></i></div>
+                        <span class="video-duration">16:34</span>
+                    </div>
+                    <p class="video-title">MultiAgent AI System using CrewAI + Llama 3.1</p>
+                    <div class="video-meta"><span>475 views</span><span>1 year ago</span></div>
+                </a>
+
+            </div>
+            <div class="video-footer">
+                <a href="https://www.youtube.com/@joydeepbhattacharjee3849/videos" class="btn btn-outline" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-youtube"></i> Watch all 85 videos on YouTube
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- BOOKS -->
+    <section id="books" class="section">
+        <div class="container">
+            <p class="section-label">Published Work</p>
+            <h2 class="section-title">Books</h2>
+            <div class="book-grid">
+                <div class="card book-card fade-in">
+                    <img src="https://images-na.ssl-images-amazon.com/images/I/41DTUUR59fL._SX331_BO1,204,203,200_.jpg" alt="Practical Machine Learning with Rust" class="book-cover">
+                    <h3 class="book-title">Practical Machine Learning with Rust</h3>
+                    <div class="book-meta">
+                        <span class="book-stat"><i class="fa-solid fa-star"></i> 83 stars</span>
+                        <span class="book-stat"><i class="fa-solid fa-code-fork"></i> 27 forks</span>
+                        <span class="book-stat"><i class="fa-solid fa-building-columns"></i> Apress</span>
+                    </div>
+                    <p class="book-desc">
+                        My first book bridges two worlds I love: Rust's performance guarantees and the richness of the ML ecosystem. It covers supervised, unsupervised, and reinforcement learning, computer vision, NLP, and deployment — all in Rust. Written for engineers who want memory-safe, high-performance ML beyond Python.
+                    </p>
+                    <div class="book-links">
+                        <a href="https://link.springer.com/book/10.1007/978-1-4842-5121-8" class="btn btn-outline" target="_blank" rel="noopener"><i class="fa-solid fa-globe"></i> Springer</a>
+                        <a href="https://github.com/Apress/practical-machine-learning-w-rust" class="btn btn-outline" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> Code</a>
+                        <a href="https://www.amazon.in/Practical-Machine-Learning-Rust-Applications/dp/1484251202" class="btn btn-outline" target="_blank" rel="noopener"><i class="fa-brands fa-amazon"></i> Amazon</a>
+                    </div>
+                </div>
+                <div class="card book-card fade-in">
+                    <img src="https://images-na.ssl-images-amazon.com/images/I/51cx2IzvnzL.jpg" alt="fastText Quick Start Guide" class="book-cover">
+                    <h3 class="book-title">fastText Quick Start Guide</h3>
+                    <div class="book-meta">
+                        <span class="book-stat"><i class="fa-solid fa-star"></i> 50 stars</span>
+                        <span class="book-stat"><i class="fa-solid fa-code-fork"></i> 10 forks</span>
+                        <span class="book-stat"><i class="fa-solid fa-building-columns"></i> Packt</span>
+                    </div>
+                    <p class="book-desc">
+                        A practical guide to Facebook's fastText — the library that made fast, scalable text classification accessible to everyone. Covers word representations, text classification, integration with Keras, TensorFlow, and PyTorch, and mobile deployment. A great entry point for applied NLP.
+                    </p>
+                    <div class="book-links">
+                        <a href="https://www.packtpub.com/big-data-and-business-intelligence/fasttext-quick-start-guide" class="btn btn-outline" target="_blank" rel="noopener"><i class="fa-solid fa-globe"></i> Packt</a>
+                        <a href="https://github.com/PacktPublishing/fastText-Quick-Start-Guide" class="btn btn-outline" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> Code</a>
+                        <a href="https://www.amazon.com/fastText-Quick-Start-Guide-representation-ebook/dp/B07FNY4KH7" class="btn btn-outline" target="_blank" rel="noopener"><i class="fa-brands fa-amazon"></i> Amazon</a>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="footer-below">
-            <div class="container">
-                <div class="row">
-                    <div class="col-sm-12">
-                        Copyright &copy; Joydeep Bhattacharjee 2018
+    </section>
+
+    <!-- OPEN SOURCE -->
+    <section id="projects" class="section">
+        <div class="container">
+            <p class="section-label">Open Source</p>
+            <h2 class="section-title">GitHub Projects</h2>
+            <div class="projects-grid">
+                <div class="card project-card fade-in">
+                    <p class="project-name">practical-machine-learning-w-rust</p>
+                    <p class="project-desc">Source code and examples for <em>Practical Machine Learning with Rust</em> — ML algorithms, computer vision, NLP, and deployment, all in Rust.</p>
+                    <div class="project-stats">
+                        <span class="project-stat"><i class="fa-solid fa-star"></i> 83</span>
+                        <span class="project-stat"><i class="fa-solid fa-code-fork"></i> 27</span>
+                    </div>
+                    <div class="project-links">
+                        <a href="https://github.com/Apress/practical-machine-learning-w-rust" class="btn btn-outline" target="_blank" rel="noopener">
+                            <i class="fa-brands fa-github"></i> View on GitHub
+                        </a>
+                    </div>
+                </div>
+                <div class="card project-card fade-in">
+                    <p class="project-name">fastText-Quick-Start-Guide</p>
+                    <p class="project-desc">Code repository for the fastText Quick Start Guide — hands-on examples for text classification, word embeddings, and ML framework integrations.</p>
+                    <div class="project-stats">
+                        <span class="project-stat"><i class="fa-solid fa-star"></i> 50</span>
+                        <span class="project-stat"><i class="fa-solid fa-code-fork"></i> 10</span>
+                    </div>
+                    <div class="project-links">
+                        <a href="https://github.com/PacktPublishing/fastText-Quick-Start-Guide" class="btn btn-outline" target="_blank" rel="noopener">
+                            <i class="fa-brands fa-github"></i> View on GitHub
+                        </a>
+                    </div>
+                </div>
+                <div class="card project-card ghost-card fade-in">
+                    <i class="fa-brands fa-github" style="font-size:36px; color:var(--text-muted); margin-bottom:16px;"></i>
+                    <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">94 repositories and counting</p>
+                    <a href="https://github.com/infinite-Joy" class="btn btn-outline" target="_blank" rel="noopener">View all repos</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- EXPERIENCE -->
+    <section id="experience" class="section">
+        <div class="container">
+            <p class="section-label">Career</p>
+            <h2 class="section-title">Professional Experience</h2>
+            <div class="timeline">
+                <div class="timeline-item fade-in">
+                    <div>
+                        <p class="timeline-period">2022 → Present</p>
+                        <p class="timeline-company">Adobe</p>
+                        <p class="timeline-role">Lead ML Engineer</p>
+                        <span class="timeline-current">&#11044; Current</span>
+                    </div>
+                    <div>
+                        <p class="timeline-desc">Building and scaling ML systems at Adobe — focused on LLM inference, NLP pipelines, and intelligent content understanding. Research-to-production work with emphasis on performance, reliability, and scale.</p>
+                        <div class="timeline-tags">
+                            <span class="tag">LLM Inference</span>
+                            <span class="tag">NLP</span>
+                            <span class="tag">PyTorch</span>
+                            <span class="tag">ML Systems</span>
+                            <span class="tag">Hugging Face</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-item fade-in">
+                    <div>
+                        <p class="timeline-period">Jan 2021 → 2022</p>
+                        <p class="timeline-company">Yellow.ai</p>
+                        <p class="timeline-role">Engineering Manager — NLP</p>
+                    </div>
+                    <div>
+                        <p class="timeline-desc">Led the NLP infrastructure team building and deploying thousands of conversational AI models at scale. Architected multi-lingual, multi-modal NLP pipelines from research through Kubernetes-based production serving.</p>
+                        <div class="timeline-tags">
+                            <span class="tag">1000s of models at scale</span>
+                            <span class="tag">Multilingual NLP</span>
+                            <span class="tag">Kubernetes</span>
+                            <span class="tag">MLOps</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-item fade-in">
+                    <div>
+                        <p class="timeline-period">May 2017 → Dec 2020</p>
+                        <p class="timeline-company">Nineleaps</p>
+                        <p class="timeline-role">Team Lead — ML Platform</p>
+                    </div>
+                    <div>
+                        <p class="timeline-desc">Grew from individual contributor to technical lead on the ML platform — building production data pipelines, ML models, and leading the team through architecture reviews and mentorship.</p>
+                        <div class="timeline-tags">
+                            <span class="tag">ML Pipelines</span>
+                            <span class="tag">TensorFlow</span>
+                            <span class="tag">scikit-learn</span>
+                            <span class="tag">Team Lead</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-item fade-in">
+                    <div>
+                        <p class="timeline-period">Nov 2016 → May 2017</p>
+                        <p class="timeline-company">HackerEarth</p>
+                        <p class="timeline-role">Category Head — Python</p>
+                    </div>
+                    <div>
+                        <p class="timeline-desc">Built the Python practice section for B2C developer engagement, creating content and tooling for a high-engagement coding education platform.</p>
+                        <div class="timeline-tags">
+                            <span class="tag">Python</span>
+                            <span class="tag">EdTech</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-item fade-in">
+                    <div>
+                        <p class="timeline-period">2011 → 2016</p>
+                        <p class="timeline-company">TCS &amp; SLK</p>
+                        <p class="timeline-role">Systems Engineer</p>
+                    </div>
+                    <div>
+                        <p class="timeline-desc">Early career in systems engineering at Tata Consultancy Services and SLK Software — building automation tools, configuring J2EE applications, and developing foundational software engineering instincts.</p>
+                        <div class="timeline-tags">
+                            <span class="tag">Java / J2EE</span>
+                            <span class="tag">Automation</span>
+                            <span class="tag">Systems</span>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- TECH STACK -->
+    <section id="stack" class="section">
+        <div class="container">
+            <p class="section-label">Expertise</p>
+            <h2 class="section-title">Tech Stack</h2>
+            <div class="stack-grid">
+                <div class="card fade-in">
+                    <p class="stack-category-title">ML / DL Frameworks</p>
+                    <div class="stack-items">
+                        <span class="stack-item">PyTorch</span>
+                        <span class="stack-item">TensorFlow</span>
+                        <span class="stack-item">Hugging Face</span>
+                        <span class="stack-item">fastText</span>
+                        <span class="stack-item">scikit-learn</span>
+                    </div>
+                </div>
+                <div class="card fade-in">
+                    <p class="stack-category-title">Languages</p>
+                    <div class="stack-items">
+                        <span class="stack-item">Python</span>
+                        <span class="stack-item">Rust</span>
+                        <span class="stack-item">SQL</span>
+                        <span class="stack-item">Bash</span>
+                    </div>
+                </div>
+                <div class="card fade-in">
+                    <p class="stack-category-title">Infrastructure</p>
+                    <div class="stack-items">
+                        <span class="stack-item">Kubernetes</span>
+                        <span class="stack-item">Docker</span>
+                        <span class="stack-item">AWS</span>
+                        <span class="stack-item">GCP</span>
+                        <span class="stack-item">MLflow</span>
+                    </div>
+                </div>
+                <div class="card fade-in">
+                    <p class="stack-category-title">Specializations</p>
+                    <div class="stack-items">
+                        <span class="stack-item">LLM Inference</span>
+                        <span class="stack-item">NLP Pipelines</span>
+                        <span class="stack-item">Quantization</span>
+                        <span class="stack-item">Flash Attention</span>
+                        <span class="stack-item">ML System Design</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MENTORSHIP -->
+    <section id="mentorship" class="section">
+        <div class="container">
+            <div class="mentorship-inner">
+                <div>
+                    <p class="section-label">Mentorship</p>
+                    <h2 class="mentorship-title">Let's work<br><em>together.</em></h2>
+                    <p class="mentorship-desc">I offer 1:1 mentorship for engineers looking to grow in ML, navigate career transitions, or sharpen their system design skills. Whether you're preparing for senior interviews or shipping your first production model, I've been there.</p>
+                    <div class="mentorship-services">
+                        <div class="mentorship-service">
+                            <i class="fa-solid fa-check"></i>
+                            <span>ML system design reviews</span>
+                        </div>
+                        <div class="mentorship-service">
+                            <i class="fa-solid fa-check"></i>
+                            <span>Career guidance for ML engineers</span>
+                        </div>
+                        <div class="mentorship-service">
+                            <i class="fa-solid fa-check"></i>
+                            <span>Mock technical interviews</span>
+                        </div>
+                        <div class="mentorship-service">
+                            <i class="fa-solid fa-check"></i>
+                            <span>Resume and portfolio review</span>
+                        </div>
+                    </div>
+                    <a href="https://topmate.io/joydeep_bhattacharjee" class="btn btn-primary" target="_blank" rel="noopener">
+                        <i class="fa-solid fa-calendar-check"></i> Book on Topmate
+                    </a>
+                </div>
+                <div class="card mentorship-card fade-in">
+                    <i class="fa-solid fa-brain" style="font-size:40px; color:var(--accent); margin-bottom:20px;"></i>
+                    <h3>Book a 1:1 Session</h3>
+                    <p>Career guidance, technical deep-dives, interview prep, and more — on your schedule.</p>
+                    <a href="https://topmate.io/joydeep_bhattacharjee" class="btn btn-primary" style="width:100%; justify-content:center;" target="_blank" rel="noopener">
+                        View availability on Topmate
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="section">
+        <div class="container">
+            <p class="section-label" style="text-align:center;">Contact</p>
+            <h2 class="contact-title">Get in touch</h2>
+            <p class="contact-subtitle">Open to collaborations, speaking opportunities, and interesting conversations.</p>
+            <div class="contact-links">
+                <a href="mailto:joydeepubuntu@gmail.com" class="contact-link">
+                    <i class="fa-solid fa-envelope"></i> Email
+                </a>
+                <a href="https://github.com/infinite-Joy" class="contact-link" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-github"></i> GitHub
+                </a>
+                <a href="https://www.linkedin.com/in/joydeep-bhattacharjee-934a1157/" class="contact-link" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-linkedin"></i> LinkedIn
+                </a>
+                <a href="https://medium.com/@joydeepubuntu/latest" class="contact-link" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-medium"></i> Medium
+                </a>
+                <a href="https://twitter.com/alt227Joydeep" class="contact-link" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-x-twitter"></i> X / Twitter
+                </a>
+                <a href="https://topmate.io/joydeep_bhattacharjee" class="contact-link" target="_blank" rel="noopener">
+                    <i class="fa-solid fa-calendar"></i> Topmate
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p class="footer-text">Copyright &copy; Joydeep Bhattacharjee 2026 &middot; Bengaluru, India</p>
         </div>
     </footer>
 
-    <!-- jQuery -->
-    <!-- <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script> -->
+    <script>
+        // Theme toggle
+        const html = document.documentElement;
+        const themeToggle = document.getElementById('themeToggle');
 
-    <!-- Bootstrap Core JavaScript -->
-    <!-- <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script> -->
+        function setTheme(theme) {
+            html.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            const icon = themeToggle.querySelector('i');
+            icon.className = theme === 'light' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+        }
 
-    <!-- Plugin JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/classie/1.0.1/classie.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animated-header/0.0.1/js/cbpAnimatedHeader.min.js"></script>
+        // Restore saved theme, default to dark
+        setTheme(localStorage.getItem('theme') || 'dark');
 
-    <!-- Contact Form JavaScript -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqBootstrapValidation/1.3.7/jqBootstrapValidation.min.js"></script>
-    <script src="js/contact_me.js"></script>
+        themeToggle.addEventListener('click', () => {
+            setTheme(html.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+        });
 
-    <!-- Custom Theme JavaScript -->
-    <script src="js/freelancer.js"></script>
+        // Scroll fade-in animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+    </script>
 
 </body>
-
 </html>
