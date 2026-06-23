@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Joydeep Bhattacharjee — Lead ML Engineer at Adobe. Author of 2 ML books. Building intelligent systems at scale.">
+<meta name="author" content="Joydeep Bhattacharjee">
+<title>Joydeep Bhattacharjee — ML Engineer · Author · Mentor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #08090b;
+  --bg-elevated: #0f1114;
+  --bg-card: #12141a;
+  --bg-card-hover: #181b22;
+  --surface: #1c1f28;
+  --text: #e4e2de;
+  --text-secondary: #8a877f;
+  --text-muted: #555349;
+  --accent: #e8c547;
+  --accent-dim: rgba(232, 197, 71, 0.08);
+  --accent-glow: rgba(232, 197, 71, 0.2);
+  --green: #5cb97a;
+  --blue: #5b8def;
+  --coral: #e8726a;
+  --border: #1f222b;
+  --border-light: #282c38;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-body: 'Outfit', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --max-w: 1200px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.65;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection { background: var(--accent); color: var(--bg); }
+
+/* ── GRAIN OVERLAY ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 100px;
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 3px; }
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  padding: 0 48px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  background: rgba(8, 9, 11, 0.75);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.3px;
+  text-decoration: none;
+}
+
+.nav-center {
+  display: flex;
+  gap: 28px;
+  list-style: none;
+}
+
+.nav-center a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: color 0.2s;
+}
+
+.nav-center a:hover { color: var(--text); }
+
+.nav-cta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: blink 2.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.btn-book {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 50px;
+  background: var(--accent);
+  color: var(--bg);
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  transition: all 0.25s;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-book:hover {
+  box-shadow: 0 0 24px var(--accent-glow);
+  transform: translateY(-1px);
+}
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 140px 48px 100px;
+  max-width: var(--max-w);
+  margin: 0 auto;
+  position: relative;
+}
+
+.hero-ambient {
+  position: fixed;
+  top: -200px;
+  right: -200px;
+  width: 700px;
+  height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  filter: blur(80px);
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: -1;
+  animation: drift 12s ease-in-out infinite;
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-40px, 30px); }
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: riseIn 0.7s 0.2s forwards;
+}
+
+.hero-tag::before {
+  content: '';
+  display: block;
+  width: 24px;
+  height: 1px;
+  background: var(--accent);
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 7vw, 96px);
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: -2px;
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: riseIn 0.7s 0.35s forwards;
+}
+
+.hero h1 em { font-style: italic; color: var(--accent); }
+
+.hero-desc {
+  font-size: 18px;
+  color: var(--text-secondary);
+  max-width: 560px;
+  font-weight: 300;
+  line-height: 1.75;
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: riseIn 0.7s 0.5s forwards;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: riseIn 0.7s 0.65s forwards;
+}
+
+.hero-stat { display: flex; flex-direction: column; }
+
+.hero-stat-val {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.hero-stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 2px;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 48px;
+  opacity: 0;
+  animation: riseIn 0.7s 0.8s forwards;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: 50px;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 4px 30px var(--accent-glow);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: 50px;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── SECTION BASE ── */
+.section {
+  padding: 100px 48px;
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.divider {
+  height: 1px;
+  max-width: var(--max-w);
+  margin: 0 auto;
+  background: linear-gradient(90deg, transparent, var(--border-light), transparent);
+}
+
+.section-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.section-heading {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 400;
+  letter-spacing: -1px;
+  margin-bottom: 48px;
+}
+
+.section-heading em { font-style: italic; color: var(--accent); }
+
+/* ── ABOUT: BENTO GRID ── */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.card:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(232, 197, 71, 0.12);
+  transform: translateY(-3px);
+}
+
+.card-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+
+.card p {
+  color: var(--text-secondary);
+  font-size: 14.5px;
+  line-height: 1.8;
+}
+
+.span-8 { grid-column: span 8; }
+.span-4 { grid-column: span 4; }
+.span-6 { grid-column: span 6; }
+.span-3 { grid-column: span 3; }
+.span-5 { grid-column: span 5; }
+.span-7 { grid-column: span 7; }
+.span-12 { grid-column: span 12; }
+
+.photo-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--bg-card) 0%, #191c26 100%);
+  min-height: 260px;
+}
+
+.avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  object-fit: cover;
+  opacity: 0.95;
+}
+
+.avatar-placeholder {
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 52px;
+  font-style: italic;
+  color: var(--accent);
+  background: linear-gradient(135deg, #1a1c24 0%, #222530 100%);
+}
+
+.tags-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.tag {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  transition: all 0.25s;
+}
+
+.tag:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.stat-rows { display: flex; flex-direction: column; }
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.stat-row:last-child { border-bottom: none; }
+
+.stat-row .lbl { font-size: 13px; color: var(--text-muted); }
+
+.stat-row .val {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ── BOOKS ── */
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.book-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+  display: flex;
+  gap: 28px;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.book-card:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(232, 197, 71, 0.12);
+  transform: translateY(-3px);
+}
+
+.book-cover {
+  width: 120px;
+  min-width: 120px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+}
+
+.book-cover img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.book-info { flex: 1; }
+
+.book-info h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  letter-spacing: -0.2px;
+}
+
+.book-publisher {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.book-info p {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.book-links {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.book-link {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.book-link:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.book-stars {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── EXPERIENCE TIMELINE ── */
+.timeline {
+  max-width: 800px;
+  position: relative;
+  padding-left: 28px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: linear-gradient(180deg, var(--accent), var(--border-light) 30%, var(--border-light));
+}
+
+.tl-item {
+  padding: 0 0 36px 28px;
+  position: relative;
+}
+
+.tl-item:last-child { padding-bottom: 0; }
+
+.tl-item::before {
+  content: '';
+  position: absolute;
+  left: -32px;
+  top: 8px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--accent);
+}
+
+.tl-item.past::before { background: var(--text-muted); box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px var(--border); }
+
+.tl-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+}
+
+.tl-role {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.tl-company {
+  font-size: 14px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.tl-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 600px;
+}
+
+.tl-chips {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--accent-dim);
+  font-size: 11px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+
+/* ── BLOG ── */
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.blog-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.blog-card:hover {
+  background: var(--bg-card-hover);
+  transform: translateY(-3px);
+  border-color: rgba(232, 197, 71, 0.12);
+}
+
+.blog-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.blog-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  letter-spacing: -0.2px;
+  line-height: 1.4;
+}
+
+.blog-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.blog-read-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  letter-spacing: 0.5px;
+}
+
+.blog-read-more .arr { transition: transform 0.25s; }
+.blog-card:hover .blog-read-more .arr { transform: translateX(4px); }
+
+/* ── OPEN SOURCE ── */
+.oss-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.oss-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.oss-card:hover {
+  background: var(--bg-card-hover);
+  transform: translateY(-3px);
+  border-color: rgba(232, 197, 71, 0.12);
+}
+
+.oss-name {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lang-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.lang-rust { background: #dea584; }
+.lang-python { background: #3572A5; }
+.lang-jupyter { background: #DA5B0B; }
+
+.oss-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+
+.oss-meta {
+  display: flex;
+  gap: 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.oss-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── TECH STACK ── */
+.stack-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.stack-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: all 0.3s;
+}
+
+.stack-card:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(232, 197, 71, 0.08);
+}
+
+.stack-category {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+
+.stack-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stack-item {
+  font-size: 13.5px;
+  color: var(--text-secondary);
+  padding-left: 14px;
+  position: relative;
+}
+
+.stack-item::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  color: var(--text-muted);
+}
+
+/* ── MENTORSHIP / TOPMATE ── */
+.mentor-card {
+  background: linear-gradient(135deg, var(--bg-card) 0%, #17192280 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.mentor-card::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+
+.mentor-content h3 {
+  font-family: var(--font-display);
+  font-size: 32px;
+  margin-bottom: 10px;
+  font-weight: 400;
+}
+
+.mentor-content h3 em { font-style: italic; color: var(--accent); }
+
+.mentor-content p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  max-width: 520px;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.mentor-services {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.service-tag {
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: var(--accent-dim);
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.mentor-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-topmate {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 36px;
+  border-radius: 50px;
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.btn-topmate:hover {
+  box-shadow: 0 4px 40px var(--accent-glow);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.topmate-note {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* ── CONTACT ── */
+.contact-section {
+  text-align: center;
+  padding: 100px 48px 60px;
+  max-width: var(--max-w);
+  margin: 0 auto;
+}
+
+.contact-section .section-heading { margin-bottom: 12px; }
+
+.contact-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  font-weight: 300;
+}
+
+.contact-links {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.contact-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 50px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.contact-link:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  transform: translateY(-2px);
+}
+
+.contact-link svg {
+  width: 18px; height: 18px;
+  fill: currentColor;
+}
+
+/* ── FOOTER ── */
+footer {
+  padding: 32px 48px;
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border);
+}
+
+footer p {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+footer a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+
+footer a:hover { color: var(--accent); }
+
+/* ── SCROLL REVEAL ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1024px) {
+  .span-8, .span-7, .span-6, .span-5, .span-4, .span-3 { grid-column: span 12; }
+  .books-grid, .blog-grid, .oss-grid { grid-template-columns: 1fr; }
+  .stack-grid { grid-template-columns: repeat(2, 1fr); }
+  .mentor-card { flex-direction: column; text-align: center; padding: 36px; }
+  .mentor-content p { max-width: 100%; }
+  .mentor-services { justify-content: center; }
+}
+
+@media (max-width: 768px) {
+  nav { padding: 0 20px; }
+  .nav-center { display: none; }
+  .hero, .section { padding-left: 20px; padding-right: 20px; }
+  .hero h1 { font-size: 40px; letter-spacing: -1px; }
+  .hero-stats { gap: 24px; }
+  .hero-actions { flex-direction: column; }
+  .btn-primary, .btn-secondary { justify-content: center; }
+  .book-card { flex-direction: column; align-items: center; text-align: center; }
+  .book-links { justify-content: center; }
+  .stack-grid { grid-template-columns: 1fr; }
+  .contact-links { flex-direction: column; align-items: center; }
+  .contact-section, footer { padding-left: 20px; padding-right: 20px; }
+  footer { flex-direction: column; gap: 8px; }
+}
+
+@media (max-width: 480px) {
+  .nav-status { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero-ambient"></div>
+
+<!-- ═══════ NAV ═══════ -->
+<nav>
+  <a href="#" class="nav-logo">joydeep.b</a>
+  <ul class="nav-center">
+    <li><a href="#about">About</a></li>
+    <li><a href="#books">Books</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#writing">Writing</a></li>
+    <li><a href="#opensource">Open Source</a></li>
+    <li><a href="#mentorship">Mentorship</a></li>
+  </ul>
+  <div class="nav-cta">
+    <div class="nav-status">
+      <span class="status-dot"></span>
+      Available
+    </div>
+    <a href="https://topmate.io/joydeep_bhattacharjee" target="_blank" class="btn-book">Book a Call ↗</a>
+  </div>
+</nav>
+
+<!-- ═══════ HERO ═══════ -->
+<section class="hero">
+  <div class="hero-tag">Lead ML Engineer · Author · Mentor</div>
+  <h1>Joydeep<br>Bhattacharjee</h1>
+  <p class="hero-desc">
+    Lead ML Engineer at Adobe building intelligent systems at scale. Author of two books on machine learning. I write about LLMs, NLP, and ML systems design.
+  </p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="hero-stat-val">2</span>
+      <span class="hero-stat-label">Published Books</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-val">94</span>
+      <span class="hero-stat-label">GitHub Repos</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-val">670+</span>
+      <span class="hero-stat-label">Medium Followers</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-val">10+</span>
+      <span class="hero-stat-label">Years in ML</span>
+    </div>
+  </div>
+  <div class="hero-actions">
+    <a href="https://topmate.io/joydeep_bhattacharjee" target="_blank" class="btn-primary">
+      Book a Conversation ↗
+    </a>
+    <a href="https://github.com/infinite-Joy/infinite-Joy.github.io/raw/master/docs/joydeep_resume.pdf" class="btn-secondary">
+      Download Resume ↓
+    </a>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ ABOUT ═══════ -->
+<section class="section" id="about">
+  <div class="section-eyebrow">01 — About</div>
+  <h2 class="section-heading">Building ML systems<br>that <em>actually ship</em></h2>
+  <div class="bento">
+    <div class="card span-8 reveal">
+      <div class="card-label">Bio</div>
+      <p>
+        I'm an ML engineer who bridges the gap between research papers and production systems. At Adobe, I lead ML engineering focused on building and deploying intelligent NLP systems at scale. Previously, I was an Engineering Manager at Yellow.ai, where I designed next-generation conversational AI infrastructure handling thousands of models across multilingual contexts.
+      </p>
+      <br>
+      <p>
+        I've authored two published books on machine learning — one on ML with Rust (Apress) and another on Facebook's fastText library (Packt). I regularly write deep technical articles on LLMs, attention mechanisms, quantization, and ML system design.
+      </p>
+    </div>
+    <div class="card span-4 photo-card reveal">
+      <div class="avatar-placeholder">JB</div>
+    </div>
+    <div class="card span-4 reveal">
+      <div class="card-label">Focus Areas</div>
+      <div class="tags-wrap">
+        <span class="tag">LLM Systems</span>
+        <span class="tag">NLP at Scale</span>
+        <span class="tag">Flash Attention</span>
+        <span class="tag">Model Quantization</span>
+        <span class="tag">Diffusion Models</span>
+        <span class="tag">ML System Design</span>
+        <span class="tag">Conversational AI</span>
+        <span class="tag">MLOps</span>
+      </div>
+    </div>
+    <div class="card span-4 reveal">
+      <div class="card-label">Currently</div>
+      <p>
+        Leading ML engineering at Adobe. Writing about Flash Attention internals, LLM quantization techniques (GGUF, GPTQ, AWQ, BitNet), and production ML systems design.
+      </p>
+    </div>
+    <div class="card span-4 reveal">
+      <div class="card-label">Quick Stats</div>
+      <div class="stat-rows">
+        <div class="stat-row"><span class="lbl">Location</span><span class="val">Bengaluru, India</span></div>
+        <div class="stat-row"><span class="lbl">Company</span><span class="val">Adobe</span></div>
+        <div class="stat-row"><span class="lbl">Books</span><span class="val">2 Published</span></div>
+        <div class="stat-row"><span class="lbl">Blog Followers</span><span class="val">670+</span></div>
+        <div class="stat-row"><span class="lbl">GitHub Repos</span><span class="val">94</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ BOOKS ═══════ -->
+<section class="section" id="books">
+  <div class="section-eyebrow">02 — Books</div>
+  <h2 class="section-heading">Published <em>works</em></h2>
+  <div class="books-grid">
+    <div class="book-card reveal">
+      <div class="book-cover">
+        <img src="https://images-na.ssl-images-amazon.com/images/I/41DTUUR59fL._SX331_BO1,204,203,200_.jpg" alt="Practical Machine Learning with Rust">
+      </div>
+      <div class="book-info">
+        <h3>Practical Machine Learning with Rust</h3>
+        <div class="book-publisher">Apress · Springer</div>
+        <div class="book-stars">★ 83 GitHub stars · 27 forks</div>
+        <p>
+          A hands-on guide to building ML applications in Rust — covering supervised, unsupervised, and reinforcement learning, plus computer vision and NLP with Rust's ecosystem.
+        </p>
+        <div class="book-links">
+          <a href="https://link.springer.com/book/10.1007/978-1-4842-5121-8" target="_blank" class="book-link">Springer ↗</a>
+          <a href="https://www.amazon.in/Practical-Machine-Learning-Rust-Applications/dp/1484251202" target="_blank" class="book-link">Amazon ↗</a>
+          <a href="https://github.com/Apress/practical-machine-learning-w-rust" target="_blank" class="book-link">GitHub ↗</a>
+        </div>
+      </div>
+    </div>
+    <div class="book-card reveal">
+      <div class="book-cover">
+        <img src="https://images-na.ssl-images-amazon.com/images/I/51cx2IzvnzL.jpg" alt="fastText Quick Start Guide">
+      </div>
+      <div class="book-info">
+        <h3>fastText Quick Start Guide</h3>
+        <div class="book-publisher">Packt Publishing</div>
+        <div class="book-stars">★ 50 GitHub stars · 10 forks</div>
+        <p>
+          Your introduction to Facebook's fastText for text classification and word representation. Covers command-line models, integration with Keras, TensorFlow, PyTorch, and mobile deployment.
+        </p>
+        <div class="book-links">
+          <a href="https://www.packtpub.com/big-data-and-business-intelligence/fasttext-quick-start-guide" target="_blank" class="book-link">Packt ↗</a>
+          <a href="https://www.amazon.com/fastText-Quick-Start-Guide-representation-ebook/dp/B07FNY4KH7" target="_blank" class="book-link">Amazon ↗</a>
+          <a href="https://github.com/PacktPublishing/fastText-Quick-Start-Guide" target="_blank" class="book-link">GitHub ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ EXPERIENCE ═══════ -->
+<section class="section" id="experience">
+  <div class="section-eyebrow">03 — Experience</div>
+  <h2 class="section-heading">Career <em>arc</em></h2>
+  <div class="timeline">
+    <div class="tl-item reveal">
+      <div class="tl-date">2021 → Present</div>
+      <div class="tl-role">Lead ML Engineer</div>
+      <div class="tl-company">Adobe</div>
+      <div class="tl-desc">
+        Leading ML engineering initiatives. Previously Engineering Manager at Yellow.ai, designing next-gen AI/NLP infrastructure for conversational AI at scale — building and deploying thousands of models across multilingual, multimodal contexts. Responsible for the full pipeline from research to production.
+      </div>
+      <div class="tl-chips">
+        <span class="chip">LLMs at Scale</span>
+        <span class="chip">NLP Infrastructure</span>
+        <span class="chip">MLOps</span>
+        <span class="chip">Kubernetes</span>
+      </div>
+    </div>
+    <div class="tl-item past reveal">
+      <div class="tl-date">2017 → 2020</div>
+      <div class="tl-role">Team Lead — ML Platform</div>
+      <div class="tl-company">Nineleaps</div>
+      <div class="tl-desc">
+        Built and optimized data pipelines for growth. Researched and prototyped ML/statistical models for forecasting and segmentation. Led sprint planning, design reviews, and mentored team members.
+      </div>
+      <div class="tl-chips">
+        <span class="chip">ML Pipelines</span>
+        <span class="chip">Team Leadership</span>
+      </div>
+    </div>
+    <div class="tl-item past reveal">
+      <div class="tl-date">2016 → 2017</div>
+      <div class="tl-role">Category Head — Python</div>
+      <div class="tl-company">HackerEarth</div>
+      <div class="tl-desc">
+        Developed the Python practice section for B2C user engagement. Designed and coded applications focused on high user retention.
+      </div>
+    </div>
+    <div class="tl-item past reveal">
+      <div class="tl-date">2011 → 2016</div>
+      <div class="tl-role">Software / Systems Engineer</div>
+      <div class="tl-company">SLK Software & TCS</div>
+      <div class="tl-desc">
+        Early career in software engineering — building custom automation tools, administering J2EE applications, and developing solutions for enterprise clients.
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ WRITING ═══════ -->
+<section class="section" id="writing">
+  <div class="section-eyebrow">04 — Writing</div>
+  <h2 class="section-heading">Technical <em>articles</em></h2>
+  <div class="blog-grid">
+    <a href="https://joydeep31415.medium.com/flash-attention-b16b93314695" target="_blank" class="blog-card reveal">
+      <div class="blog-date">Mar 2026</div>
+      <h3>Flash Attention</h3>
+      <p>Forward and backward pass derivation and algorithm explained in detail — the math behind efficient attention computation.</p>
+      <div class="blog-read-more">Read <span class="arr">→</span></div>
+    </a>
+    <a href="https://joydeep31415.medium.com/vera-rubin-and-the-future-of-ai-28f925257d8b" target="_blank" class="blog-card reveal">
+      <div class="blog-date">Mar 2026</div>
+      <h3>Vera Rubin and the Future of AI</h3>
+      <p>NVIDIA's Vera Rubin GPUs and what they mean for the next generation of AI infrastructure and model training.</p>
+      <div class="blog-read-more">Read <span class="arr">→</span></div>
+    </a>
+    <a href="https://joydeep31415.medium.com/the-math-behind-diffusion-models-ddpm-9fabe9c9f1d9" target="_blank" class="blog-card reveal">
+      <div class="blog-date">Sep 2025</div>
+      <h3>The Math Behind Diffusion Models — DDPM</h3>
+      <p>A deep dive into the mathematical foundations of denoising diffusion probabilistic models.</p>
+      <div class="blog-read-more">Read <span class="arr">→</span></div>
+    </a>
+    <a href="https://joydeep31415.medium.com/llm-quantization-techniques-4229b7eac20c" target="_blank" class="blog-card reveal">
+      <div class="blog-date">Aug 2025</div>
+      <h3>LLM Quantization Techniques</h3>
+      <p>Comprehensive comparison of GGUF, GPTQ, AWQ, and BitNet approaches to model compression.</p>
+      <div class="blog-read-more">Read <span class="arr">→</span></div>
+    </a>
+    <a href="https://joydeep31415.medium.com/design-harmful-advertisements-detection-system-mlsd-youtube-instagram-005679995c89" target="_blank" class="blog-card reveal">
+      <div class="blog-date">Jul 2025</div>
+      <h3>Design: Harmful Ad Detection System</h3>
+      <p>ML system design for detecting harmful advertisements across social media platforms like YouTube and Instagram.</p>
+      <div class="blog-read-more">Read <span class="arr">→</span></div>
+    </a>
+    <a href="https://joydeep31415.medium.com/design-an-improved-comment-ranking-system-for-instagram-youtube-reddit-mlsd-ffa37ab70a3e" target="_blank" class="blog-card reveal">
+      <div class="blog-date">Jun 2025</div>
+      <h3>Design: Comment Ranking System</h3>
+      <p>ML system design for an improved ranking system across Instagram, YouTube, and Reddit.</p>
+      <div class="blog-read-more">Read <span class="arr">→</span></div>
+    </a>
+  </div>
+  <div style="text-align: center; margin-top: 28px;">
+    <a href="https://joydeep31415.medium.com/" target="_blank" class="btn-secondary">
+      Read all posts on Medium ↗
+    </a>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ OPEN SOURCE ═══════ -->
+<section class="section" id="opensource">
+  <div class="section-eyebrow">05 — Open Source</div>
+  <h2 class="section-heading">Code I've <em>shipped</em></h2>
+  <div class="oss-grid">
+    <a href="https://github.com/Apress/practical-machine-learning-w-rust" target="_blank" class="oss-card reveal">
+      <div class="oss-name"><span class="lang-dot lang-rust"></span>practical-ml-rust</div>
+      <p>Source code for "Practical Machine Learning with Rust" — ML implementations covering supervised learning, computer vision, and NLP in Rust.</p>
+      <div class="oss-meta">
+        <span>★ 83</span>
+        <span>⑂ 27</span>
+        <span>Rust</span>
+      </div>
+    </a>
+    <a href="https://github.com/PacktPublishing/fastText-Quick-Start-Guide" target="_blank" class="oss-card reveal">
+      <div class="oss-name"><span class="lang-dot lang-jupyter"></span>fastText-Quick-Start</div>
+      <p>Companion code for the fastText Quick Start Guide — word embeddings, text classification, and integration with deep learning frameworks.</p>
+      <div class="oss-meta">
+        <span>★ 50</span>
+        <span>⑂ 10</span>
+        <span>Jupyter</span>
+      </div>
+    </a>
+    <a href="https://github.com/infinite-Joy" target="_blank" class="oss-card reveal">
+      <div class="oss-name"><span class="lang-dot lang-python"></span>94 repositories</div>
+      <p>ML kernels, experiments, prototypes, and tools across Python, Rust, and more. Explore all public work on GitHub.</p>
+      <div class="oss-meta">
+        <span>51 followers</span>
+        <span>Python · Rust · Jupyter</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ TECH STACK ═══════ -->
+<section class="section" id="stack">
+  <div class="section-eyebrow">06 — Stack</div>
+  <h2 class="section-heading">Tools of the <em>trade</em></h2>
+  <div class="stack-grid">
+    <div class="stack-card reveal">
+      <div class="stack-category">ML / DL Frameworks</div>
+      <div class="stack-items">
+        <span class="stack-item">PyTorch</span>
+        <span class="stack-item">TensorFlow</span>
+        <span class="stack-item">Hugging Face</span>
+        <span class="stack-item">fastText</span>
+        <span class="stack-item">scikit-learn</span>
+      </div>
+    </div>
+    <div class="stack-card reveal">
+      <div class="stack-category">Languages</div>
+      <div class="stack-items">
+        <span class="stack-item">Python</span>
+        <span class="stack-item">Rust</span>
+        <span class="stack-item">SQL</span>
+        <span class="stack-item">Bash</span>
+      </div>
+    </div>
+    <div class="stack-card reveal">
+      <div class="stack-category">Infrastructure</div>
+      <div class="stack-items">
+        <span class="stack-item">Kubernetes</span>
+        <span class="stack-item">Docker</span>
+        <span class="stack-item">AWS / GCP</span>
+        <span class="stack-item">MLflow</span>
+      </div>
+    </div>
+    <div class="stack-card reveal">
+      <div class="stack-category">Specializations</div>
+      <div class="stack-items">
+        <span class="stack-item">LLM Inference</span>
+        <span class="stack-item">NLP Pipelines</span>
+        <span class="stack-item">Model Quantization</span>
+        <span class="stack-item">Attention Mechanisms</span>
+        <span class="stack-item">ML System Design</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ MENTORSHIP ═══════ -->
+<section class="section" id="mentorship">
+  <div class="section-eyebrow">07 — Mentorship</div>
+  <h2 class="section-heading">Let's <em>talk</em></h2>
+  <div class="mentor-card reveal">
+    <div class="mentor-content">
+      <h3>Book a 1:1 <em>session</em></h3>
+      <p>
+        I mentor engineers on ML career growth, system design interviews, building production ML systems, and navigating the path from IC to lead roles. Available for career guidance, mock interviews, and technical deep-dives.
+      </p>
+      <div class="mentor-services">
+        <span class="service-tag">Career Guidance</span>
+        <span class="service-tag">ML System Design</span>
+        <span class="service-tag">Mock Interviews</span>
+        <span class="service-tag">Resume Review</span>
+      </div>
+    </div>
+    <div class="mentor-action">
+      <a href="https://topmate.io/joydeep_bhattacharjee" target="_blank" class="btn-topmate">
+        Book on Topmate ↗
+      </a>
+      <span class="topmate-note">topmate.io/joydeep_bhattacharjee</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ═══════ CONTACT ═══════ -->
+<section class="contact-section" id="contact">
+  <div class="section-eyebrow">08 — Contact</div>
+  <h2 class="section-heading">Get in <em>touch</em></h2>
+  <p class="contact-subtitle">Open to collaborations, speaking invitations, and interesting ML problems.</p>
+  <div class="contact-links">
+    <a href="mailto:joydeepubuntu@gmail.com" class="contact-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 4L12 13L2 4"/></svg>
+      Email
+    </a>
+    <a href="https://github.com/infinite-Joy" target="_blank" class="contact-link">
+      <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
+    <a href="https://in.linkedin.com/in/joydeep-bhattacharjee-934a1157" target="_blank" class="contact-link">
+      <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      LinkedIn
+    </a>
+    <a href="https://joydeep31415.medium.com/" target="_blank" class="contact-link">
+      <svg viewBox="0 0 24 24"><path d="M13.54 12a6.8 6.8 0 01-6.77 6.82A6.8 6.8 0 010 12a6.8 6.8 0 016.77-6.82A6.8 6.8 0 0113.54 12zm7.42 0c0 3.54-1.51 6.42-3.38 6.42-1.87 0-3.39-2.88-3.39-6.42s1.52-6.42 3.39-6.42 3.38 2.88 3.38 6.42M24 12c0 3.17-.53 5.75-1.19 5.75-.66 0-1.19-2.58-1.19-5.75s.53-5.75 1.19-5.75C23.47 6.25 24 8.83 24 12z"/></svg>
+      Medium
+    </a>
+    <a href="https://twitter.com/alt227Joydeep" target="_blank" class="contact-link">
+      <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      X / Twitter
+    </a>
+    <a href="https://topmate.io/joydeep_bhattacharjee" target="_blank" class="contact-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      Topmate
+    </a>
+  </div>
+</section>
+
+<!-- ═══════ FOOTER ═══════ -->
+<footer>
+  <p>© 2026 Joydeep Bhattacharjee</p>
+  <a href="#">Built with care in Bengaluru</a>
+</footer>
+
+<!-- ═══════ SCROLL REVEAL JS ═══════ -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Smooth nav background on scroll
+  const nav = document.querySelector('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 100) {
+      nav.style.borderBottomColor = 'rgba(31, 34, 43, 0.8)';
+    } else {
+      nav.style.borderBottomColor = 'rgba(31, 34, 43, 0.4)';
+    }
+  });
+});
+</script>
+</body>
+</html>

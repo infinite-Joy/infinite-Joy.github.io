@@ -1,0 +1,41 @@
+{% extends "base.html.j2" %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="/assets/css/blog.css">
+{% endblock %}
+
+{% block content %}
+    <main class="blog-main">
+        <div class="container">
+            <div class="blog-header">
+                <p class="section-label">Writing</p>
+                <h1 class="section-title">All Posts</h1>
+            </div>
+
+            {% if posts %}
+            <div class="post-list">
+                {% for post in posts %}
+                <a href="/blog/{{ post.slug }}/" class="card post-row">
+                    <div class="post-row-meta">
+                        {% if post.eyebrow %}
+                        <span class="section-label" style="margin-bottom:0;">{{ post.eyebrow }}</span>
+                        {% endif %}
+                        <span class="writing-date">{{ post.date_human }}</span>
+                    </div>
+                    <h2 class="post-row-title">{{ post.title }}</h2>
+                    {% if post.description %}
+                    <p class="post-row-desc">{{ post.description }}</p>
+                    {% endif %}
+                    <div class="post-row-footer">
+                        <span class="writing-read">Read <i class="fa-solid fa-arrow-right"></i></span>
+                        <span class="writing-date">{{ post.reading_time }} min read</span>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="color:var(--text-muted); padding-bottom:64px;">No posts yet. Check back soon.</p>
+            {% endif %}
+        </div>
+    </main>
+{% endblock %}

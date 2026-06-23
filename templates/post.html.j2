@@ -1,0 +1,70 @@
+{% extends "base.html.j2" %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="/assets/css/blog.css">
+    <link rel="stylesheet" href="/assets/css/highlight.css">
+{% endblock %}
+
+{% block head_extra %}
+    <meta property="article:published_time" content="{{ date_iso }}">
+    <meta property="og:type" content="article">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": {{ title | tojson }},
+      "description": {{ description | tojson }},
+      "datePublished": "{{ date_iso }}",
+      "author": { "@type": "Person", "name": "Joydeep Bhattacharjee" },
+      "url": {{ canonical | tojson }}
+    }
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div id="reading-progress"></div>
+
+    <main class="post-main">
+        <div class="container post-container">
+
+            <header class="post-header">
+                {% if eyebrow %}<p class="section-label">{{ eyebrow }}</p>{% endif %}
+                <h1 class="post-title">{{ title }}</h1>
+                {% if description %}<p class="post-dek">{{ description }}</p>{% endif %}
+                <div class="post-meta">
+                    <span>{{ date_human }}</span>
+                    <span>&middot;</span>
+                    <span>{{ reading_time }} min read</span>
+                    {% if tags %}
+                    <span>&middot;</span>
+                    {% for tag in tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+                    {% endif %}
+                </div>
+            </header>
+
+            {% if cover %}
+            <img src="{{ cover }}" alt="{{ title }}" class="post-cover">
+            {% endif %}
+
+            <div class="post-body">
+                {{ body }}
+            </div>
+
+            <footer class="post-footer">
+                <a href="/blog/" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> All posts</a>
+            </footer>
+
+        </div>
+    </main>
+{% endblock %}
+
+{% block foot_scripts %}
+    <script>
+        const bar = document.getElementById('reading-progress');
+        window.addEventListener('scroll', () => {
+            const doc = document.documentElement;
+            const pct = doc.scrollTop / (doc.scrollHeight - doc.clientHeight);
+            bar.style.width = (pct * 100) + '%';
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Joydeep Bhattacharjee</title>
+    <link>https://infinite-joy.github.io</link>
+    <description>Writing on LLM inference, ML systems, and deep learning.</description>
+    <atom:link href="https://infinite-joy.github.io/feed.xml" rel="self" type="application/rss+xml"/>
+  <item>
+    <title>Running LLM Inference on a Budget</title>
+    <link>https://infinite-joy.github.io/blog/llm-inference-on-a-budget/</link>
+    <guid>https://infinite-joy.github.io/blog/llm-inference-on-a-budget/</guid>
+    <pubDate>2026-06-22</pubDate>
+    <description>How to run large language models on consumer hardware using quantization, GGUF, and the right tooling choices.</description>
+  </item>
+  </channel>
+</rss>
