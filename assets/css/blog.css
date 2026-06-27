@@ -198,6 +198,26 @@
 .post-body .toc ul { margin: 0.4em 0 0 1.2em; }
 .post-body .toc li { margin-bottom: 0.2em; }
 
+/* Wide equations: scroll rather than overflow */
+.post-body .arithmatex {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+/* Algorithm pseudocode blocks */
+.algorithm-block {
+    border-left: 3px solid var(--accent);
+    padding: 12px 12px 12px 20px;
+    margin: 1.6em 0;
+    background: var(--surface);
+    border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.algorithm-block .katex-display {
+    text-align: left !important;
+    margin: 0.4em 0;
+}
+
 /* Post footer */
 .post-footer {
     padding: 40px 0;
