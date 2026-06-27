@@ -7,6 +7,8 @@ import math
 import os
 import re
 import sys
+import threading
+import time
 import xml.sax.saxutils as saxutils
 from datetime import date, datetime
 from pathlib import Path
@@ -27,18 +29,21 @@ PYGMENTS_DARK = "dracula"
 PYGMENTS_LIGHT = "friendly"
 
 MD_EXTENSIONS = [
+    "pymdownx.arithmatex",
     "fenced_code",
     "codehilite",
     "tables",
     "toc",
     "footnotes",
     "attr_list",
+    "md_in_html",
     "smarty",
     "sane_lists",
 ]
 MD_EXTENSION_CONFIGS = {
     "codehilite": {"css_class": "codehilite", "guess_lang": False},
     "toc": {"permalink": "#", "permalink_title": "Link to this section"},
+    "pymdownx.arithmatex": {"generic": True},
 }
 
 
@@ -135,6 +140,8 @@ def build(include_drafts: bool = False):
 
     posts = []
     for md_file in sorted(CONTENT_DIR.glob("*.md"), reverse=True):
+        if "bak" in md_file.name:
+            continue
         post = parse_post(md_file)
         if post is None:
             continue
@@ -153,7 +160,7 @@ def build(include_drafts: bool = False):
     index_tmpl = env.get_template("index.html.j2")
     index_html = index_tmpl.render(
         posts=posts,
-        title="Blog — Joydeep Bhattacharjee",
+        title="Blog â€” Joydeep Bhattacharjee",
         description="Writing on LLM inference, ML systems, and deep learning by Joydeep Bhattacharjee.",
         canonical=f"{BASE_URL}/blog/",
         cover="",
@@ -163,7 +170,7 @@ def build(include_drafts: bool = False):
 
     _write_feed(posts)
     generate_highlight_css()
-    print(f"Done — {len(posts)} post(s) built.")
+    print(f"Done â€” {len(posts)} post(s) built.")
 
 
 def _write_feed(posts):
@@ -196,10 +203,41 @@ def _write_feed(posts):
     print("  Feed: feed.xml")
 
 
+def _watched_paths():
+    """Yield all files that should trigger a rebuild when changed."""
+    yield from (ROOT / "content" / "posts").glob("*.md")
+    yield from (ROOT / "templates").glob("*.j2")
+    yield from (ROOT / "assets" / "css").glob("*.css")
+    yield ROOT / "build.py"
+
+
+def _snapshot():
+    return {p: p.stat().st_mtime for p in _watched_paths() if p.exists()}
+
+
+def watch_and_rebuild(include_drafts: bool = False):
+    last = _snapshot()
+    print("Watching for changesâ€¦ (Ctrl+C to stop)")
+    while True:
+        time.sleep(1)
+        current = _snapshot()
+        changed = [p for p, t in current.items() if last.get(p) != t] + \
+                  [p for p in last if p not in current]
+        if changed:
+            for p in changed:
+                print(f"  changed: {p.relative_to(ROOT)}")
+            try:
+                build(include_drafts=include_drafts)
+            except Exception as e:
+                print(f"  Build error: {e}")
+            last = _snapshot()
+
+
 def main():
     parser = argparse.ArgumentParser(description="Build the blog.")
     parser.add_argument("--drafts", action="store_true", help="Include draft posts")
     parser.add_argument("--serve", action="store_true", help="Serve after building")
+    parser.add_argument("--watch", action="store_true", help="Rebuild on file changes")
     args = parser.parse_args()
 
     build(include_drafts=args.drafts)
@@ -209,11 +247,26 @@ def main():
         port = 8000
         print(f"\nServing at http://localhost:{port}/blog/  (Ctrl+C to stop)\n")
         handler = http.server.SimpleHTTPRequestHandler
-        with http.server.HTTPServer(("", port), handler) as httpd:
+        httpd = http.server.HTTPServer(("", port), handler)
+        server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+        server_thread.start()
+
+        if args.watch:
             try:
-                httpd.serve_forever()
+                watch_and_rebuild(include_drafts=args.drafts)
             except KeyboardInterrupt:
                 pass
+        else:
+            try:
+                server_thread.join()
+            except KeyboardInterrupt:
+                pass
+        httpd.shutdown()
+    elif args.watch:
+        try:
+            watch_and_rebuild(include_drafts=args.drafts)
+        except KeyboardInterrupt:
+            pass
 
 
 if __name__ == "__main__":
