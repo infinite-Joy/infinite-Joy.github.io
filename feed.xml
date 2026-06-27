@@ -6,11 +6,11 @@
     <description>Writing on LLM inference, ML systems, and deep learning.</description>
     <atom:link href="https://infinite-joy.github.io/feed.xml" rel="self" type="application/rss+xml"/>
   <item>
-    <title>Running LLM Inference on a Budget</title>
-    <link>https://infinite-joy.github.io/blog/llm-inference-on-a-budget/</link>
-    <guid>https://infinite-joy.github.io/blog/llm-inference-on-a-budget/</guid>
-    <pubDate>2026-06-22</pubDate>
-    <description>How to run large language models on consumer hardware using quantization, GGUF, and the right tooling choices.</description>
+    <title>Flash Attention</title>
+    <link>https://infinite-joy.github.io/blog/flash-attention/</link>
+    <guid>https://infinite-joy.github.io/blog/flash-attention/</guid>
+    <pubDate>2026-03-08</pubDate>
+    <description>Forward and Backward pass derivation and algorithm explained in detail</description>
   </item>
   </channel>
 </rss>
