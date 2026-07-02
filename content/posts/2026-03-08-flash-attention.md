@@ -686,7 +686,7 @@ Since we are not saving the intermediate outputs, we need to do the backward. In
 ![fig 16: Backward Pass though attention. Image by author](/images/posts/flash-attention/fig15-backward-pass-diagram.png)
 *fig 16: Backward Pass though attention. Image by author*
 
-Suppose there is a scalar loss function \(L\) and because we are working in a deep learning framework such as pytorch we will be having the output gradient dO = \(\partial L/\partial O\) \(\in\) \(\mathbb{R}^{nxd}\). From this we want to compute the input gradients dQ, dK, dV \(\in\) \(\mathbb{R}^{nxd}\), where dQ = \(\partial L/\partial Q\), dK = \(\partial L/\partial K\) and dV = \(\partial L/\partial V\).
+Suppose there is a scalar loss function \(L\) and because we are working in a deep learning framework such as pytorch we will be having the output gradient dO = \(\partial L/\partial O\) \(\in\) \(\mathbb{R}^{n \times d}\). From this we want to compute the input gradients dQ, dK, dV \(\in\) \(\mathbb{R}^{n \times d}\), where dQ = \(\partial L/\partial Q\), dK = \(\partial L/\partial K\) and dV = \(\partial L/\partial V\).
 
 In the paper the derivation is there but a lot of the steps are skipped. In Linear Algebra it is important to make sure that we are differentiating in the right manner. Hence taking inspiration from [Li Yuan’s blog](https://liyuan24.github.io/writings/attention_backprop.html), lets take a 3x3 matrix example to make sure our expressions are correct.
 

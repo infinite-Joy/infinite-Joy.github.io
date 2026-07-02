@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="The goal of AI is to learn from data, adapt to new and complex situations and solve problems without the need for human interventions. This…">
+    <meta name="author" content="Joydeep Bhattacharjee">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="The MATH behind Diffusion Models—DDPM">
+    <meta property="og:description" content="The goal of AI is to learn from data, adapt to new and complex situations and solve problems without the need for human interventions. This…">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://infinite-joy.github.io/blog/the-math-behind-diffusion-models-ddpm/">
+    
+
+    <link rel="canonical" href="https://infinite-joy.github.io/blog/the-math-behind-diffusion-models-ddpm/">
+
+    <title>The MATH behind Diffusion Models—DDPM</title>
+
+    <!-- No-flash theme: set before paint -->
+    <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PVKZ8S6D');</script>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YFFWNGH33K"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-YFFWNGH33K');
+    </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Site CSS -->
+    <link rel="stylesheet" href="/assets/css/site.css">
+    
+    <link rel="stylesheet" href="/assets/css/blog.css">
+    <link rel="stylesheet" href="/assets/css/highlight.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+
+
+    <!-- RSS autodiscovery -->
+    <link rel="alternate" type="application/rss+xml" title="Joydeep Bhattacharjee" href="/feed.xml">
+
+    
+    <meta property="article:published_time" content="2025-09-21">
+    <meta property="og:type" content="article">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "The MATH behind Diffusion Models\u2014DDPM",
+      "description": "The goal of AI is to learn from data, adapt to new and complex situations and solve problems without the need for human interventions. This\u2026",
+      "datePublished": "2025-09-21",
+      "author": { "@type": "Person", "name": "Joydeep Bhattacharjee" },
+      "url": "https://infinite-joy.github.io/blog/the-math-behind-diffusion-models-ddpm/"
+    }
+    </script>
+
+</head>
+<body>
+
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PVKZ8S6D"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+    <!-- NAV -->
+    <nav>
+        <div class="container">
+            <div class="nav-inner">
+                <a href="/" class="nav-brand">Joydeep B.</a>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Toggle navigation">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="/#about">About</a></li>
+                    <li><a href="/#writing">Writing</a></li>
+                    <li><a href="/#videos">Videos</a></li>
+                    <li><a href="/#books">Books</a></li>
+                    <li><a href="/#experience">Experience</a></li>
+                    <li><a href="/#mentorship">Mentorship</a></li>
+                    <li><a href="/blog/">Blog</a></li>
+                    <li><a href="https://topmate.io/joydeep_bhattacharjee" class="nav-cta" target="_blank" rel="noopener">Book a Call</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    
+    <div id="reading-progress"></div>
+
+    <main class="post-main">
+        <div class="container post-container">
+
+            <header class="post-header">
+                
+                <h1 class="post-title">The MATH behind Diffusion Models—DDPM</h1>
+                <p class="post-dek">The goal of AI is to learn from data, adapt to new and complex situations and solve problems without the need for human interventions. This…</p>
+                <div class="post-meta">
+                    <span>21 September 2025</span>
+                    <span>&middot;</span>
+                    <span>42 min read</span>
+                    
+                </div>
+            </header>
+
+            
+
+            <div class="post-body">
+                <div class="toc">
+<ul>
+<li><a href="#background-and-motivation">Background and Motivation</a></li>
+<li><a href="#physical-diffusion">Physical Diffusion</a></li>
+<li><a href="#markov-chain-monte-carlo-and-langevin-dynamics">Markov chain Monte Carlo and Langevin Dynamics</a></li>
+<li><a href="#forward-diffusion">Forward Diffusion</a><ul>
+<li><a href="#tractable-closed-for-sampling-at-every-step-reparametrizing-trick">Tractable Closed for Sampling at every step: Reparametrizing trick</a></li>
+</ul>
+</li>
+<li><a href="#reverse-diffusion">Reverse Diffusion</a></li>
+<li><a href="#evidence-lower-bound-method">Evidence Lower Bound Method</a></li>
+<li><a href="#applying-the-elbo-method">Applying the ELBO method</a></li>
+<li><a href="#gaussian-parameters-for-our-diffusion-model">Gaussian parameters for our Diffusion Model</a></li>
+<li><a href="#training-algorithm">Training Algorithm</a></li>
+<li><a href="#conclusion">Conclusion</a></li>
+<li><a href="#references-and-further-reading">References and Further Reading</a></li>
+</ul>
+</div>
+<p><img alt="Graphical model as in the DDPM paper" src="/images/posts/the-math-behind-diffusion-models-ddpm/graphical-model-as-in-the-ddpm-paper.png" />
+<em>Graphical model as in the DDPM paper</em></p>
+<p>The goal of AI is to learn from data, adapt to new and complex situations and solve problems without the need for human interventions.</p>
+<p>This generally involves some form of intelligent signal generation that cannot be done with the help of some clean mathematical formula. To achieve this signal generation in complicated environments, generative models are used. Currently there are two classes of generative models that are quite successful: Autoregressive models and Diffusion models.</p>
+<p>Diffusion models are widely used for various purposes such as</p>
+<ul>
+<li><a href="https://civitai.com/articles/7492">Image generation from scratch using a prompt</a></li>
+<li><a href="https://stable-diffusion-art.com/inpainting/">Inpainting and Conditional Image Generation</a></li>
+<li><a href="https://stableaudio.com/">Audio and Music Generation</a></li>
+<li><a href="https://deepmind.google/models/veo/">Video Generation</a></li>
+<li><a href="https://www.youtube.com/watch?v=0Z9Ijc6nsgs">Drug Discovery</a></li>
+<li><a href="https://www.physicalintelligence.company/blog/pi0">Training robots for household chores</a></li>
+</ul>
+<p>And many more...</p>
+<p><img alt="source: https://arxiv.org/abs/2006.11239" src="/images/posts/the-math-behind-diffusion-models-ddpm/img-01.png" />
+<em>source: <a href="https://arxiv.org/pdf/2006.11239">https://arxiv.org/abs/2006.11239</a></em></p>
+<p>In this blog we will take a look at how the diffusion process is formulated in the DDPM paper and how the training and sampling algorithms are formulated. The algorithms are shown in the screenshot above.</p>
+<div class="yt-card">
+  <a href="https://youtu.be/auVC7K1xN_Y?si=v2acv-H8EBh6dj7j" target="_blank" rel="noopener noreferrer" class="yt-card__link" aria-label="Watch on YouTube">
+    <div class="yt-card__thumb-wrap">
+      <img class="yt-card__thumb" src="https://img.youtube.com/vi/auVC7K1xN_Y/hqdefault.jpg" alt="Watch on YouTube" loading="lazy">
+      <div class="yt-card__play" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 68 48">
+          <path d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.64-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z" fill="#f00"/>
+          <path d="M 45,24 27,14 27,34" fill="#fff"/>
+        </svg>
+      </div>
+    </div>
+    <div class="yt-card__footer">Watch on YouTube</div>
+  </a>
+</div>
+<p>Do also take a look at the video above for great visualizations on the topic.</p>
+<h2 id="background-and-motivation">Background and Motivation<a class="headerlink" href="#background-and-motivation" title="Link to this section">#</a></h2>
+<p><img alt="source: Pin by Carol📸 on Pixel art😻 in 2025 | Pixel art pattern, Easy pixel art, Pixel art" src="/images/posts/the-math-behind-diffusion-models-ddpm/source-pin-by-carol-on-pixel-art-in-2025-pixel-art.jpg" />
+<em>source: <a href="https://in.pinterest.com/pin/pixel-art-in-2025--18155204742782450/">Pin by Carol📸 on Pixel art😻 in 2025 | Pixel art pattern, Easy pixel art, Pixel art</a></em></p>
+<p>Now understanding what diffusion is, lets backtrack a little bit and we will consider the image example as that is both the easiest and where diffusion models first came into prominence.</p>
+<p>An image is generally stored as a combination of red, blue and green pixels because our eyes have cones for these three colors and in this way, we are able to differentiate between a wide range of colors [<a href="https://en.wikipedia.org/wiki/RGB_color_model#Physical_principles_for_the_choice_of_red,_green,_and_blue">source</a>]. So, there are 3 channels for the pixels, and each channel has intensity values from 0–255 for the corresponding colors. So, the dimensions of the image are 1xCxHxW where C is the channels, H and W are the height and width of the image.</p>
+<p>Now consider a random combination of these pixel values. It will probably be just some random noise image and not have anything discernible in the image. So, you can imagine that a “good” image would be just a very small subset of the overall class of images that can be denoted by this hyperspace denoted by 1xCxHxW. If we can somehow find the boundaries of this subspace, then maybe we will be able to generate an image out of this. GANs work on this idea where the Discriminator differentiates between the “real” and “fake” images and then conditions the Generator model to generate or sample from this subspace where the “real” reside. Another popular idea has been using Variational Autoencoders where the model learns a structured and continuous latent space and this is used to generate new data. Interestingly there have been major issues with these two approaches such as <a href="https://pub.towardsai.net/gan-mode-collapse-explanation-fa5f9124ee73">mode collapse</a> in case of GANs and noisy images in case of VAEs.</p>
+<h2 id="physical-diffusion">Physical Diffusion<a class="headerlink" href="#physical-diffusion" title="Link to this section">#</a></h2>
+<p>Machine learning has had a history of taking inspiration from nature and this time we can take inspiration from diffusion process. You might have observed that when you dissolve one liquid like let's say some form of a die, it tends to distribute over the liquid. Thus, diffusion is the net movement of a body of molecules from a place of higher concentration to lower concentration within the domain of fluids. Although called diffusion, what we are more interested in is <a href="https://en.wikipedia.org/wiki/Brownian_motion">Brownian motion</a> which is diffusion of a single particle. The reason for this will be clear later in this blog.</p>
+<p>There is a poem from 60 BC which talks about the random movement of dust. The discovery of Brownian motion is attributed to botanist Robert Brown who observed the jittery behavior of pollens when working on an experiment. He first thought that pollens had life of their own but then experimented with inorganic matter as well confirming that this is not the reason. Albert Einstein proved the relation between the probability distribution of Brownian motion and the diffusion equation. The first complete and rigorous mathematical analysis of Brownian motion was given by Norbert Weiner and hence the Brownian motion is also called the Weiner process.</p>
+<h2 id="markov-chain-monte-carlo-and-langevin-dynamics">Markov chain Monte Carlo and Langevin Dynamics<a class="headerlink" href="#markov-chain-monte-carlo-and-langevin-dynamics" title="Link to this section">#</a></h2>
+<p><img alt="img-06.jpeg" src="/images/posts/the-math-behind-diffusion-models-ddpm/img-06.jpeg" /></p>
+<p>Since we are working on creating a generative model, we want to find the distribution of the true images. But notice carefully, we only want the true distribution to be able to sample from it. If finding the true distribution is hard, maybe another method can be used which is easier and which lets such somehow sample from the true distribution and thus, circumvent the whole problem.</p>
+<p><img alt="source: https://www.youtube.com/shorts/MnBBV73KbDo" src="/images/posts/the-math-behind-diffusion-models-ddpm/img-07.gif" />
+<em>source: <a href="https://www.youtube.com/shorts/MnBBV73KbDo">https://www.youtube.com/shorts/MnBBV73KbDo</a></em></p>
+<p>Markov Chain Monte Carlo (MCMC) is a class of algorithms that lets us do just that. Given a target and unknown probability distribution, one can construct a Markov chain which can be used to approximate this target probability distribution. The more steps that are included to perform the approximation, the more closely the distribution of the sample will match the true distribution. Notice that the idea is quite similar to the penalty method that we discussed in the <a href="https://joydeep31415.medium.com/llm-quantization-techniques-4229b7eac20c#f708">previous blog</a>. A process is Markovian when the current decision only depends on where you are at and not where you started. There is a probability transition matrix, and we can build a chain structure which is called a Markov chain.</p>
+<div class="arithmatex">\[p(x) \propto e^{-f(x)} \Rightarrow \log p(x) = -f(x) + \text{const} \tag{1}\]</div>
+<div class="arithmatex">\[\therefore x_t = x_{t-1} - \eta_t \nabla f(x_{t-1}) \tag{2}\]</div>
+<div class="arithmatex">\[x_{t+1} = x_t - \frac{\epsilon}{2} \nabla f(x_t) + \sqrt{\epsilon}\, \mathcal{N}(0, I) \tag{3}\]</div>
+<p>Langevin dynamics is done of the most popular MCMC methods out there. If we have a probability distribution p(x) that is Markovian, then it will belong to the exponential class of distributions. This is given in equation 1 where f(x) is some function such that the equation holds. Let’s assume that we don’t have a way to directly sample from this distribution. Let’s assume that we can only know the gradient of the function at every point ∇f(x). If that’s the case we can apply gradient descent to find the modes of the distribution. This is given by equation 2 where η is the learning rate at time step t. If we can find the modes of the distribution, then we can find the areas with peaks in the density. Since in our training data, there will be lots of “good” images, this means going to peaks will result in these good images. Langevin sampling is an interesting modification of this gradient descent algorithm given by equation 3. Here we are adding a noise term to each step in the GD formula.</p>
+<p>One problem can be that if want to speed up the process we might choose the value of <span class="arithmatex">\(\epsilon\)</span> to be too high which may make the above equation 3 unstable and diverge out. So, it would be good if we can provide some form of guarantee that the update rule will converge. For this we can take the help of various algorithms such as the Metropolis Hastings algorithm. Not going into them as that is not the focus of this post.</p>
+<h2 id="forward-diffusion">Forward Diffusion<a class="headerlink" href="#forward-diffusion" title="Link to this section">#</a></h2>
+<p><img alt="Graphical model as in the DDPM paper" src="/images/posts/the-math-behind-diffusion-models-ddpm/graphical-model-as-in-the-ddpm-paper.png" />
+<em>Graphical model as in the DDPM paper</em></p>
+<p>So, taking inspiration from this concept about Markov chains, lets say we sample an initial data <span class="arithmatex">\(x_0 \sim q(x)\)</span> from a real data distribution. We gradually add noise to this initial data <span class="arithmatex">\(x_0\)</span> similar to the physical diffusion we discussed above.</p>
+<div class="arithmatex">\[q(x_1, \ldots, x_T) = \prod_{t=1}^{T} q(x_t | x_{t-1}) \tag{4}\]</div>
+<p>In this way we obtain a series of noisy data <span class="arithmatex">\(x_1, \dots, x_T\)</span>. Since a Markov process is memoryless, we can represent the joint probability of all data by equation 4 above. This is called the forward diffusion in DDPM paper.</p>
+<div class="arithmatex">\[q(x_t \mid x_{t-1}) := \mathcal{N}(x_t; \sqrt{1 - \beta_t}\, x_{t-1},\, \beta_t I) \tag{5}\]</div>
+<p>Recall that a normal distribution is defined by a mean <span class="arithmatex">\(\mu\)</span> and a variance <span class="arithmatex">\(\sigma^2 \ge 0\)</span>. Hence this transition kernel <span class="arithmatex">\(q(x_t \mid x_{t-1})\)</span> is defined by a normal probability distribution with mean <span class="arithmatex">\(\sqrt{1-\beta_t}\, x_{t-1}\)</span> and variance <span class="arithmatex">\(\beta_t I\)</span>. Here <span class="arithmatex">\(\beta\)</span> is a noise variance schedule that exists in each iteration from <span class="arithmatex">\(\beta_0\)</span> to <span class="arithmatex">\(\beta_t\)</span> where <span class="arithmatex">\(\beta\)</span> lies between 0 and 1, <span class="arithmatex">\(\beta \in (0, 1)\)</span>. <span class="arithmatex">\(I\)</span> is the identity matrix.</p>
+<p><img alt="img-12.png" src="/images/posts/the-math-behind-diffusion-models-ddpm/img-12.png" /></p>
+<p>As mentioned <span class="arithmatex">\(\beta\)</span> for a specific time t is given by a variance schedule <span class="arithmatex">\(0 &lt; \beta_1 &lt; \beta_2 &lt; \dots &lt; \beta_T &lt; 1\)</span>. The specific way this can be changed can be according to various strategies such as linear, fibonacci, cosine, sigmoid, exponential and so on. The comparisons of the various decays of signal to noise ratio is shown in the above figure. The original DDPM paper used a linear schedule increasing from <span class="arithmatex">\(\beta_1 = 10^{-4}\)</span> to <span class="arithmatex">\(\beta_T = 0.02\)</span> but later works showed that using a cosine schedule is better. Since we are talking about the multidimensional scenario hence the equation has the identity matrix I, indicating that we are having the same variance <span class="arithmatex">\(\beta_t\)</span> for all the dimensions.</p>
+<h3 id="tractable-closed-for-sampling-at-every-step-reparametrizing-trick">Tractable Closed for Sampling at every step: Reparametrizing trick<a class="headerlink" href="#tractable-closed-for-sampling-at-every-step-reparametrizing-trick" title="Link to this section">#</a></h3>
+<p>Now one challenge is if we want to sample x for the t=500 or more, do we need to repeatedly apply q 500 times? You may say that lets do <a href="https://en.wikipedia.org/wiki/Dynamic_programming">dynamic programming (DP)</a>, but what if we don't want to do training sequentially!</p>
+<p>There is in fact a better method available. Since we are using Gaussian distributions is a reparameterization trick which can help us find a tractable closed form sample of xt at any step.</p>
+<div class="arithmatex">\[z \sim \mathcal{N}(\mu, \sigma^2)\]</div>
+<div class="arithmatex">\[\Rightarrow z = \mu + \sigma\epsilon \text{ where } \epsilon \sim \mathcal{N}(0,1)\]</div>
+<p>If there is a normal distribution with mean <span class="arithmatex">\(\mu\)</span> and standard deviation <span class="arithmatex">\(\sigma^2\)</span>, then this can be reparametrized to a linear form of <span class="arithmatex">\(\mu\)</span>, <span class="arithmatex">\(\sigma\)</span> and a normal distribution with mean 0 and standard deviation 1. For <span class="arithmatex">\(x_t\)</span> we can replace the mean and standard deviation terms from equation 5 to arrive at equation 6 above.</p>
+<div class="arithmatex">\[x_t = \sqrt{1 - \beta_t} \, x_{t-1} + \sqrt{\beta_t} \, \epsilon_{t-1} \tag{6}\]</div>
+<div class="arithmatex">\[\alpha_t = 1 - \beta_t \tag{7}\]</div>
+<div class="arithmatex">\[x_t = \sqrt{\alpha_t} \cdot x_{t-1} + \sqrt{1 - \alpha_t} \cdot \epsilon_{t-1} \tag{8}\]</div>
+<div class="arithmatex">\[= \sqrt{\alpha_t} \cdot \left(\sqrt{\alpha_{t-1}} \cdot x_{t-2} + \sqrt{1 - \alpha_{t-1}} \cdot \epsilon_{t-2}\right) + \sqrt{1 - \alpha_t} \cdot \epsilon_{t-1} \tag{9}\]</div>
+<div class="arithmatex">\[= \sqrt{\alpha_t \alpha_{t-1}} \cdot x_{t-2} + \sqrt{\alpha_t(1 - \alpha_{t-1})} \cdot \epsilon_{t-2} + \sqrt{1 - \alpha_t} \cdot \epsilon_{t-1} \tag{10}\]</div>
+<p>Now we take the same equation 6 in the first line. If we consider <span class="arithmatex">\(\alpha = 1 - \beta\)</span> as in equation 7, then we can write <span class="arithmatex">\(x_t = \sqrt{\alpha_t}\, x_{t-1} + \sqrt{1-\alpha_t}\, \epsilon_{t-1}\)</span> given by equation 8. Now we can apply the same reparameterization trick again to go from <span class="arithmatex">\(x_{t-1}\)</span> to <span class="arithmatex">\(x_{t-2}\)</span> in equation 9. If we now remove the brackets, we get an equation of three terms involving <span class="arithmatex">\(x_{t-2}\)</span>, <span class="arithmatex">\(\epsilon_{t-2}\)</span> and <span class="arithmatex">\(\epsilon_{t-1}\)</span> as shown in equation 10. We have 3 variables now and it would be simpler to go to 2 variables. Is there a way we can combine the <span class="arithmatex">\(\epsilon_{t-2}\)</span> and <span class="arithmatex">\(\epsilon_{t-1}\)</span> to a single term of <span class="arithmatex">\(\epsilon_{t-2}\)</span>!</p>
+<div class="arithmatex">\[0 + \sqrt{\alpha_t(1-\alpha_{t-1})} \cdot \epsilon_{t-2} \Rightarrow X \sim \mathcal{N}(0,\, \alpha_t(1-\alpha_{t-1})\,I) \tag{11}\]</div>
+<div class="arithmatex">\[0 + \sqrt{1-\alpha_t} \cdot \epsilon_{t-1} \Rightarrow Y \sim \mathcal{N}(0,\,(1-\alpha_t)\,I) \tag{12}\]</div>
+<div class="arithmatex">\[Z = X + Y \sim \mathcal{N}\!\left(\mu_x + \mu_y,\, \sigma_x^2 + \sigma_y^2\right) \tag{13}\]</div>
+<div class="arithmatex">\[\sigma_x^2 + \sigma_y^2 = \alpha_t(1-\alpha_{t-1}) + 1 - \alpha_t = \alpha_t - \alpha_t\alpha_{t-1} + 1 - \alpha_t \tag{14}\]</div>
+<div class="arithmatex">\[\Rightarrow \sigma_x^2 + \sigma_y^2 = 1 - \alpha_t\alpha_{t-1} \tag{15}\]</div>
+<div class="arithmatex">\[\Rightarrow \sqrt{\alpha_t(1-\alpha_{t-1})} \cdot \epsilon_{t-2} + \sqrt{1-\alpha_t} \cdot \epsilon_{t-1} = \sqrt{1-\alpha_t\alpha_{t-1}} \cdot \epsilon_{t-2} \tag{16}\]</div>
+<p>First two lines, equation 11 and 12, mean that we can consider the <span class="arithmatex">\(\epsilon_{t-2}\)</span> and <span class="arithmatex">\(\epsilon_{t-1}\)</span> terms as normal distribution with mean 0 and respective variances. From the laws of statistics, if we want to combine two normal distributions X and Y to Z, that means the new distribution is also a normal distribution with sum of the mean and the variances in equation 13. Sums are 0 so no need to worry about it. For the sum of variances in equation 14, we combine the terms, then resolve the brackets. <span class="arithmatex">\(+\alpha_t\)</span> and <span class="arithmatex">\(-\alpha_t\)</span> gets canceled. Finally, we get the form in equation 15 which is <span class="arithmatex">\(1 - \alpha_t \alpha_{t-1}\)</span>. In equation 16, we can combine the normal equations in 11 and 12 in the form of <span class="arithmatex">\(\epsilon_{t-2}\)</span>. We bring in a square root over the variance part.</p>
+<div class="arithmatex">\[x_t = \sqrt{\alpha_t \alpha_{t-1}} \cdot x_{t-2} + \sqrt{\alpha_t(1 - \alpha_{t-1})} \cdot \epsilon_{t-2} + \sqrt{1 - \alpha_t} \cdot \epsilon_{t-1}\]</div>
+<div class="arithmatex">\[\Rightarrow x_t = \sqrt{\alpha_t \alpha_{t-1}} \cdot x_{t-2} + \sqrt{1 - \alpha_t \alpha_{t-1}} \cdot \epsilon_{t-2} \tag{17}\]</div>
+<div class="arithmatex">\[= \ ...\]</div>
+<div class="arithmatex">\[\Rightarrow x_t = \sqrt{\alpha_t \alpha_{t-1} \cdots \alpha_1} \cdot x_0 + \sqrt{1 - \alpha_t \alpha_{t-1} \cdots \alpha_1} \cdot \epsilon_0 \tag{18}\]</div>
+<p>Now taking equation 10 derived earlier, which consists of terms <span class="arithmatex">\(x_{t-2}\)</span>, <span class="arithmatex">\(\epsilon_{t-2}\)</span> and <span class="arithmatex">\(\epsilon_{t-1}\)</span>, and using equation 16 where we reparametrized two normal distributions, we get the terms involving <span class="arithmatex">\(x_{t-2}\)</span> and <span class="arithmatex">\(\epsilon_{t-2}\)</span> such that the term under the square root is in a nice form of the manner <span class="arithmatex">\(\alpha_t \alpha_{t-1}\)</span> as shown in equation 17. We can now extend this concept recursively till <span class="arithmatex">\(x_0\)</span> which means that the term under the square root also keeps extending till <span class="arithmatex">\(\alpha_1\)</span> as shown in equation 18.</p>
+<div class="arithmatex">\[x_t = \sqrt{\prod_{t=1}^{T} \alpha_t} \cdot x_0 + \sqrt{1 - \prod_{t=1}^{T} \alpha_t} \cdot \epsilon_0 \tag{19}\]</div>
+<div class="arithmatex">\[x_t = \sqrt{\bar{\alpha}_t} \cdot x_0 + \sqrt{1 - \bar{\alpha}_t} \cdot \epsilon_0 \tag{20}\]</div>
+<div class="arithmatex">\[\Rightarrow x_t \sim \mathcal{N}\!\left(x_t;\, \sqrt{\bar{\alpha}_t}\, x_0,\, (1 - \bar{\alpha}_t)\, I\right) \tag{21}\]</div>
+<p>So, in equation 19, we can write the whole term as the product of all the <span class="arithmatex">\(\alpha\)</span>'s for all the time steps. If we write this product as <span class="arithmatex">\(\bar{\alpha}_t\)</span>, then we arrive at equation 20 where <span class="arithmatex">\(\bar{\alpha}_t = \alpha_1 \times \alpha_2 \times \dots \times \alpha_T\)</span>. This we can write as taking sample from a normal distribution with mean <span class="arithmatex">\(\sqrt{\bar{\alpha}_t}\, x_0\)</span> and variance <span class="arithmatex">\((1 - \bar{\alpha}_t) I\)</span>, where <span class="arithmatex">\(I\)</span> is the identity matrix.</p>
+<p>Thus, we will not need to sample from q again and again and this makes the process much faster.</p>
+<h2 id="reverse-diffusion">Reverse Diffusion<a class="headerlink" href="#reverse-diffusion" title="Link to this section">#</a></h2>
+<p><img alt="Reverse diffusion here means going from left to right" src="/images/posts/the-math-behind-diffusion-models-ddpm/reverse-diffusion-here-means-going-from-left-to-ri.png" />
+<em>Reverse diffusion here means going from left to right</em></p>
+<p>But the forward diffusion by itself is not very useful. What would be interesting is doing the exact opposite i.e. transforming a totally random noise into an actual image. As per eq (5), the current value of x i.e. <span class="arithmatex">\(x_t\)</span> is dependent on both the current value of <span class="arithmatex">\(\beta\)</span> given by <span class="arithmatex">\(\beta_t\)</span> and the previous value of x given by <span class="arithmatex">\(x_{t-1}\)</span>, so you can see that starting from <span class="arithmatex">\(x_0\)</span> there will be a sequence of x's i.e <span class="arithmatex">\(x_1, x_2, \dots, x_T\)</span>, where <span class="arithmatex">\(x_T\)</span> is pure Gaussian if the noise scheduling is done properly.</p>
+<p>Now lets assume that there is a conditional probability <span class="arithmatex">\(p(x_{t-1}| x_t)\)</span> which is the opposite of the forward diffusion process. If we could somehow compute this conditional probability for the reverse process, we could start from some random Gaussian noise <span class="arithmatex">\(x_T\)</span>, and then repeatedly “denoise” it so that we arrive at a sample from the real distribution <span class="arithmatex">\(x_0\)</span>. However, practically speaking, computing this probability distribution p will be quite difficult. In the paper they say its intractable because it means you need to consider all possible images in order to compute this conditional distribution. You can argue that in statistics in any case, we make do with sample statistic instead of the population statistic assuming that the law of large numbers will hold. Even then computing the probability distribution would be quite difficult if we do not make any assumptions about the distribution.</p>
+<p>Two things are done that makes our lives easier. One is that we use a neural network to approximate this probability distribution. So we are learning <span class="arithmatex">\(p_\theta(\)</span>x_{t-1} | xt)$, where <span class="arithmatex">\(\theta\)</span> is the parameters of the neural network, which we will update during the training process.</p>
+<p><img alt="reverse diffusion is gaussian!" src="/images/posts/the-math-behind-diffusion-models-ddpm/reverse-diffusion-is-gaussian.gif" />
+<em>reverse diffusion is gaussian!</em></p>
+<p>Second interesting insight is that learning to reverse each intermediate step may be easier than learning to sample from the target distribution in one step. Taking inspiration from Weiner processes and Brian Anderson, 1982 it can be shown that this reverse conditional distribution <span class="arithmatex">\(p(x_{t-1}|x_t) \sim N\)</span> is the forward process is Gaussian and the noise that is introduced is small. Basically “with sufficiently small step sizes” the authors in the DDPM paper said that the discrete diffusion process approaches the solution to a stochastic differential equation (aka Weiner Process / Brownian Motion) as the step sizes get infinitesimally small. Similar to how a binomial distribution approaches a normal distribution as n goes to infinity, so people will just approximate binomial as a Gaussian.</p>
+<div class="arithmatex">\[p_\theta(x_{t-1}|x_t) = \mathcal{N}\!\left(x_{t-1};\, \mu_\theta(x_t, t), \Sigma_\theta(x_t, t)\right) \tag{22}\]</div>
+<p>We can parameterize the reverse process in terms of <span class="arithmatex">\(\mu_\theta\)</span> and <span class="arithmatex">\(\Sigma_\theta\)</span> where the mean and the variance is a function of the noise level at time t as given in equation 22. We will come back with a derivation for this later.</p>
+<div class="arithmatex">\[p_\theta(x_1, \ldots, x_T) = p_\theta(x_{0:T})\]</div>
+<div class="arithmatex">\[= p_\theta(x_T) \prod_{t=1}^{T} p_\theta(x_{t-1}|x_t) \tag{23}\]</div>
+<p>Similar to the forward process in equation 4, we can write the joint distribution of all the images as the product of the individual models for the time steps as shown in equation 23 above. If we are able to compute the Gaussian parameters <span class="arithmatex">\(\mu_\theta\)</span> and <span class="arithmatex">\(\Sigma_\theta\)</span> mentioned in equation 22, we will then be able to compute for this joint product in equation 23 for all the time steps.</p>
+<div class="arithmatex">\[p_\theta(x_T) = \mathcal{N}(x_T; 0, I) \tag{24}\]</div>
+<p>Above equation 24 simply means that the final image <span class="arithmatex">\(x_T\)</span> is pure Gaussian noise with mean 0 and variance 1 in all dimensions. This is what we want to achieve after <span class="arithmatex">\(T\)</span> steps in the forward diffusion, and what is our starting point in case of reverse diffusion.</p>
+<h2 id="evidence-lower-bound-method">Evidence Lower Bound Method<a class="headerlink" href="#evidence-lower-bound-method" title="Link to this section">#</a></h2>
+<p>Now lets assume that there is a latent variable <span class="arithmatex">\(z\)</span> which is generating out data, which then becomes the joint probability <span class="arithmatex">\(p(x, z)\)</span>. Generally, in machine learning, we learn a model to maximize the likelihood of <span class="arithmatex">\(p(x)\)</span> given all observed values of <span class="arithmatex">\(x\)</span>.</p>
+<div class="arithmatex">\[p(x) = \int p(x, z)\,dz \tag{25}\]</div>
+<p>To compute this <span class="arithmatex">\(p(x)\)</span> we can try to integrate over the whole of <span class="arithmatex">\(z\)</span> as given in equation 25.</p>
+<div class="arithmatex">\[p(x) = \frac{p(x,z)}{p(z|x)} \tag{26}\]</div>
+<p>Another way of computing the <span class="arithmatex">\(p(x)\)</span> is by utilizing the law of conditional probability, which makes it the ration of the joint probability <span class="arithmatex">\(p(x, z)\)</span> and the conditional probability <span class="arithmatex">\(p(z|x)\)</span>. But both these formulations are not exactly great because equation 26 means that we will need to integrate over all the latent variables z or we need a ground truth model for the latent variable <span class="arithmatex">\(p(z|x)\)</span>. Here we know the numerator part because we have the data.</p>
+<p><img alt="Using a lever | Source: https://tenor.com/view/fulcrum-lever-gif-22681762" src="/images/posts/the-math-behind-diffusion-models-ddpm/using-a-lever.gif" />
+<em>Using a lever | Source: <a href="https://tenor.com/view/fulcrum-lever-gif-22681762">https://tenor.com/view/fulcrum-lever-gif-22681762</a></em></p>
+<p>Now in case you are wondering if these equations are so useless, why did I talk about them in the first place. It turns out that using these two equations, we can derive a term called the <strong>Evidence Lower Bound (ELBO)</strong>which suggests a way to specify a lower bound on the evidence. The evidence in this case is the log likelihood of the observed data. This is equivalent to using a lever where it is difficult to lift the original object.</p>
+<div class="arithmatex">\[q_\phi(z, x) = q_\phi(z|x)\, q_\phi(x) \tag{27}\]</div>
+<div class="arithmatex">\[q_\phi(x) = \int q_\phi(z, x)\, dz \tag{28}\]</div>
+<div class="arithmatex">\[\Rightarrow q_\phi(x) = \int q_\phi(z|x)\, q_\phi(x)\, dz \tag{29}\]</div>
+<p>Now assuming we are training a model <span class="arithmatex">\(q_\phi(z|x)\)</span> to approximate the true distribution <span class="arithmatex">\(p(z|x)\)</span>. This means that the joint distribution <span class="arithmatex">\(q_\phi(z, x)\)</span> is the product of the conditional probability <span class="arithmatex">\(q_\phi(z|x)\)</span> and <span class="arithmatex">\(q_\phi(x)\)</span> as per the definition of conditional probability, shown in equation 27. In equation 28, we can know from the laws of probability, that the prior probability <span class="arithmatex">\(q_\phi(x)\)</span> can be achieved by integrating over the whole joint distribution <span class="arithmatex">\(q_\phi(z|x)\)</span> if we integrate over <span class="arithmatex">\(z\)</span>. So in equation 29, we can expand <span class="arithmatex">\(q_\phi(z, x)\)</span> to the product as give in equation 27.</p>
+<div class="arithmatex">\[q_\phi(x) = q_\phi(x) \int q_\phi(z|x)\,dz \tag{30}\]</div>
+<div class="arithmatex">\[\int q_\phi(z|x)\,dz = 1 \tag{31}\]</div>
+<p>If we observe equation 29, from the perspective of z, <span class="arithmatex">\(q_\phi(x)\)</span> is basically a constant, so we can take that outside the integration as shown in equation 30. Next we should be able to cancel out the <span class="arithmatex">\(q_\phi(x)\)</span> in equation 30 because probability lies between 0 and 1 i.e its a positive number. Hence we get the relation in 31. We can also write the integration of <span class="arithmatex">\(q_\phi(z|x)\)</span> over z as 1 because no matter what the evidence x is, something will happen to z.</p>
+<div class="arithmatex">\[\Rightarrow \log\, p(x) = \log\, p(x) \int q_\phi(z|x)\,dz \tag{32}\]</div>
+<div class="arithmatex">\[= \int q_\phi(z|x)\log\, p(x)\,dz \tag{33}\]</div>
+<div class="arithmatex">\[= \mathrm{E}_{q_\phi(z|x)}[\log\, p(x)] \tag{34}\]</div>
+<p>From equation 31 we can multiply <span class="arithmatex">\(\log p(x)\)</span> on both sides to arrive at equation 32. Then we can take the <span class="arithmatex">\(\log p(x)\)</span> inside the integration sign for equation 33. Considering <span class="arithmatex">\(\log p(x)\)</span> as the random variable, this can be rewritten in terms of statistical expectation as given in equation 34.</p>
+<div class="arithmatex">\[= \text{E}_{q_\phi(z|x)}\left[log\frac{p(x,z)}{p(z|x)}\right] \tag{35}\]</div>
+<div class="arithmatex">\[= \text{E}_{q_\phi(z|x)}\left[log\frac{p(x,z)}{p(z|x)} \cdot \frac{q_\phi(z|x)}{q_\phi(z|x)}\right] \tag{36}\]</div>
+<p>See above in equation 26, the joint probability can be written as a ratio or probabilities, and we can replace the <span class="arithmatex">\(\log p(x)\)</span> as the same ratio in equation 35. Then we introduce <span class="arithmatex">\(q_\phi(z|x)\)</span> in both the numerator and denominator in equation 36.</p>
+<div class="arithmatex">\[
+E[X + Y] = \sum_{x} \sum_{y} [(x + y)p(X = x, Y = y)] \tag{37}
+\]</div>
+<div class="arithmatex">\[
+= \sum_{x} \sum_{y} [x \, p(X = x, Y = y)]
+\]</div>
+<div class="arithmatex">\[
++ \sum_{y} \sum_{x} y \left[p(X = x, Y = y)\right] \tag{38}
+\]</div>
+<div class="arithmatex">\[
+= \sum_{x} x \sum_{y} [p(X = x, Y = y)] + \sum_{y} y \sum_{x} [p(X = x, Y = y)] \tag{39}
+\]</div>
+<div class="arithmatex">\[
+= \sum_{x} x \, p(Y = y) + \sum_{y} y \, p(X = x) \tag{40}
+\]</div>
+<div class="arithmatex">\[
+\therefore E[X + Y] = E[X] + E[Y] \tag{41}
+\]</div>
+<p>Let's take a slight detour and go through the derivations of one of the classic results in statistics. You might already know about this result, so consider this a refresher. The first line shown in equation 37, is the definition of the joint expectation when we add two random variables. In the next line with equation 38, we can separate out the summation terms and also interchange the x summation and y summation for the second term. In the third line with equation 39, we take out the x variable from the y summation and y variable from the x summation. This means in the fourth line in equation 40, the x join distribution is redundant and for the second term the y joint distribution is redundant, and we can thus write the probability in y and x terms respectively. This gives us the result in equation 41 which means that <strong>the sum of the expectation is the expectation of the sum</strong>. We will use this result shortly.</p>
+<div class="arithmatex">\[
+\log\, p(x) = \mathrm{E}_{q_\phi(z|x)}\!\left[\log \frac{p(x,z)}{p(z|x)} \cdot \frac{q_\phi(z|x)}{q_\phi(z|x)}\right]
+\]</div>
+<div class="arithmatex">\[
+= \mathrm{E}_{q_\phi(z|x)}\!\left[\log \frac{p(x,z)}{q_\phi(z|x)} + \log \frac{q_\phi(z|x)}{p(z|x)}\right] \tag{42}
+\]</div>
+<div class="arithmatex">\[
+= \mathrm{E}_{q_\phi(z|x)}\!\left[\log \frac{p(x,z)}{q_\phi(z|x)}\right] + \mathrm{E}_{q_\phi(z|x)}\!\left[\log \frac{q_\phi(z|x)}{p(z|x)}\right] \tag{43}
+\]</div>
+<p>Now going back to equation 36, we write the same equation above in the first line. Since log of the product is the sum of the logs (log (AB) = log A + log B), we can separate out the product with an addition of two terms; the first term is ratio of joint probability p(x,z) and the model $q_\phi(z|x); the second term is the ration of model $q_\phi(z|x) and the conditional probability p(z|x) as shown in equation 42. Using the relation that we had derived in equation 41 that expectation of the sum is the sum of the expectations, we separate out the expectations in equation 43.</p>
+<div class="arithmatex">\[
+\log p(x) = \mathrm{E}_{q_\phi(z|x)}\left[\log \frac{p(x,z)}{q_\phi(z|x)}\right] + D_{KL}(q_\phi(z|x) \| p(z|x)) \tag{44}
+\]</div>
+<div class="arithmatex">\[
+\therefore \log p(x) \geq \mathrm{E}_{q_\phi(z|x)}\left[\log \frac{p(x,z)}{q_\phi(z|x)}\right] \tag{45}
+\]</div>
+<p>Thus we arrive at equation 44, where we can observe that the second term is the <a href="https://stats.stackexchange.com/a/601470">KL divergence</a> between the approximate posterior $q_\phi(z|x) and the true posterior p(z|x). Since KL divergence will always be some positive value or at best be 0, we can say that log p(x) is lower bounded by the ELBO term given in equation 45.</p>
+<h2 id="applying-the-elbo-method">Applying the ELBO method<a class="headerlink" href="#applying-the-elbo-method" title="Link to this section">#</a></h2>
+<div class="arithmatex">\[
+q(x_t | x_{t-1})
+= q(x_t | x_{t-1}, x_0) \tag{46}
+\]</div>
+<div class="arithmatex">\[
+= \frac{q(x_{t-1} | x_t, x_0)\, q(x_t | x_0)}{q(x_{t-1} | x_0)} \tag{47}
+\]</div>
+<p>Because we started with saying that the forward process is Markovian as mentioned in equation 4 and 5, hence we can bring in an extra conditioning term x0 that is earlier in the chain, and this will not change the probability as shown in equation 46. Now applying Bayes rule to convert this to the ratio as shown in equation 47.</p>
+<div class="arithmatex">\[
+\log p(x) = \log \int p(x_{0:T}) dx_{1:T} \tag{48}
+\]</div>
+<div class="arithmatex">\[
+\implies \log p(x) = \log \int \frac{p(x_{0:T}) q(x_{1:T} | x_0)}{q(x_{1:T} | x_0)} \, dx_{1:T} \tag{49}
+\]</div>
+<div class="arithmatex">\[
+\implies \log p(x) = \log \mathrm{E}_{q(x_{1:T} | x_0)} \left[ \frac{p(x_{0:T})}{q(x_{1:T} | x_0)} \right] \tag{50}
+\]</div>
+<div class="arithmatex">\[
+\implies \log p(x) \geq \mathrm{E}_{q(x_{1:T} | x_0)} \left[ \log \frac{p(x_{0:T})}{q(x_{1:T} | x_0)} \right] \tag{51}
+\]</div>
+<p>Now we will do the same ELBO analysis as shown in equation 45 and work towards maximizing the log of the evidence. Hence <span class="arithmatex">\(log p(x)\)</span> is the log of the overall integration for <span class="arithmatex">\(p(x)\)</span> for all the time steps as shown in equation 48. We can divide with same conditional probability <span class="arithmatex">\(q(x_{1:T}|x_0)\)</span> in both numerator and denominator and this will not change the result shown in equation 49. This looks like the log of the expectation of p/q over all the time steps as shown in equation 50. Hence, we can utilize the ELBO relation we found in equation 45, where we can take the expectation outside and the log inside, to say that this will be greater than the expectation of the log of the ration of p/q.</p>
+<div class="arithmatex">\[ELBO = \mathrm{E}_{q(x_{1:T}|x_0)}\left[\log \frac{p(x_{0:T})}{q(x_{1:T}|x_0)}\right] \tag{52}\]</div>
+<p>As a result from equation 51, our ELBO part becomes the expectation from time step 1 to T which is the log of the ration between reverse diffusion probability and the reverse diffusion probability as shown in equation 52.</p>
+<div class="arithmatex">\[\Rightarrow ELBO = \mathrm{E}_{q(x_{1:T}|x_0)}\left[log\frac{p(x_T)\prod_{t=1}^{T}p_\theta(x_{t-1}|x_t)}{q(x_{1:T}|x_0)}\right] \tag{53}\]</div>
+<p>In the numerator we can replace the reverse diffusion with the product of the final noisy image at time step <span class="arithmatex">\(T\)</span> and the conditional probability of the previous step given the current step taking from equation 23.</p>
+<div class="arithmatex">\[\Rightarrow ELBO = \mathrm{E}_{q(x_{1:T}|x_0)}\left[log\frac{p(x_T)\prod_{t=1}^{T}p_\theta(x_{t-1}|x_t)}{\prod_{t=1}^{T}q(x_t|x_{t-1},x_0)}\right] \tag{54}\]</div>
+<div class="arithmatex">\[ELBO = \mathrm{E}_{q(x_{1:T}|x_0)}\left[log\frac{p(x_T)p_\theta(x_0|x_1)\prod_{t=2}^{T}p_\theta(x_{t-1}|x_t)}{q(x_1|x_0)\prod_{t=2}^{T}q(x_t|x_{t-1},x_0)}\right] \tag{55}\]</div>
+<p>For the denominator, using equation 4, we can write the forward diffusion in terms of the product of the conditional distributions as in equation 54. We can add the <span class="arithmatex">\(x_0\)</span> as a condition based on the arguments related to equation 46. Finally in equation 55, the ELBO part can be written as the expectation of the log of the probability of the final image at time step T, the conditional probability of the first image given the second image <span class="arithmatex">\(p(x_0 \mid x_1)\)</span> and the product of the intermediate conditional probabilities in the reverse direction assuming parameters are <span class="arithmatex">\(\theta\)</span>. Notice that we extracted out the model at the first time step <span class="arithmatex">\(p_\theta(x_0 \mid x_1)\)</span> so the product term ranges from t=2 to T.</p>
+<div class="arithmatex">\[
+ELBO = \mathrm{E}_{q(x_{1:T}|x_0)}\left[\log \frac{p(x_T)p_\theta(x_0|x_1)\prod_{t=2}^{T}p_\theta(x_{t-1}|x_t)}{q(x_1|x_0)\prod_{t=2}^{T}q(x_t|x_{t-1},x_0)}\right]
+\]</div>
+<div class="arithmatex">\[
+= \mathrm{E}_{q(x_{1:T}|x_0)}\left[\log \frac{p(x_T)p_\theta(x_0|x_1)}{q(x_1|x_0)}\right]
+\]</div>
+<div class="arithmatex">\[
++ \mathrm{E}_{q(x_{1:T}|x_0)}\left[\log \prod_{t=2}^{T}\frac{p_\theta(x_{t-1}|x_t)}{q(x_t|x_{t-1},x_0)}\right] \tag{57}
+\]</div>
+<div class="arithmatex">\[
+= E_1 + E_2 \tag{58}
+\]</div>
+<p>We can continue with the above expressions from equation 55. Because ELBO is an expectation of the log of some product terms which involves the starting <span class="arithmatex">\(x_0\)</span>, <span class="arithmatex">\(x_1\)</span> and final <span class="arithmatex">\(x_T\)</span> and the intermediaries <span class="arithmatex">\(p(x_{t-1}|x_t)\)</span> and <span class="arithmatex">\(q(x_t|x_{t-1},x_0)\)</span>, we can separate out to summation of two terms <span class="arithmatex">\(E_1 + E_2\)</span> as shown in equation 58. The first term <span class="arithmatex">\(E_1\)</span> has the edge terms i.e. the starting and the final terms. The second term <span class="arithmatex">\(E_2\)</span> will have the product of the intermediate terms. I broke them to <span class="arithmatex">\(E_1\)</span> and <span class="arithmatex">\(E_2\)</span> because in the couple of paragraphs we will focus only on the <span class="arithmatex">\(E_2\)</span> part. Makes reasoning about the equations simpler because we are not doing anything of <span class="arithmatex">\(E_1\)</span> and writing such long equations would just take up real estate.</p>
+<div class="arithmatex">\[E_2 = \mathrm{E}_{q(x_{1:T}|x_0)}\left[log\prod_{t=2}^{T}\frac{p_\theta(x_{t-1}|x_t)}{q(x_t|x_{t-1},x_0)}\right] \tag{59}\]</div>
+<div class="arithmatex">\[\therefore E_2 = \mathrm{E}_{q(x_{1:T}|x_0)}\left[log\prod_{t=2}^{T}\frac{p_\theta(x_{t-1}|x_t)}{\dfrac{q(x_{t-1}|x_t,x_0)q(x_t|x_0)}{q(x_{t-1}|x_0)}}\right] \tag{60}\]</div>
+<p>In the above equation 59, we take this <span class="arithmatex">\(E_2\)</span> term as defined in equation 58, and we can apply the Bayes' rule on the denominator term for multiple conditionals as per equation 47.</p>
+<div class="arithmatex">\[E_2 = \mathrm{E}_{q(x_{1:T}|x_0)}\left[\log\prod_{t=2}^{T}\frac{p_\theta(x_{t-1}|x_t)}{q(x_{t-1}|x_t,\,x_0)} + \log\prod_{t=2}^{T}\frac{q(x_{t-1}|x_0)}{q(x_t|x_0)}\right] \tag{61}\]</div>
+<div class="arithmatex">\[E_2 = \mathrm{E}_{q(x_{1:T}|x_0)}\left[\log\prod_{t=2}^{T}\frac{p_\theta(x_{t-1}|x_t)}{q(x_{t-1}|x_t,\,x_0)} + \log\left[\frac{q(x_1|x_0)}{\cancel{q(x_2|x_0)}}\cdot\frac{\cancel{q(x_2|x_0)}}{\cancel{q(x_3|x_0)}}\cdots\frac{\cancel{q(x_{T-1}|x_0)}}{q(x_T|x_0)}\right]\right] \tag{62}\]</div>
+<p>Now lets separate out the terms with the prior <span class="arithmatex">\(x_{t-1}\)</span> and with posterior <span class="arithmatex">\(x_0\)</span>. Interestingly since the second term is a product, we can expand it to its individual components and fortuitously, successive denominators and numerators get canceled out.</p>
+<div class="arithmatex">\[E_2 = \mathbb{E}_{q(x_{1:T}|x_0)}\left[\log\prod_{t=2}^{T}\frac{p_\theta(x_{t-1}|x_t)}{q(x_{t-1}|x_t,x_0)} + \log\left[\frac{q(x_1|x_0)}{q(x_T|x_0)}\right]\right] \tag{63}\]</div>
+<div class="arithmatex">\[\implies E_2 = \mathbb{E}_{q(x_{1:T}|x_0)}\left[\log\left[\frac{q(x_1|x_0)}{q(x_T|x_0)}\right] + \log\prod_{t=2}^{T}\frac{p_\theta(x_{t-1}|x_t)}{q(x_{t-1}|x_t,x_0)}\right] \tag{64}\]</div>
+<p>After the cancelation in equation 62, we are left with only the ratio of <span class="arithmatex">\(q(x_1|x_0)/q(x_T|x_0)\)</span>. In equation (64) these same two terms are simply reordered within the expectation brackets. The <span class="arithmatex">\(\log[q(x_1|x_0)/q(x_T|x_0)]\)</span> term is moved to the front while the product term remains unchanged.</p>
+<div class="arithmatex">\[
+\mathrm{ELBO} = \mathrm{E}_{q(x_{1:T}|x_0)}\left[\log\frac{p(x_T)p_\theta(x_0|x_1)}{q(x_1|x_0)} + \log\left[\frac{q(x_1|x_0)}{q(x_T|x_0)}\right] + \log\prod_{t=2}^{T}\frac{p_\theta(x_{t-1}|x_t)}{q(x_{t-1}|x_t, x_0)}\right] \qquad \tag{65}
+\]</div>
+<div class="arithmatex">\[
+\mathrm{ELBO} = \mathrm{E}_{q(x_{1:T}|x_0)}\left[\log\frac{p(x_T)p_\theta(x_0|x_1)}{q(x_1|x_0)} + \log\left[\frac{q(x_1|x_0)}{q(x_T|x_0)}\right] + \log\prod_{t=2}^{T}\frac{p_\theta(x_{t-1}|x_t)}{q(x_{t-1}|x_t, x_0)}\right]
+\]</div>
+<p>We take the E2 term and replace this in ELBO in equation 58. Thus in equation (65), we have three separate log terms: the first containing p(x_T)<span class="arithmatex">\(p_\theta\)</span>(x_0|x_1)/q(x_1|x_0), the second containing q(x_1|x_0)/q(x_T|x_0), and the third being the product term from E2. The key insight is that since we’re dealing with sums of logarithms, the underlying structure represents products of ratios, which allows for cancellation between adjacent terms. Specifically, the q(x_1|x_0) in the denominator of the first term cancels with the q(x_1|x_0) in the numerator of the second term when these logarithms are combined (since log(A/B) + log(B/C) = log(A/C)). This cancellation removes the q(x_1|x_0) terms that appeared in both the numerator and denominator of adjacent fractions. The last product term remains unchanged.</p>
+<div class="arithmatex">\[= \mathrm{E}_{q(x_{1:T}|x_0)}\left[\log\frac{p(x_T)p_\theta(x_0|x_1)}{q(x_T|x_0)} + \sum_{t=2}^{T}\log\frac{p_\theta(x_{t-1}|x_t)}{q(x_{t-1}|x_t,x_0)}\right] \tag{67}\]</div>
+<div class="arithmatex">\[ELBO = \mathrm{E}_{q(x_{1:T}|x_0)}\left[\log\, p_\theta(x_0|x_1)\right] + \mathrm{E}_{q(x_{1:T}|x_0)}\left[\log\frac{p(x_T)}{q(x_T|x_0)}\right]\]</div>
+<div class="arithmatex">\[+ \mathrm{E}_{q(x_{1:T}|x_0)}\left[\sum_{t=2}^{T}\log\frac{p_\theta(x_{t-1}|x_t)}{q(x_{t-1}|x_t,x_0)}\right] \tag{68}\]</div>
+<p>First in equation 67, we perform an algebraic simplification by combining terms from the previous cancellation step (equation 65). In equation 68. we can break apart the compound logarithmic expression <span class="arithmatex">\(\log[p(x_T) p_\theta(x_0 \mid x_1) / q(x_T \mid x_0)]\)</span> into two separate components: the reconstruction term <span class="arithmatex">\(\log p_\theta(x_0 \mid x_1)\)</span> and the prior matching term <span class="arithmatex">\(\log[p(x_T)/q(x_T \mid x_0)]\)</span>. This separation uses the logarithm property that <span class="arithmatex">\(\log(AB/C) = \log(B) + \log(A/C)\)</span>.</p>
+<p>In equation 68, we also apply the linearity property of expectations, which states that the expectation of a sum equals the sum of expectations: E[A + B + C] = E[A] + E[B] + E[C]. This mathematical principle (referenced in equation 41) allows us to transform a single complex expectation into three manageable, separate expectations.</p>
+<div class="arithmatex">\[
+= \mathrm{E}_{q(x_1|x_0)}[\log p_\theta(x_0|x_1)] + \mathrm{E}_{q(x_T|x_0)}\left[\log \frac{p(x_T)}{q(x_T|x_0)}\right]
+\]</div>
+<div class="arithmatex">\[
++ \sum_{t=2}^{T} \mathrm{E}_{q(x_t,\, x_{t-1}|x_0)}\left[\log \frac{p_\theta(x_{t-1}|x_t)}{q(x_{t-1}|x_t,\, x_0)}\right] \tag{69}
+\]</div>
+<div class="arithmatex">\[
+= L_0 + L_T + \sum_{t=2}^{T} L_{t-1} \tag{70}
+\]</div>
+<p>In the above steps equation 69 and 70, we’ve separated the complex ELBO equation into three simpler parts:</p>
+<ol>
+<li><strong><span class="arithmatex">\(L_0\)</span></strong> — The starting term (deals with <span class="arithmatex">\(x_0 \mid x_1\)</span>)</li>
+<li><strong><span class="arithmatex">\(L_T\)</span></strong> — The ending term (deals with <span class="arithmatex">\(x_T\)</span>)</li>
+<li><strong><span class="arithmatex">\(\sum L_{t-1}\)</span></strong> — The middle steps (deals with intermediate denoising from <span class="arithmatex">\(t=2\)</span> to <span class="arithmatex">\(T\)</span>)</li>
+</ol>
+<p>In the middle equation, we <strong>simplified each expectation by removing irrelevant variables</strong> — so instead of averaging over all possible values of variables that don’t actually appear in each term, we only consider the specific variables that are directly involved in that particular calculation. For example, if a term only depends on <span class="arithmatex">\(x_1\)</span> and <span class="arithmatex">\(x_0\)</span>, we remove <span class="arithmatex">\(x_2\)</span>, <span class="arithmatex">\(x_3\)</span>, <span class="arithmatex">\(\dots\)</span>, <span class="arithmatex">\(x_T\)</span> from that expectation since they don’t affect the result, making the computation more focused and efficient.</p>
+<p>This separation makes the whole equation easier to compute. Instead of handling all variables at once, each term now depends on just one or two random variables. Each expectation has lower variance and thus is simpler to estimate accurately. Lets now have a look at each of the terms.</p>
+<div class="arithmatex">\[E_{q(x_1|x_0)}[\log p_\theta(x_0|x_1)] = L_0 \tag{71}\]</div>
+<p>The first term as shown in equation 71, is the reconstruction term. This term can be interpreted as how well we construct the final image and can be approximated and optimized using a Monte Carlo Estimate.</p>
+<div class="arithmatex">\[
+\mathrm{E}_{q(x_T|x_0)}\left[\log \frac{p(x_T)}{q(x_T|x_0)}\right] = D_{KL}(q(x_T|x_0)\,||\,p(x_T)) \tag{72}
+\]</div>
+<div class="arithmatex">\[
+= L_T
+\]</div>
+<p>The second term as shown in equation 72, represents how close the distribution of the final noisified input is to the standard Gaussian prior. Notice there are no trainable parameters here and thus is a constant in the loss function. The derivative would be 0. Also, since we are assuming Markovian chain, the conditional probability would be 0.</p>
+<div class="arithmatex">\[
+\sum_{t=2}^{T} E_{q(x_t,\, x_{t-1}|x_0)}\!\left[\log \frac{p_\theta(x_{t-1}|x_t)}{q(x_{t-1}|x_t,x_0)}\right]
+\]</div>
+<div class="arithmatex">\[
+= \sum_{t=2}^{T} E_{q(x_t|x_0)}\!\left[D_{KL}(q(x_{t-1},x_t|x_0)\,||\,p_\theta(x_{t-1}|x_t))\right] = \sum_{t=2}^{T} L_{t-1} \tag{73}
+\]</div>
+<p>The third term as shown in equation 73, can be interpreted as how well the model learns to denoise images compared to the “perfect” denoising process. The perfect denoising process is <span class="arithmatex">\(q(x_{t-1} \mid x_t, x_0)\)</span> term which sees both the noisy image <span class="arithmatex">\(x_t\)</span> and the perfect image <span class="arithmatex">\(x_0\)</span>. The numerator <span class="arithmatex">\(p_\theta(x_{t-1} \mid x_t)\)</span> is our models denoiser and its conditioned on only the noisy image <span class="arithmatex">\(x_t\)</span>. Thus it has to guess how to remove the noise without the final answer.</p>
+<p>This can be written in terms of the summation across all time steps of the expectation of KL divergence D_KL. Writing it as a KL divergence term is to show that we are measuring the difference between two different probability distributions. When the difference is small that means that the model is acting like the perfect denoiser. Big difference means that it's still a weak model. Since the KL divergence will have the biggest contribution to the loss, we can focus on this.</p>
+<h2 id="gaussian-parameters-for-our-diffusion-model">Gaussian parameters for our Diffusion Model<a class="headerlink" href="#gaussian-parameters-for-our-diffusion-model" title="Link to this section">#</a></h2>
+<p>Although we have defined the loss function as a sum of KL divergence between two probability distributions as equation 73, this does not mean that our work is done. Optimizing each KL divergence term is quite difficult since that would mean minimizing arbitrary posteriors. In this section, we will use Gaussian assumptions that we made to make the problem simpler and tractable. Notice that in equation 73, we have the term <span class="arithmatex">\(q(x_{t-1} \mid x_t, x_0)\)</span> and using Bayes rule we can flip the priors as shown in equation 74.</p>
+<div class="arithmatex">\[q(x_{t-1}|x_t, x_0) = \frac{q(x_t|x_{t-1}, x_0)q(x_{t-1}|x_0)}{q(x_t|x_0)} \tag{74}\]</div>
+<div class="arithmatex">\[= \frac{\mathcal{N}\!\left(x_t;\sqrt{\alpha_t}\,x_{t-1},\,(1-\alpha_t)\,I\right)\mathcal{N}\!\left(x_{t-1};\sqrt{\bar{\alpha}_{t-1}}\,x_0,\,(1-\bar{\alpha}_{t-1})\,I\right)}{\mathcal{N}\!\left(x_t;\sqrt{\bar{\alpha}_t}\,x_0,\,(1-\bar{\alpha}_t)\,I\right)} \tag{75}\]</div>
+<p>We know that <span class="arithmatex">\(q(x_t \mid x_{t-1}, x_0) = q(x_t \mid x_{t-1})\)</span> from the markov property as discussed in equation 5. Hence using the same equation 5, From the forward diffusion process, we can write expression 74 into normal distributions with the mean and the sd in the specified format as shown in equation 75.</p>
+<p>Recall that the probability density function for a Gaussian distribution is given by the below equation 76.</p>
+<div class="arithmatex">\[f(x) = \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{(x-\mu)^2}{2\sigma^2}} \tag{76}\]</div>
+<p>So based on this we can write the equation for q(x_{t-1}|x_t, x_0) in the below relation as shown in equation 77.</p>
+<div class="arithmatex">\[q(x_{t-1}|x_t, x_0) = \frac{\frac{1}{\sqrt{2\pi(1-\alpha_t)}}exp\left(-\frac{(x_t - \sqrt{\alpha_t}x_{t-1})^2}{2(1-\alpha_t)}\right) \times \frac{1}{\sqrt{2\pi(1-\bar{\alpha}_{t-1})}}exp\left(-\frac{(x_{t-1} - \sqrt{\bar{\alpha}_{t-1}}x_0)^2}{2(1-\bar{\alpha}_{t-1})}\right)}{\frac{1}{\sqrt{2\pi(1-\bar{\alpha}_t)}}exp\left(-\frac{(x_t - \sqrt{\bar{\alpha}_t}x_0)^2}{2(1-\bar{\alpha}_t)}\right)}\]</div>
+<div class="arithmatex">\[q(x_{t-1}|x_t, x_0) \propto exp\left(-\left[\frac{(x_t - \sqrt{\alpha_t}x_{t-1})^2}{2(1-\alpha_t)} + \frac{(x_{t-1} - \sqrt{\bar{\alpha}_{t-1}}x_0)^2}{2(1-\bar{\alpha}_{t-1})} - \frac{(x_t - \sqrt{\bar{\alpha}_t}x_0)^2}{2(1-\bar{\alpha}_t)}\right]\right) \tag{77}\]</div>
+<p>We can say this because multiplication and division become addition and subtraction in the exponents.</p>
+<div class="arithmatex">\[= \exp\!\left(-\frac{1}{2}\left[\frac{\left(x_t - \sqrt{\alpha_t}\,x_{t-1}\right)^2}{(1-\alpha_t)} + \frac{\left(x_{t-1} - \sqrt{\bar{\alpha}_{t-1}}\,x_0\right)^2}{(1-\bar{\alpha}_{t-1})} - \frac{\left(x_t - \sqrt{\bar{\alpha}_t}\,x_0\right)^2}{(1-\bar{\alpha}_t)}\right]\right) \tag{78}\]</div>
+<p>Take the 1/2 outside we get the above equation 78</p>
+<div class="arithmatex">\[(a - b)^2 = a^2 - 2ab + b^2\]</div>
+<p>Recall the formula for (a-b)<span class="arithmatex">\(^2\)</span> from elementary course in algebra from high school. The numerators of our relations have this form so we can apply it in this case as shown in equation 79 below.</p>
+<div class="arithmatex">\[= \exp\left(-\frac{1}{2}\left[\frac{x_t^2 + \alpha_t x_{t-1}^2 - 2\sqrt{\alpha_t}\,x_t x_{t-1}}{(1-\alpha_t)} + \frac{x_{t-1}^2 + \overline{\alpha_{t-1}}x_0^2 - 2\sqrt{\overline{\alpha_{t-1}}}\,x_{t-1}x_0}{(1-\overline{\alpha_{t-1}})} - \frac{x_t^2 + \overline{\alpha_t}x_0^2 - 2\sqrt{\overline{\alpha_t}}\,x_t x_0}{(1-\overline{\alpha_t})}\right]\right) \tag{79}\]</div>
+<p>Equation 80 below shows that we can take all the terms involving product of <span class="arithmatex">\(x_t\)</span> and <span class="arithmatex">\(x_0\)</span> towards the end. In equation 81, we then mark this group as <span class="arithmatex">\(C(x_t, x_0)\)</span> as a function of <span class="arithmatex">\(x_t\)</span> and <span class="arithmatex">\(x_0\)</span>.</p>
+<div class="arithmatex">\[
+= \exp\!\left(-\frac{1}{2}\left[\frac{\alpha_t x_{t-1}^2 - 2\sqrt{\alpha_t}\,x_t x_{t-1}}{(1-\alpha_t)} + \frac{x_{t-1}^2 - 2\sqrt{\bar{\alpha}_{t-1}}\,x_{t-1}x_0}{(1-\bar{\alpha}_{t-1})} + \left(\frac{x_t^2}{(1-\alpha_t)} + \frac{\bar{\alpha}_{t-1}x_0^2}{(1-\bar{\alpha}_{t-1})} - \frac{x_t^2 + \bar{\alpha}_t x_0^2 - 2\sqrt{\bar{\alpha}_t}\,x_t x_0}{(1-\bar{\alpha}_t)}\right)\right]\right) \tag{80}
+\]</div>
+<div class="arithmatex">\[
+= \exp\!\left(-\frac{1}{2}\left[\frac{\alpha_t x_{t-1}^2 - 2\sqrt{\alpha_t}\,x_t x_{t-1}}{(1-\alpha_t)} + \frac{x_{t-1}^2 - 2\sqrt{\bar{\alpha}_{t-1}}\,x_{t-1}x_0}{(1-\bar{\alpha}_{t-1})} + C(x_t, x_0)\right]\right) \tag{81}
+\]</div>
+<p>This function we are marking as a constant function, because we started out with the assumption that in the current step we know the values of <span class="arithmatex">\(x_t\)</span> and <span class="arithmatex">\(x_0\)</span>.</p>
+<div class="arithmatex">\[e^{(x+C)} = e^x \cdot e^C = e^C \cdot e^x = Ce^x \propto e^x\]</div>
+<div class="arithmatex">\[\Rightarrow q(x_{t-1}|x_t, x_0) \propto \exp\left(-\frac{1}{2}\left[\frac{\alpha_t x_{t-1}^2 - 2\sqrt{\alpha_t}\, x_t x_{t-1}}{(1-\alpha_t)} + \frac{x_{t-1}^2 - 2\sqrt{\bar{\alpha}_{t-1}}\, x_{t-1} x_0}{(1-\bar{\alpha}_{t-1})}\right]\right) \tag{82}\]</div>
+<p>Now from high school maths we know that adding a constant in the exponents means that the result is proportional to the exponent of the variable. This means that in the above proportionality relation shown in equation 82, we can remove the <span class="arithmatex">\(C(x_t, x_0)\)</span> part.</p>
+<div class="arithmatex">\[= \exp\!\left(-\frac{1}{2}\left[\frac{\alpha_t x_{t-1}^2}{(1-\alpha_t)} + \frac{x_{t-1}^2}{(1-\bar{\alpha}_{t-1})} + \frac{-2\sqrt{\alpha_t}x_t x_{t-1}}{(1-\alpha_t)} + \frac{-2\sqrt{\bar{\alpha}_{t-1}}x_{t-1}x_0}{(1-\bar{\alpha}_{t-1})}\right]\right) \tag{83}\]</div>
+<div class="arithmatex">\[= \exp\!\left(-\frac{1}{2}\left[\left(\frac{\alpha_t}{1-\alpha_t} + \frac{1}{1-\bar{\alpha}_{t-1}}\right)x_{t-1}^2 - 2\!\left(\frac{\sqrt{\alpha_t}\,x_t}{1-\alpha_t} + \frac{\sqrt{\bar{\alpha}_{t-1}}\,x_0}{1-\bar{\alpha}_{t-1}}\right)x_{t-1}\right]\right) \tag{84}\]</div>
+<div class="arithmatex">\[= \exp\!\left(-\frac{1}{2}\left[\frac{\alpha_t(1-\bar{\alpha}_{t-1})+1-\alpha_t}{(1-\alpha_t)(1-\bar{\alpha}_{t-1})}x_{t-1}^2 - 2\!\left(\frac{\sqrt{\alpha_t}\,x_t(1-\bar{\alpha}_{t-1})+(1-\alpha_t)\sqrt{\bar{\alpha}_{t-1}}\,x_0}{(1-\alpha_t)(1-\bar{\alpha}_{t-1})}\right)x_{t-1}\right]\right) \tag{85}\]</div>
+<p>In the first step in equation 83, we factor out common denominators and reorganize terms, particularly combining the first two fractions that share the <span class="arithmatex">\(x_{t-1}^2\)</span> term and grouping the last two fractions that involve square root terms with <span class="arithmatex">\(x_{t-1}\)</span>. In the second transformation equation 84, we apply further algebraic manipulation where the coefficients are combined more systematically — we consolidate the terms involving <span class="arithmatex">\(x_{t-1}^2\)</span> by finding a common denominator of <span class="arithmatex">\((1-\alpha_t)(1-\bar{\alpha}_{t-1})\)</span>, which allows the numerator to become <span class="arithmatex">\(\alpha_t(1-\bar{\alpha}_{t-1}) + (1-\alpha_t)\)</span>. We can also combine the terms involving the square roots under a single coefficient of <span class="arithmatex">\(x^2_{t-1}\)</span>, we work towards resolving the numerator so that we will have a common factor in the denominator <span class="arithmatex">\((1-\alpha_t)(1-\bar{\alpha}_{t-1})\)</span> as shown in equation 85.</p>
+<div class="arithmatex">\[= \exp\left(-\frac{1}{2}\left[\frac{\dfrac{\alpha_{\bar{t}} - \alpha_t\overline{\alpha_{t-1}} + 1 - \alpha_{\bar{t}}}{(1-\alpha_t)(1-\overline{\alpha_{t-1}})}x_{t-1}^2}{-2\dfrac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_t + \sqrt{\overline{\alpha_{t-1}}}(1-\alpha_t)x_0}{(1-\alpha_t)(1-\overline{\alpha_{t-1}})}x_{t-1}}\right]\right) \tag{86}\]</div>
+<div class="arithmatex">\[= \exp\left(-\frac{1}{2}\left[\frac{\dfrac{1-\overline{\alpha}_t}{(1-\alpha_t)(1-\overline{\alpha_{t-1}})}x_{t-1}^2}{-2\dfrac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_t + \sqrt{\overline{\alpha_{t-1}}}(1-\alpha_t)x_0}{(1-\alpha_t)(1-\overline{\alpha_{t-1}})}x_{t-1}}\right]\right) \tag{87}\]</div>
+<p>In the above steps equation 86 and 87, we continue with the simplification process as we focus on algebraic manipulation of the numerator in the first fraction in the numerator of the coefficient for <span class="arithmatex">\(x^2_{t-1}\)</span>. Starting with the numerator <span class="arithmatex">\(\alpha_t - \alpha_t \bar{\alpha}_{t-1} + 1 - \alpha_t\)</span>, we observe that the terms <span class="arithmatex">\(\alpha_t\)</span> and <span class="arithmatex">\(-\alpha_t\)</span> cancel each other out, leaving just <span class="arithmatex">\(-\alpha_t \bar{\alpha}_{t-1} + 1\)</span>, which we can rewrite as <span class="arithmatex">\(1 - \bar{\alpha}_t\)</span> which is what we had defined for <span class="arithmatex">\(\bar{\alpha}_t\)</span>. The second fraction involving <span class="arithmatex">\(x_{t-1}\)</span>, we keep mostly the same, just some rearrangement.</p>
+<div class="arithmatex">\[= \exp\left(-\frac{1}{2}\left(\frac{1-\bar{\alpha}_t}{(1-\alpha_t)(1-\bar{\alpha}_{t-1})}\right)\left[x_{t-1}^2 - 2\frac{\sqrt{\alpha_t}(1-\bar{\alpha}_{t-1})x_t + \sqrt{\bar{\alpha}_{t-1}}(1-\alpha_t)x_0}{1-\bar{\alpha}_t}x_{t-1}\right]\right) \tag{88}\]</div>
+<div class="arithmatex">\[= \exp\left(-\frac{1}{2\dfrac{(1-\alpha_t)(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}}\left[x_{t-1}^2 - 2\frac{\sqrt{\alpha_t}(1-\bar{\alpha}_{t-1})x_t + \sqrt{\bar{\alpha}_{t-1}}(1-\alpha_t)x_0}{1-\bar{\alpha}_t}x_{t-1}\right]\right) \tag{89}\]</div>
+<p>Here in equation 88, we are factoring out the terms related to <span class="arithmatex">\(x^2_{t-1}\)</span>. For this we make the necessary changes in the fraction involving <span class="arithmatex">\(x_{t-1}\)</span>. Next in equation 89, we can change the constant fraction at the start to the form <span class="arithmatex">\(1/2\sigma ^2\)</span>. Why this change will be clear in just a while.</p>
+<div class="arithmatex">\[q(x_{t-1}|x_t, x_0) \propto \mathcal{N}\left(x_{t-1};\frac{\sqrt{\alpha_t}(1-\overline{\alpha}_{t-1})x_t + \sqrt{\overline{\alpha}_{t-1}}(1-\alpha_t)x_0}{1-\overline{\alpha}_t},\frac{(1-\alpha_t)(1-\overline{\alpha}_{t-1})}{1-\overline{\alpha}_t}I\right) \tag{90}\]</div>
+<div class="arithmatex">\[\mu_q(x_t, x_0) \coloneqq \frac{\sqrt{\alpha_t}(1-\overline{\alpha}_{t-1})x_t + \sqrt{\overline{\alpha}_{t-1}}(1-\alpha_t)x_0}{1-\overline{\alpha}_t} \tag{91}\]</div>
+<div class="arithmatex">\[\Sigma_q(t) \coloneqq \frac{(1-\alpha_t)(1-\overline{\alpha}_{t-1})}{1-\overline{\alpha}_t} \tag{92}\]</div>
+<p>In this final step of the derivation, we complete the transformation by recognizing that our simplified exponential expression represents a normal (Gaussian) distribution as shown in equation 90. We identify that the expression <span class="arithmatex">\(q(x_{t-1} \mid x_t, x_0)\)</span> is proportional to a normal distribution N with specific mean and variance parameters. We can now extract the mean and variance from the quadratic form we've been manipulating throughout the derivation. We define the mean <span class="arithmatex">\(\mu_q(x_t, x_0)\)</span> as the expression <span class="arithmatex">\((\sqrt{\alpha_t}(1-\bar{\alpha}_{t-1}) x_t + \sqrt{\bar{\alpha}_{t-1}}(1-\alpha_t) x_0)/(1-\bar{\alpha}_t)\)</span>, which represents a weighted combination of the current state <span class="arithmatex">\(x_t\)</span> and the initial state <span class="arithmatex">\(x_0\)</span>, with weights determined by the <span class="arithmatex">\(\alpha\)</span> parameters as shown in equation 91. Similarly, we define the variance <span class="arithmatex">\(\Sigma_q(t)\)</span> as <span class="arithmatex">\((1-\alpha_t)(1-\bar{\alpha}_{t-1})/(1-\bar{\alpha}_t)\)</span>, which captures how the uncertainty scales with the time-dependent parameters as shown in equation 92. This parameterization reveals the underlying probabilistic structure of the system, showing that what began as a complex exponential expression with multiple fractions and square root terms ultimately describes a Gaussian distribution with interpretable mean and variance parameters. These <span class="arithmatex">\(\alpha\)</span> coefficients are known and fixed at each time step. They are either set permanently when modeled as hyperparamters, or can be treated as current inference output of a network that seeks to model them. This transformation is particularly valuable because it converts a complicated algebraic expression into the standard form of a normal distribution, making the probabilistic relationships clear and enabling further statistical analysis or sampling procedures.</p>
+<p>Notice that the variance term above is mostly clean, but the mean is a combination of <span class="arithmatex">\(x_t\)</span> and <span class="arithmatex">\(x_0\)</span>, so let's probe a little more.</p>
+<div class="arithmatex">\[x_t = \sqrt{\bar{\alpha}_t} \cdot x_0 + \sqrt{1 - \bar{\alpha}_t} \cdot \epsilon_0\]</div>
+<div class="arithmatex">\[\Rightarrow x_0 = \frac{x_t - \sqrt{1 - \bar{\alpha}_t}\epsilon_0}{\sqrt{\bar{\alpha}_t}} \tag{93}\]</div>
+<p>In this step of the derivation, we start with equation (20), which expresses <span class="arithmatex">\(x_t\)</span> as a linear combination of <span class="arithmatex">\(x_0\)</span> and a noise term <span class="arithmatex">\(\varepsilon_0\)</span>: <span class="arithmatex">\(x_t = \sqrt{\bar{\alpha}_t} \cdot x_0 + \sqrt{1-\bar{\alpha}_t} \cdot \varepsilon_0\)</span>, thus solving for <span class="arithmatex">\(x_0\)</span> in terms of x. We then rearrange this equation to isolate <span class="arithmatex">\(x_0\)</span>, yielding <span class="arithmatex">\(x_0 = (x_t - \sqrt{1-\bar{\alpha}_t}\, \varepsilon_0) / \sqrt{\bar{\alpha}_t}\)</span> as shown in equation 93. This reparameterization expresses the initial state <span class="arithmatex">\(x_0\)</span> in terms of the current observed state <span class="arithmatex">\(x_t\)</span> and the accumulated noise.</p>
+<div class="arithmatex">\[
+\mu_q(x_t, x_0) = \frac{\sqrt{\alpha_t}(1 - \overline{\alpha}_{t-1})x_t + \sqrt{\overline{\alpha}_{t-1}}(1 - \alpha_t)x_0}{1 - \overline{\alpha}_t} \tag{94}
+\]</div>
+<div class="arithmatex">\[
+= \frac{\sqrt{\alpha_t}(1 - \overline{\alpha}_{t-1})x_t + \sqrt{\overline{\alpha}_{t-1}}(1 - \alpha_t)\dfrac{x_t - \sqrt{1 - \overline{\alpha}_t}\epsilon_0}{\sqrt{\overline{\alpha}_t}}}{1 - \overline{\alpha}_t} \tag{95}
+\]</div>
+<p>We then substitute this expression for <span class="arithmatex">\(x_0\)</span> into our previously derived mean formula <span class="arithmatex">\(\mu_q(x_t, x_0)\)</span>. When we perform this substitution, we replace <span class="arithmatex">\(x_0\)</span> in the expression <span class="arithmatex">\((\sqrt{\alpha_t}(1-\bar{\alpha}_{t-1}) x_t + \sqrt{\bar{\alpha}_{t-1}}(1-\alpha_t) x_0)/(1-\bar{\alpha}_t)\)</span> with our rearranged form, resulting in the final expression shown. This substitution allows us to express the posterior mean entirely in terms of the current state <span class="arithmatex">\(x_t\)</span> and the noise parameters, eliminating the explicit dependence on <span class="arithmatex">\(x_0\)</span> and providing a more practical form for computational implementation.</p>
+<div class="arithmatex">\[
+= \frac{\sqrt{\alpha_t}(1-\overline{\alpha_{t-1}})x_t + \sqrt{\overline{\alpha_{t-1}}}(1-\alpha_t)\dfrac{x_t - \sqrt{1-\overline{\alpha_t}}\,\epsilon_0}{\sqrt{\alpha_t}\sqrt{\overline{\alpha_{t-1}}}}}{1-\overline{\alpha_t}} \tag{96}
+\]</div>
+<div class="arithmatex">\[
+= \frac{\alpha_t(1-\overline{\alpha_{t-1}})x_t + (1-\alpha_t)(x_t - \sqrt{1-\overline{\alpha_t}}\,\epsilon_0)}{\sqrt{\alpha_t}(1-\overline{\alpha_t})} \tag{97}
+\]</div>
+<p>In the current step in equation 96, we expand <span class="arithmatex">\(\sqrt{\alpha_t}\)</span> to <span class="arithmatex">\(\sqrt{\alpha_t} \sqrt{\alpha_{t-1}}\)</span> so we can cancel out the <span class="arithmatex">\(\sqrt{\alpha_{t-1}}\)</span>. Then we multiply with the other terms in the numerator so we can take this <span class="arithmatex">\(\sqrt{\alpha_t}\)</span> to the overall denominator as shown in equation 97.</p>
+<div class="arithmatex">\[
+\mu_q(x_t, x_0) = \frac{\cancel{\alpha_t x_t} - \alpha_t \overline{\alpha_{t-1}} x_t + x_t - \sqrt{1 - \overline{\alpha}_t}\,\epsilon_0 - \cancel{\alpha_t x_t} + \alpha_t \sqrt{1 - \overline{\alpha}_t}\,\epsilon_0}{\sqrt{\alpha_t}(1 - \overline{\alpha}_t)} \tag{98}
+\]</div>
+<div class="arithmatex">\[
+= \frac{1 - \overline{\alpha}_t}{\sqrt{\alpha_t}(1 - \overline{\alpha}_t)}\,x_t + \frac{-\sqrt{1 - \overline{\alpha}_t} + \alpha_t \sqrt{1 - \overline{\alpha}_t}}{\sqrt{\alpha_t}(1 - \overline{\alpha}_t)}\,\epsilon_0 \tag{99}
+\]</div>
+<p>In the current step, if we remove the brackets and expand the terms, we can cancel out couple of terms as shown in equation 98. Next we separate into <span class="arithmatex">\(x_t\)</span> and <span class="arithmatex">\(\varepsilon_0\)</span> terms as shown in equation 99.</p>
+<div class="arithmatex">\[= \frac{1-\overline{\alpha_t}}{\sqrt{\alpha_t(1-\overline{\alpha_t})}} x_t - \frac{(1-\alpha_t)\sqrt{1-\overline{\alpha_t}}}{\sqrt{\alpha_t}(1-\overline{\alpha_t})} \epsilon_0 \tag{100}\]</div>
+<div class="arithmatex">\[= \frac{1}{\sqrt{\alpha_t}} x_t - \frac{1-\alpha_t}{\sqrt{\alpha_t}\sqrt{1-\overline{\alpha_t}}} \epsilon_0 \tag{101}\]</div>
+<div class="arithmatex">\[\mu_q(x_t, x_0) = \frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{1-\alpha_t}{\sqrt{1-\overline{\alpha_t}}} \epsilon_0 \right) \tag{102}\]</div>
+<p>Notice that in equation 100, in the <span class="arithmatex">\(x_t\)</span> coefficient, we can cancel <span class="arithmatex">\((1-\alpha_t)\)</span> in numerator and denominator. Similarly in the <span class="arithmatex">\(\varepsilon_0\)</span> coefficient we can cancel <span class="arithmatex">\(\sqrt{1-\alpha_t}\)</span> in numerator and denominator as shown in equation 101. Then we can factor out the <span class="arithmatex">\(1/\sqrt{\alpha_t}\)</span> to form the final form of <span class="arithmatex">\(\mu_q(x_t, x_0)\)</span> as shown in equation 102.</p>
+<p>As discussed in equation 22, in order to match approximate denoising transition step <span class="arithmatex">\(p_\theta(x_{t-1} \mid x_t)\)</span> to ground-truth denoising transition step <span class="arithmatex">\(q(x_{t-1} \mid x_t, x_0)\)</span> as closely as possible, we can also model it as a Gaussian. Furthermore, as all <span class="arithmatex">\(\alpha\)</span> terms are known to be frozen at each timestep, we can immediately construct the variance of the approximate denoising transition step to also be <span class="arithmatex">\(\Sigma_q(t) = \sigma^2_q(t) I\)</span>. We must parameterize its mean <span class="arithmatex">\(\mu_\theta(x_t, t)\)</span> as a function of <span class="arithmatex">\(x_t\)</span>. Thus we can set the approximate denoising transition mean <span class="arithmatex">\(\mu_\theta(x_t, t)\)</span> as shown below in equation 103</p>
+<div class="arithmatex">\[
+\mu_\theta(x_t, t) = \frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{1 - \alpha_t}{\sqrt{1 - \bar{\alpha}_t}} \hat{\epsilon}_\theta(x_t, t) \right) \tag{103}
+\]</div>
+<p>Now that we have the form of <span class="arithmatex">\(\mu_\theta(x_t, t)\)</span> we can write the algorithm for the sampling. Below is the screenshot of the algorithm as mentioned in the DDPM paper.</p>
+<p><img alt="DDPM paper: https://arxiv.org/abs/2006.11239" src="/images/posts/the-math-behind-diffusion-models-ddpm/ddpm-paper.png" />
+<em>DDPM paper: <a href="https://arxiv.org/pdf/2006.11239">https://arxiv.org/abs/2006.11239</a></em></p>
+<h2 id="training-algorithm">Training Algorithm<a class="headerlink" href="#training-algorithm" title="Link to this section">#</a></h2>
+<p>Suppose that we have two <a href="https://en.wikipedia.org/wiki/Multivariate_normal_distribution">multivariate normal distributions</a> x and y, with means <span class="arithmatex">\(\mu_x\)</span> and <span class="arithmatex">\(\mu_y\)</span> and with (non-singular) <a href="https://en.wikipedia.org/wiki/Covariance_matrix">covariance matrices</a> <span class="arithmatex">\(\Sigma_x\)</span>, <span class="arithmatex">\(\Sigma_y\)</span>. If the two distributions have the same dimension, <em>d</em>, then the relative entropy between the distributions is as given below in equation 104. If you are interested, you can follow the proof <a href="https://statproofbook.github.io/P/mvn-kl.html">here</a>.</p>
+<div class="arithmatex">\[D_{KL}(\mathcal{N}(x;\mu_x,\Sigma_x)||\mathcal{N}(y;\mu_y,\Sigma_y)) = \frac{1}{2}\left[\log\frac{\Sigma_y}{\Sigma_x} - d + tr\!\left(\Sigma_y^{-1}\Sigma_x\right) + \left(\mu_y - \mu_x\right)^T \Sigma_y^{-1}\left(\Sigma_y - \Sigma_x\right)\right] \tag{104}\]</div>
+<p>There is a KL divergence term in the loss function as shown in equation 70, which is the denoising matching term. Hence in our loss function, we want to optimize the KL divergence between the two distributions.</p>
+<div class="arithmatex">\[\arg\min_{\theta} D_{KL}\left(q(x_{t-1}, x_t | x_0) \| p_{\theta}(x_{t-1} | x_t)\right) \tag{105}\]</div>
+<p>For our training purposes, we can set the variance for the two probability distributions to match to <span class="arithmatex">\(\Sigma_q(t) = \sigma^2_q(t) I\)</span>. In the DDPM, paper the authors decided to keep the variance fixed, and let the neural network only learn (represent) the mean <span class="arithmatex">\(\mu_\theta\)</span> of this conditional probability distribution.</p>
+<div class="arithmatex">\[= \arg\min_{\theta} \, D_{KL}\!\left(\mathcal{N}(x_{t-1};\mu_q,\Sigma_q(t))\,\|\,\mathcal{N}(x_{t-1};\mu_\theta,\Sigma_q(t))\right) \tag{106}\]</div>
+<p>Using the relation for two multivariate normal distributions from equation 104 we can write as shown in equation 107 below.</p>
+<div class="arithmatex">\[= \underset{\theta}{argmin} \frac{1}{2} \left[ \log \frac{\Sigma_q(t)}{\Sigma_q(t)} - d + tr\left(\Sigma_q(t)^{-1} \Sigma_q(t)\right) + \left(\mu_\theta - \mu_q\right)^T \Sigma_q(t)^{-1} \left(\mu_\theta - \mu_q\right) \right] \tag{107}\]</div>
+<div class="arithmatex">\[= \underset{\theta}{argmin} \frac{1}{2} \left[ \log 1 - d + d + \left(\mu_\theta - \mu_q\right)^T \Sigma_q(t)^{-1} \left(\mu_\theta - \mu_q\right) \right] \tag{108}\]</div>
+<p>The first term in equation 107 becomes log 1 hence we can cancel this. The third term is the trace function which resolves to d.</p>
+<div class="arithmatex">\[= \underset{\theta}{argmin} \frac{1}{2}\left[(\mu_\theta - \mu_q)^T \Sigma_q(t)^{-1}(\mu_\theta - \mu_q)\right] \tag{109}\]</div>
+<div class="arithmatex">\[= \underset{\theta}{argmin} \frac{1}{2}\left[(\mu_\theta - \mu_q)^T \left(\sigma_q^2(t)I\right)^{-1}(\mu_\theta - \mu_q)\right] \tag{110}\]</div>
+<div class="arithmatex">\[= \underset{\theta}{argmin} \frac{1}{2\sigma_q^2(t)}\left[||\mu_\theta - \mu_q||_2^2\right] \tag{111}\]</div>
+<p>Resolving the variance term in equation 109 to <span class="arithmatex">\(\sigma^2_q(t) I\)</span> gives results in equation 110. Then we can go to equation 111 because of the definition of the norm of two distributions.</p>
+<div class="arithmatex">\[= \underset{\theta}{argmin} \frac{1}{2\sigma_q^2(t)} \left\| \frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}} \widehat{\epsilon}_\theta(x_t, t) \right) - \frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}} \epsilon_0 \right) \right\|_2^2 \tag{112}\]</div>
+<div class="arithmatex">\[= \underset{\theta}{argmin} \frac{1}{2\sigma_q^2(t)} \left\| \frac{x_t}{\sqrt{\alpha_t}} - \frac{(1-\alpha_t)}{\sqrt{\alpha_t}\sqrt{1-\bar{\alpha}_t}} \widehat{\epsilon}_\theta(x_t, t) - \frac{x_t}{\sqrt{\alpha_t}} + \frac{1-\alpha_t}{\sqrt{\alpha_t}\sqrt{1-\bar{\alpha}_t}} \epsilon_0 \right\|_2^2 \tag{113}\]</div>
+<div class="arithmatex">\[= \underset{\theta}{argmin} \frac{1}{2\sigma_q^2(t)} \left\| \frac{1-\alpha_t}{\sqrt{\alpha_t}\sqrt{1-\bar{\alpha}_t}} \epsilon_0 - \frac{(1-\alpha_t)}{\sqrt{\alpha_t}\sqrt{1-\bar{\alpha}_t}} \widehat{\epsilon}_\theta(x_t, t) \right\|_2^2 \tag{114}\]</div>
+<p>Now we replace the values of <span class="arithmatex">\(\mu_q\)</span> and <span class="arithmatex">\(\mu_\theta\)</span>, from the above equations 102 and 103. Then resolve the brackets by multiplying the terms with <span class="arithmatex">\(1/\sqrt{\alpha_t}\)</span> and shown in equation 113. So, we can cancel out the <span class="arithmatex">\(x_t/\sqrt{\alpha_t}\)</span> terms, leaving with us an equation with <span class="arithmatex">\(\epsilon_0\)</span> and <span class="arithmatex">\(\epsilon_\theta\)</span> terms as shown in 114.</p>
+<div class="arithmatex">\[= \underset{\theta}{argmin} \frac{1}{2\sigma_q^2(t)} \left[\left\|\frac{1-\alpha_t}{\sqrt{\alpha_t}\sqrt{1-\bar{\alpha}_t}}\left(\epsilon_0 - \widehat{\epsilon_\theta}(x_t, t)\right)\right\|_2^2\right] \tag{115}\]</div>
+<div class="arithmatex">\[= \underset{\theta}{argmin} \frac{1}{2\sigma_q^2(t)} \frac{(1-\alpha_t)^2}{\alpha_t(1-\bar{\alpha}_t)} \left[\left\|\left(\epsilon_0 - \widehat{\epsilon_\theta}(x_t, t)\right)\right\|_2^2\right] \tag{116}\]</div>
+<div class="arithmatex">\[= \underset{\theta}{argmin} \frac{1}{2\sigma_q^2(t)} \frac{\beta_t^2}{\alpha_t(1-\bar{\alpha}_t)} \left[\left\|\left(\epsilon_0 - \widehat{\epsilon_\theta}\left(\sqrt{\bar{\alpha}_t} \cdot x_0 + \sqrt{1-\bar{\alpha}_t} \cdot \epsilon_0, t\right)\right)\right\|_2^2\right] \tag{117}\]</div>
+<p>Notice that the coefficients of both <span class="arithmatex">\(\epsilon_0\)</span> and <span class="arithmatex">\(\epsilon_\theta\)</span> terms are the same, so we can factor it out as shown in equation 115. If we take this outside the norm, that means we have to square the coefficient terms ie. <span class="arithmatex">\((1-\alpha_t)\)</span> becomes <span class="arithmatex">\((1-\alpha_t)^2\)</span> and the square roots in the denominators <span class="arithmatex">\(\sqrt{\alpha_t}\)</span> and <span class="arithmatex">\(\sqrt{1-\bar{\alpha}_t}\)</span> go away as shown in equation 116. Finally from equation 7, we replace the numerator with <span class="arithmatex">\(\beta_t\)</span>. We replace the <span class="arithmatex">\(x_t\)</span> with the function of <span class="arithmatex">\(x_0\)</span> and <span class="arithmatex">\(\epsilon_0\)</span> from equation 20 showcasing the final form of the loss function as shown in equation 117.</p>
+<p><img alt="source: DDPM paper https://arxiv.org/abs/2006.11239" src="/images/posts/the-math-behind-diffusion-models-ddpm/source-ddpm-paper.png" />
+<em>source: DDPM paper <a href="https://arxiv.org/pdf/2006.11239">https://arxiv.org/abs/2006.11239</a></em></p>
+<p>Thus, we have derived the final form of the equation that is used in the training algorithm in the DDPM paper shown in the screenshot above. Here, <span class="arithmatex">\(\epsilon_\theta(x_t, t)\)</span> is a neural network that learns to predict the source noise <span class="arithmatex">\(\epsilon_0 \sim \mathcal{N}(\epsilon; 0, I)\)</span> that determines <span class="arithmatex">\(x_t\)</span> from of <span class="arithmatex">\(x_0\)</span>.</p>
+<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Link to this section">#</a></h2>
+<p>In this post we worked through the derivations of the sampling algorithm and the training algorithm as mentioned in the DDPM paper. For this we started with the definition of the forward and reverse diffusion and then worked through the ELBO method. If there is an part of the logic that is unclear or you think might not be correct, please reach out to me.</p>
+<h2 id="references-and-further-reading">References and Further Reading<a class="headerlink" href="#references-and-further-reading" title="Link to this section">#</a></h2>
+<ol>
+<li>Rogge, N. &amp; Rasool, K. <a href="https://huggingface.co/blog/annotated-diffusion">The Annotated Diffusion Model</a>. HuggingFace Blog.</li>
+<li>Adaloglou, N. <a href="https://theaisummer.com/diffusion-models/">How Diffusion Models Work: The Math From Scratch</a>. The AI Summer.</li>
+<li>Roy, S. <a href="https://roysubhradip.hashnode.dev/a-beginners-guide-to-diffusion-models-understanding-the-basics-and-beyond">A Beginner's Guide to Diffusion Models</a>. Hashnode.</li>
+<li>Song, Y. <a href="https://yang-song.net/blog/2021/score/">Generative Modeling by Estimating Gradients of the Data Distribution</a>. 2021.</li>
+<li>Stability AI. <a href="https://stability.ai/stable-image">Stable Image</a>.</li>
+<li>MIT CSAIL. <a href="https://diffusion.csail.mit.edu/">Flow Matching and Diffusion Models</a>. Course website.</li>
+<li>MIT. <a href="https://www.youtube.com/playlist?list=PL_1TbuIu65A_G908tHHvTnyQsueR17rMh">A Practical Introduction to Diffusion Models</a>. YouTube playlist.</li>
+<li>Fudan Generative Vision Lab. <a href="https://github.com/fudan-generative-vision/diffusion-genAI-course">Diffusion GenAI Course</a>. GitHub.</li>
+<li><a href="https://www.practical-diffusion.org/">A Practical Introduction to Diffusion</a>.</li>
+<li>Gallon et al. <a href="https://arxiv.org/pdf/2412.01371">An Overview of Diffusion Models for Generative Artificial Intelligence</a>. arXiv:2412.01371.</li>
+<li>Yang, C. <a href="https://chenyang.co/diffusion.html">Diffusion Models</a>.</li>
+<li>Deepia. <a href="https://www.youtube.com/watch?v=EhndHhIvWWw">Diffusion Models: DDPM</a>. YouTube.</li>
+<li>Chen et al. <a href="https://link.springer.com/article/10.1007/s10462-025-11110-3">Comprehensive Exploration of Diffusion Models in Image Generation: A Survey</a>. Springer, 2025.</li>
+<li>Mehraban, S. <a href="https://youtu.be/r4V0vLhYZIQ?si=BfIXc27koRCQrS51">Diffusion Models (DDPM &amp; DDIM) — Easily Explained!</a> YouTube.</li>
+<li>Turc, J. <a href="https://youtu.be/R0uMcXsfo2o?si=XASKvo1ENB3QogCl">The Physics Behind Diffusion Models</a>. YouTube.</li>
+<li>Deepia. <a href="https://youtu.be/lUljxdkolK8?si=M3yZB2C2QZyBvbHN">Score-based Diffusion Models</a>. YouTube.</li>
+<li>Aggarwal et al. <a href="https://www.sciencedirect.com/science/article/pii/S2667096820300045">Generative Adversarial Network: An Overview of Theory and Applications</a>. ScienceDirect.</li>
+<li><a href="https://www.datacamp.com/tutorial/variational-autoencoders">Variational Autoencoders: How They Work and Why They Matter</a>. DataCamp.</li>
+<li>Wikipedia. <a href="https://en.wikipedia.org/wiki/Brownian_motion#Narrow_escape">Brownian Motion</a>.</li>
+<li>Winkler, L. <a href="https://ludwigwinkler.github.io/blog/ReverseTimeAnderson/">Reverse Time Anderson</a>.</li>
+<li>Neal, R. M. <a href="https://arxiv.org/pdf/physics/9803008">Annealed Importance Sampling</a>. arXiv.</li>
+<li>Friedman, R. <a href="https://friedmanroy.github.io/blog/2022/Langevin/">MCMC and Langevin Dynamics</a>.</li>
+<li>Wikipedia. <a href="https://en.wikipedia.org/wiki/Markov_chain_Monte_Carlo">Markov Chain Monte Carlo</a>.</li>
+<li>Wikipedia. <a href="https://en.wikipedia.org/wiki/Metropolis-adjusted_Langevin_algorithm">Metropolis-adjusted Langevin Algorithm</a>.</li>
+<li>Gimenez, O. <a href="https://oliviergimenez.github.io/banana-book/crashcourse.html">Bayesian Statistics and MCMC</a>.</li>
+<li><a href="https://arxiv.org/abs/2406.08929">A Step by Step Tutorial on Diffusion</a>. arXiv:2406.08929.</li>
+<li>Das, A. <a href="https://ayandas.me/blogs/2021-12-04-diffusion-prob-models.html">Diffusion Probabilistic Models and their Connection to SDEs</a>.</li>
+<li>Guo et al. <a href="https://arxiv.org/html/2502.04669v1">A Comprehensive Review on Noise Control of Diffusion Models</a>. arXiv:2502.04669.</li>
+<li>Turner et al. <a href="https://arxiv.org/abs/2402.04384">Denoising Diffusion Probabilistic Models in Six Simple Steps</a>. arXiv:2402.04384.</li>
+<li>Kim, J. <a href="http://jiha-kim.github.io/posts/deriving-reverse-time-stochastic-differential-equations-sdes/">Deriving Reverse-Time Stochastic Differential Equations</a>.</li>
+<li>Ghojogh et al. <a href="https://arxiv.org/pdf/2101.00734">Factor Analysis, Probabilistic PCA, Variational Inference, and VAE: Tutorial and Survey</a>. arXiv:2101.00734.</li>
+<li>Jiang, Y. <a href="https://yunfanj.com/blog/2021/01/11/ELBO.html">ELBO — Evidence Lower Bound</a>.</li>
+<li>Luo, C. <a href="https://arxiv.org/pdf/2208.11970">Understanding Diffusion Models: A Unified Perspective</a>. arXiv:2208.11970.</li>
+<li>Stack Exchange. <a href="https://stats.stackexchange.com/questions/595852/how-is-the-variance-for-a-diffusion-kernel-derived-for-a-diffusion-model">How is the variance for a diffusion kernel derived?</a></li>
+<li>Stack Exchange. <a href="https://math.stackexchange.com/questions/3232411/expectation-of-sum-is-sum-of-expectation-is-this-claim-true-if-yes-how-to-j">Expectation of sum is sum of expectations</a>.</li>
+<li>Stack Exchange. <a href="https://math.stackexchange.com/questions/1808611/integral-of-conditional-probability-density-function">Integral of conditional probability density function</a>.</li>
+</ol>
+            </div>
+
+            <footer class="post-footer">
+                <a href="/blog/" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> All posts</a>
+            </footer>
+
+        </div>
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p class="footer-text">Copyright &copy; Joydeep Bhattacharjee 2026 &middot; Bengaluru, India</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/site.js"></script>
+    
+    <script>
+        const bar = document.getElementById('reading-progress');
+        window.addEventListener('scroll', () => {
+            const doc = document.documentElement;
+            const pct = doc.scrollTop / (doc.scrollHeight - doc.clientHeight);
+            bar.style.width = (pct * 100) + '%';
+        });
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+
+            document.querySelectorAll(".arithmatex").forEach(function(block) {
+                var katexDisplay = block.querySelector(".katex-display");
+                if (!katexDisplay) return;
+                var tag = katexDisplay.querySelector(".katex-html > .tag");
+                if (!tag) return;
+
+                var text = tag.textContent.trim();
+                tag.style.display = "none";
+
+                // auto-render wraps each math segment in its own <span>, so
+                // katex-display is never a direct child of block — rebuild
+                // block's children instead of assuming a fixed depth.
+                var wrapper = document.createElement("div");
+                wrapper.className = "eq-scroll-wrapper";
+                wrapper.appendChild(katexDisplay);
+
+                var label = document.createElement("span");
+                label.className = "eq-tag-label";
+                label.textContent = text;
+
+                block.replaceChildren(wrapper, label);
+                block.classList.add("eq-tagged");
+            });
+        });
+    </script>
+
+</body>
+</html>

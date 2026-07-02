@@ -1,5 +1,63 @@
 /* Blog-specific styles, built on tokens defined in site.css */
 
+/* YouTube embed card */
+.yt-card {
+    margin: 2em 0;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    max-width: 560px;
+}
+
+.yt-card__link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.15s;
+}
+
+.yt-card__link:hover { opacity: 0.85; }
+
+.yt-card__thumb-wrap {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    overflow: hidden;
+}
+
+.yt-card__thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.yt-card__play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 68px;
+    height: 48px;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,.6));
+    transition: transform 0.15s;
+}
+
+.yt-card__link:hover .yt-card__play {
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+.yt-card__footer {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--surface, #fff);
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .yt-card__footer { background: var(--surface); }
+
 /* Reading progress bar */
 #reading-progress {
     position: fixed;
@@ -202,6 +260,28 @@
 .post-body .arithmatex {
     overflow-x: auto;
     overflow-y: hidden;
+}
+
+/* Tagged equations: flex row so tag is always pinned right, outside the scroll area */
+.post-body .arithmatex.eq-tagged {
+    display: flex;
+    align-items: center;
+    overflow-x: visible;
+}
+
+.post-body .arithmatex.eq-tagged > .eq-scroll-wrapper {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+.post-body .arithmatex .eq-tag-label {
+    flex-shrink: 0;
+    padding-left: 1em;
+    font-size: 1rem;
+    color: var(--text-muted);
+    white-space: nowrap;
 }
 
 /* Algorithm pseudocode blocks */

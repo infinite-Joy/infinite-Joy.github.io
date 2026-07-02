@@ -37,7 +37,6 @@ MD_EXTENSIONS = [
     "footnotes",
     "attr_list",
     "md_in_html",
-    "smarty",
     "sane_lists",
 ]
 MD_EXTENSION_CONFIGS = {
@@ -88,7 +87,7 @@ def parse_post(path: Path) -> dict | None:
     md = markdown.Markdown(
         extensions=MD_EXTENSIONS, extension_configs=MD_EXTENSION_CONFIGS
     )
-    body_html = md.convert(body_md)
+    body_html = _embed_youtube_cards(md.convert(body_md))
 
     return {
         "title": front.get("title", slug.replace("-", " ").title()),
@@ -105,6 +104,48 @@ def parse_post(path: Path) -> dict | None:
         "canonical": f"{BASE_URL}/blog/{slug}/",
         "og_type": "article",
     }
+
+
+_YOUTUBE_URL_RE = re.compile(
+    r'https?://(?:(?:www\.)?youtube\.com/watch\?(?:[^&\s"<>]*&)*v=|youtu\.be/)'
+    r'([A-Za-z0-9_-]+)[^\s"<>]*'
+)
+# Matches a paragraph that contains only a bare or auto-linked YouTube URL.
+_YOUTUBE_PARA_RE = re.compile(
+    r'<p>\s*(?:<a[^>]*>)?\s*'
+    r'(https?://(?:(?:www\.)?youtube\.com/watch\?(?:[^&\s"<>]*&)*v=|youtu\.be/)'
+    r'[A-Za-z0-9_?=&.%_-]+)'
+    r'\s*(?:</a>)?\s*</p>',
+    re.IGNORECASE,
+)
+
+_YT_CARD_TMPL = """\
+<div class="yt-card">
+  <a href="{url}" target="_blank" rel="noopener noreferrer" class="yt-card__link" aria-label="Watch on YouTube">
+    <div class="yt-card__thumb-wrap">
+      <img class="yt-card__thumb" src="https://img.youtube.com/vi/{vid}/hqdefault.jpg" alt="Watch on YouTube" loading="lazy">
+      <div class="yt-card__play" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 68 48">
+          <path d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.64-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z" fill="#f00"/>
+          <path d="M 45,24 27,14 27,34" fill="#fff"/>
+        </svg>
+      </div>
+    </div>
+    <div class="yt-card__footer">Watch on YouTube</div>
+  </a>
+</div>"""
+
+
+def _embed_youtube_cards(html: str) -> str:
+    def _replace(m):
+        url = m.group(1)
+        vid_m = _YOUTUBE_URL_RE.match(url)
+        if not vid_m:
+            return m.group(0)
+        vid = vid_m.group(1)
+        return _YT_CARD_TMPL.format(url=url, vid=vid)
+
+    return _YOUTUBE_PARA_RE.sub(_replace, html)
 
 
 def generate_highlight_css():
@@ -125,7 +166,16 @@ def generate_highlight_css():
             lines.append(line)
         return "\n".join(lines)
 
-    css = scoped(dark_fmt, "") + "\n\n" + scoped(light_fmt, '[data-theme="light"]')
+    dark_css = scoped(dark_fmt, '[data-theme="dark"]')
+    light_css = scoped(light_fmt, '[data-theme="light"]')
+    # friendly theme omits `color` in its base rule; inject an explicit dark foreground.
+    light_css = re.sub(
+        r'(\[data-theme="light"\] \.codehilite \{)([^}]*)\}',
+        lambda m: m.group(1) + m.group(2) + ("color: #333333; " if "color:" not in m.group(2) else "") + "}",
+        light_css,
+        count=1,
+    )
+    css = dark_css + "\n\n" + light_css
     ASSETS_CSS.mkdir(parents=True, exist_ok=True)
     (ASSETS_CSS / "highlight.css").write_text(css, encoding="utf-8")
     print("  Generated assets/css/highlight.css")

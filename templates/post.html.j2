@@ -79,6 +79,30 @@
                 ],
                 throwOnError: false
             });
+
+            document.querySelectorAll(".arithmatex").forEach(function(block) {
+                var katexDisplay = block.querySelector(".katex-display");
+                if (!katexDisplay) return;
+                var tag = katexDisplay.querySelector(".katex-html > .tag");
+                if (!tag) return;
+
+                var text = tag.textContent.trim();
+                tag.style.display = "none";
+
+                // auto-render wraps each math segment in its own <span>, so
+                // katex-display is never a direct child of block — rebuild
+                // block's children instead of assuming a fixed depth.
+                var wrapper = document.createElement("div");
+                wrapper.className = "eq-scroll-wrapper";
+                wrapper.appendChild(katexDisplay);
+
+                var label = document.createElement("span");
+                label.className = "eq-tag-label";
+                label.textContent = text;
+
+                block.replaceChildren(wrapper, label);
+                block.classList.add("eq-tagged");
+            });
         });
     </script>
 {% endblock %}
