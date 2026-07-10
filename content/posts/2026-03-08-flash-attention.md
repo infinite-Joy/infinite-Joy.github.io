@@ -86,6 +86,8 @@ What if your matrices A and B are too big to fit into the shared memory. You can
 ![fig 9: performance comparison](/images/posts/flash-attention/fig8-tiling-performance.png)
 *fig 9: performance comparison*
 
+**Code 1**
+
 ```
 ======================================================================
 DETAILED COMPARISON: NAIVE vs TILED
@@ -148,6 +150,8 @@ Based on the formula in equation 1, the attention is implemented as shown in equ
 
 In the above equations, equation 2 and 3 can be fused and equation 5 and 6 can be fused. But the softmax is different. There is a fundamental incompatibility between the global nature of the softmax function and the tiling strategy to fit large attention matrix into the fast GPU SRAM memory. Notice from the softmax equation 7, you need to know the global sum of all the values in the row to ensure the proper normalization. But in the tiling strategy discussed above, you only have access to a small block (tile) of a row, you cannot know the global statistics for the entire row until you have seen all the tiles. This is a crucial problem that flash attention solves.
 
+**Code 2**
+
 ```python
 import numpy as np
 
@@ -163,9 +167,9 @@ print(f"\nResult: {result}")
 Output: Result: [nan nan nan]
 ```
 
-*Code 1: naive softmax in NumPy — large values overflow to NaN*
+*Code 2: naive softmax in NumPy — large values overflow to NaN*
 
-If we try to make some modifications in the softmax calculation in equation 7, we need to keep in mind another issue with the formula. The equation puts a strain on the maximum range our floating point values can hold. The [maximum value for float16 representation is 65504](https://en.wikipedia.org/wiki/Half-precision_floating-point_format#Exponent_encoding), so if the value of x is greater than 11, there will be an overflow and our calculations will be wrong and we will get nans. This is shown in the code above (Code 1) and you can try the full example in the [colab code here](https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=s-fcjG0Ktaiv).
+If we try to make some modifications in the softmax calculation in equation 7, we need to keep in mind another issue with the formula. The equation puts a strain on the maximum range our floating point values can hold. The [maximum value for float16 representation is 65504](https://en.wikipedia.org/wiki/Half-precision_floating-point_format#Exponent_encoding), so if the value of x is greater than 11, there will be an overflow and our calculations will be wrong and we will get nans. This is shown in Code 2 above and you can try the full example in the [colab code here](https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=s-fcjG0Ktaiv).
 
 \[
 \text{softmax}(x_i) = \frac{e^{x_i}}{\sum_{j=1}^{N} e^{x_j}} \tag{7}
@@ -183,7 +187,9 @@ To get around this fact, we generally find the maximum value of our tensor and s
 
 ### Safe Softmax Algorithm
 
-If we implement the above changes, we get the below implementation (Code 2).
+If we implement the above changes, we get the below implementation (Code 3).
+
+**Code 3**
 
 ```python
 import numpy as np
@@ -214,9 +220,9 @@ def safe_softmax_3pass(x):
     return a
 ```
 
-*Code 2: safe 3-pass softmax — subtract the row maximum for stability*
+*Code 3: safe 3-pass softmax — subtract the row maximum for stability*
 
-In the above algorithm, we go over the values and find the maximum value, then we go over the values again to compute the sum of the discounted exponentials and then finally we compute the softmax values. You can check the correctness of this algorithm programmatically as well in this [colab link](https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=s-fcjG0Ktaiv).
+In Code 3, we go over the values and find the maximum value, then we go over the values again to compute the sum of the discounted exponentials and then finally we compute the softmax values. You can check the correctness of this algorithm programmatically as well in this [colab link](https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=s-fcjG0Ktaiv).
 
 Thus there are 3 iterations to computing the softmax values. This creates repeated access of the HBM memory, which is a massive problem as we have discussed before. We want to reduce this repeated back and forth from the HBM memory. In the flash attention paper, the authors worked out a method to reduce this algorithm to a single pass algorithm and fused it with the other operations in attention.
 
@@ -257,7 +263,9 @@ In the safe softmax equation 8, if the denominator sequence is given by \(\ell_i
 \ell'_i = \ell'_{i-1}\, e^{m_{i-1} - m_i} + e^{x_i - m_i} \tag{15}
 \]
 
-In the above derivation, in equation 12, we take eq10 and take out the final element. Eq13 and 14 are simple algebraic manipulation, make sure you understand it. Finally in equation 15 we arrive at a recurrence relation between \(\ell'_i\) and \(\ell'_{i-1}\). This rescaling adjusts the previously accumulated denominator whenever the maximum changes, ensuring that \(\ell'_i\) always represents \(\sum_{j=1}^{i} \exp(x_j - m_i)\). Notice that the dependency is only on current max \(m_i\) and previous max \(m_{i-1}\). This enables us to compute \(m_j\) and \(\ell'_j\) which are the full sequence within the same for loop. This means that now we can fuse pass1 and pass2 shown in the 3-pass solution into a single loop as shown below (Code 3).
+In the above derivation, in equation 12, we take eq10 and take out the final element. Eq13 and 14 are simple algebraic manipulation, make sure you understand it. Finally in equation 15 we arrive at a recurrence relation between \(\ell'_i\) and \(\ell'_{i-1}\). This rescaling adjusts the previously accumulated denominator whenever the maximum changes, ensuring that \(\ell'_i\) always represents \(\sum_{j=1}^{i} \exp(x_j - m_i)\). Notice that the dependency is only on current max \(m_i\) and previous max \(m_{i-1}\). This enables us to compute \(m_j\) and \(\ell'_j\) which are the full sequence within the same for loop. This means that now we can fuse pass1 and pass2 shown in the 3-pass solution into a single loop as shown below (Code 4).
+
+**Code 4**
 
 ```python
 def softmax_2pass(x):
@@ -290,9 +298,9 @@ def softmax_2pass(x):
     return a
 ```
 
-*Code 3: fused two-pass online softmax — running max and denominator in one loop*
+*Code 4: fused two-pass online softmax — running max and denominator in one loop*
 
-Go through the algorithm shown above. Notice that the current max \(m_i\) and \(\ell _i\) are computed within a single for loop. The `l_prime` value is in accordance with the relation derived in eq15. The correctness comparison between the two algorithms is shown in this [colab link](https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=8zrI0zmqnkx7). However, we still need to compute the softmax in 2 passes. So the obvious question is can we now reduce to a single pass to minimise global I/O?
+Go through Code 4, the algorithm shown above. Notice that the current max \(m_i\) and \(\ell _i\) are computed within a single for loop. The `l_prime` value is in accordance with the relation derived in eq15. The correctness comparison between the two algorithms is shown in this [colab link](https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=8zrI0zmqnkx7). However, we still need to compute the softmax in 2 passes. So the obvious question is can we now reduce to a single pass to minimise global I/O?
 
 ## Flash Attention
 
@@ -510,6 +518,8 @@ In step 12, we compute the local statistics, \(\tilde{m}_{ij}\) which is the max
 
 In step 14, we apply the **dropout** to the unnormalized attention weights. Notice that we are applying dropout on the unnormalised weights and not on the normalized attention which is still being computed. We’ll normalize them later when we have the final \(\ell _i\). This is fine because applying dropout before final normalization is mathematically equivalent and more efficient.
 
+**Code 5**
+
 ```pseudocode
 14:    On chip, compute P_ij = dropout(P_ij, p_drop)
 15:    Write O_i ← diag(ℓ_i^new)^{-1}(diag(ℓ_i)e^{m_i - m_i^new} O_i + e^{m̃_ij - m_i^new} P̃_ij^dropped V_j) to HBM.
@@ -520,6 +530,8 @@ In step 14, we apply the **dropout** to the unnormalized attention weights. Noti
 Step 15 is the crux of the whole algorithm and the raison d’être. Here we are computing \(O_i\) based on the equation 25 which was derived earlier and writing it to HBM. Finally in step 16 we update \(\ell _i\) and \(m_i\).
 
 ### Code
+
+**Code 6**
 
 ```python
 @triton.jit
@@ -590,13 +602,15 @@ def _flash_fwd_inner(
     return acc, l_i, m_i
 ```
 
-*Code 4: `_flash_fwd_inner` — the online-softmax inner loop*
+*Code 6: `_flash_fwd_inner` — the online-softmax inner loop*
 
-Based on the triton lang implementation for flash attention and to make it compatible to run on the free tier for google colab, we can write the flash attention implementation for Tesla T4 (Turing, sm_75, 48 KB shared memory) as shown in Code 4 and Code 5. You can go run the code in [this colab link](https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=TLeUTdMy9Czs&line=9&uniqifier=1).
+Based on the triton lang implementation for flash attention and to make it compatible to run on the free tier for google colab, we can write the flash attention implementation for Tesla T4 (Turing, sm_75, 48 KB shared memory) as shown in Code 6 and Code 7. You can go run the code in [this colab link](https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=TLeUTdMy9Czs&line=9&uniqifier=1).
 
-In the code above (Code 4), we have the function `_flash_fwd_inner` which runs inside `_flash_fwd_kernel` (Code 5) and implements lines 10–13 of Algorithm 2 for one column-block at a time. The `STAGE` constexpr selects loop bounds at compile time — `STAGE=1` visits all column blocks (non-causal), `STAGE=2` visits only the diagonal block where the triangular mask is actually needed. This avoids applying the expensive `tl.where` mask on every block when only one block needs it.
+In Code 6 above, we have the function `_flash_fwd_inner` which runs inside `_flash_fwd_kernel` (Code 7) and implements lines 10–13 of Algorithm 2 for one column-block at a time. The `STAGE` constexpr selects loop bounds at compile time — `STAGE=1` visits all column blocks (non-causal), `STAGE=2` visits only the diagonal block where the triangular mask is actually needed. This avoids applying the expensive `tl.where` mask on every block when only one block needs it.
 
 In each iteration we load \(K_j\). This computes `qk = Q_i @ K_j^T`, then applies the exp2 trick from the tutorial. Since `qk_scale = sm_scale / ln(2)` was pre-folded in the outer kernel, `tl.math.exp2(qk * qk_scale)` is numerically identical to `exp(qk * sm_scale)` but maps to a single cheaper hardware instruction. The online softmax update from Algorithm 2 line 13 then follows directly where`alpha = exp2(m_i - m_ij)` rescales the old accumulator before adding the new block's contribution. V is loaded after P is computed rather than before to let the compiler reuse registers. The function returns updated `acc, l_i, m_i`thus avoiding HBM writes inside this inner 3function.
+
+**Code 7**
 
 ```python
 @triton.jit
@@ -660,9 +674,11 @@ def _flash_fwd_kernel(
     )
 ```
 
-*Code 5: `_flash_fwd_kernel` — the forward-pass kernel*
+*Code 7: `_flash_fwd_kernel` — the forward-pass kernel*
 
 The `_flash_fwd_kernel` is the main kernel call. Here we take the four individual strides of the original `[B, H, N, d]` tensor. Then pointer arithmetic is used to reach this program instance’s (batch, head) slice:
+
+**Code 8**
 
 ```python
 adj    = (off_hz // H) * stride_z + (off_hz % H) * stride_h
@@ -1203,6 +1219,8 @@ Now lets go through the code for the backward process
 
 **Attention backward preprocessing part**
 
+**Code 9**
+
 ```python
 @triton.jit
 def _attn_bwd_preprocess(
@@ -1225,11 +1243,13 @@ def _attn_bwd_preprocess(
     tl.store(Delta_ptr + off_hz * N_CTX + off_m, delta)
 ```
 
-*Code 6: `_attn_bwd_preprocess` — precompute the D vector*
+*Code 9: `_attn_bwd_preprocess` — precompute the D vector*
 
-The preprocessing kernel above (Code 6) computes the `D` buffer. During the backward pass calculation, the calculation of dS is dependent on `D_i = rowsum(O_i ⊙ dO_i)` for every query row i (check eq 98, 83 and algo 4 step 19, 20). Since the dependency is only on O and dO and not on K and V, we can compute it once upfront and store it in the HBM as a reusable `[B·H, N]` buffer. The alternative would be to recompute it inside every iteration of the hot dK/dV inner loop, wasting compute and register pressure.
+The preprocessing kernel in Code 9 above computes the `D` buffer. During the backward pass calculation, the calculation of dS is dependent on `D_i = rowsum(O_i ⊙ dO_i)` for every query row i (check eq 98, 83 and algo 4 step 19, 20). Since the dependency is only on O and dO and not on K and V, we can compute it once upfront and store it in the HBM as a reusable `[B·H, N]` buffer. The alternative would be to recompute it inside every iteration of the hot dK/dV inner loop, wasting compute and register pressure.
 
 In the forward pass, the loop structure is straightforward: for each Q row-block `i`, stream over all K/V column-blocks `j`. Each program instance owns one `i` and accumulates its output `O_i` completely before writing to HBM. But things are different in the backward pass. There is a difference in the dependency structure.
+
+**Code 10**
 
 ```
 dV_j  = Σ_i  P_ij^T dO_i          — sums over ALL query rows i, for fixed j
@@ -1240,6 +1260,8 @@ dQ_i  = Σ_j  τ · dS_ij K_j        — sums over ALL key cols  j, for fixed i
 We can try to write all the operations on a single go essentially opting for a fused kernel. In that case we are writing for each (i, j) block computing all three gradients simultaneously. We would be writing partial dK/dV buffers and reducing afterwards. Thus the overall memory that would be required would blow up. As a solution two separate kernels are written, `_attn_bwd_dkdv` and `_attn_bwd_dq`. One would do dV, dK together and another would work on dQ.
 
 **Attention backward function for dk dv**
+
+**Code 11**
 
 ```python
 @triton.jit
@@ -1300,9 +1322,11 @@ def _attn_bwd_dkdv(
     return dk, dv
 ```
 
-*Code 7: `_attn_bwd_dkdv` — accumulate dK and dV for a fixed K/V block*
+*Code 11: `_attn_bwd_dkdv` — accumulate dK and dV for a fixed K/V block*
 
-In the above function (Code 7), for a fixed K/V column block j, we stream over all Q row-blocks and accumulates `dK_j` and `dV_j` . We are implementing the steps 15, 16, 17, 18, 20 and 22 from the backward pass algorithm 4 that was discussed earlier.
+In Code 11 above, for a fixed K/V column block j, we stream over all Q row-blocks and accumulates `dK_j` and `dV_j` . We are implementing the steps 15, 16, 17, 18, 20 and 22 from the backward pass algorithm 4 that was discussed earlier.
+
+**Code 12**
 
 ```python
 qkT = tl.dot(k, qT)               # [BLOCK_N1, BLOCK_M1]pT  = tl.math.exp2(qkT - m[None, :])
@@ -1310,11 +1334,15 @@ qkT = tl.dot(k, qT)               # [BLOCK_N1, BLOCK_M1]pT  = tl.math.exp2(qkT -
 
 Notice that here \(P_{ij}\) is never stored — we recompute it on on the fly from the saved log-sum-exp `M` . Because `qT_ptrs` has shape `[HEAD_DIM, BLOCK_M1]` in index space — dimensions are swapped relative to the usual `[BLOCK_M1, HEAD_DIM]` layout. Loading from this pointer pattern gives `qT = [HEAD_DIM, BLOCK_M1]` directly, so `tl.dot(k, qT)` computes `K_j Q_i^T` as `[BLOCK_N1, HEAD_DIM] × [HEAD_DIM, BLOCK_M1] = [BLOCK_N1, BLOCK_M1]` without needing an explicit `tl.trans` call. Thus we are able to directly arrive at `pT`.
 
+**Code 13**
+
 ```python
 if MASK:    mask = (offs_m[None, :] >= offs_n[:, None])    pT   = tl.where(mask, pT, 0.0)
 ```
 
 Because `pT` is transposed — rows are key-block positions `j`, columns are query-block positions `i` — we have to specify the causal condition as`i >= j` (query token can attend to key token only if key comes before or at query position). Zeroing masked positions in `pT` before accumulating into `dV` and `dK` ensures those positions contribute nothing to the gradients. This is consistent with how the causal mask was applied in the forward pass.
+
+**Code 14**
 
 ```python
 Di   = tl.load(D_ptr + offs_m)                 # [BLOCK_M1] delta
@@ -1326,6 +1354,8 @@ dk  += tl.dot(dsT.to(tl.float16), tl.trans(qT))
 For the dk calculation, we load `Di` is the delta vector `[BLOCK_M1]` precomputed by `_attn_bwd_preprocess`. We compute `dpT` and `dsT` as per steps 18 and 20. Then we calculate the current `dk_j` and accumulate into `dk`.
 
 **Attention backward function for dq**
+
+**Code 15**
 
 ```python
 @triton.jit
@@ -1379,15 +1409,17 @@ def _attn_bwd_dq(
     return dq
 ```
 
-*Code 8: `_attn_bwd_dq` — accumulate dQ for a fixed query block*
+*Code 15: `_attn_bwd_dq` — accumulate dQ for a fixed query block*
 
-The above function `_attn_bwd_dq` (Code 8) is the mirror image of `_attn_bwd_dkdv`. Before we fixed j and streamed over query rows, now we are fixing i and streaming over the K/V column blocks. In this function, we are implementing step 21 from the algorithm `dQ_i += τ · dS_ij K_j`.
+The function `_attn_bwd_dq` in Code 15 above is the mirror image of `_attn_bwd_dkdv`. Before we fixed j and streamed over query rows, now we are fixing i and streaming over the K/V column blocks. In this function, we are implementing step 21 from the algorithm `dQ_i += τ · dS_ij K_j`.
 
 Another difference is in the calculation of `Di`. In that function, `_attn_bwd_dkdv` ,`Di` was loaded inside the loop because `offs_m` changed each iteration as the function stepped through different Q row-blocks. Here `offs_m` is fixed for the entire function call — this is the row-block we own — so `Di` is loaded once before the loop and reused across all `num_steps` iterations. Thus we are saving`num_steps` HBM loads compared to `_attn_bwd_dkdv`.
 
 Also for the masking, we need to have query row index >= key column index. Thus the condition `offs_m[:, None] >= offs_n[None, :]`is the standard causal mask in the natural (non-transposed) orientation. The other calculations, such as the recomputation of \(P_ij\), the delta subtraction, the mask application, are mostly identical to `_attn_bwd_dkdv`.
 
 **The outer function for attention backward**
+
+**Code 16**
 
 ```python
 @triton.jit
@@ -1505,9 +1537,11 @@ def _attn_bwd(
     tl.store(dq_ptrs, dq)
 ```
 
-*Code 9: `_attn_bwd` — the outer backward kernel that orchestrates the others*
+*Code 16: `_attn_bwd` — the outer backward kernel that orchestrates the others*
 
-Finally we have the outer function `_attn_bwd` (Code 9) which is the only kernel that PyTorch's autograd actually launches. It orchestrates the entire backward pass by calling `_attn_bwd_preprocess`, `_attn_bwd_dkdv` and `_attn_bwd_dq` internally.
+Finally we have the outer function `_attn_bwd` (Code 16) which is the only kernel that PyTorch's autograd actually launches. It orchestrates the entire backward pass by calling `_attn_bwd_preprocess`, `_attn_bwd_dkdv` and `_attn_bwd_dq` internally.
+
+**Code 17**
 
 ```python
 bhid    = tl.program_id(2)
@@ -1521,6 +1555,8 @@ M_ptr  += off_chz;  D_ptr  += off_chz
 
 Here in axis 2, we index the flattened (batch, head) pair and index 0 is to identify which K/V column-block this instance owns. So the total number of program instances is `(N/BLOCK_N1) × B×H`, meaning every K/V column-block for every (batch, head) pair runs in parallel. Because dK and dV are indexed by `j`, the choice is to index by `j` (K/V column block) rather than `i` (Q row block). This gives each instance exclusive ownership of one `j` avoids any write conflicts when accumulating those gradients. K and V for a particular column block are loaded once and stay in SRAM for the entire dK/dV section. We initialise`dk` and `dv` to zero and accumulate contributions from every Q row-block. Thus we have one `[BLOCK_N1, HEAD_DIM]` tile each for K and V, resident throughout, rather than reloading them for each Q row-block.
 
+**Code 18**
+
 ```python
 start_n = pid * BLOCK_N1
 offs_n  = start_n + tl.arange(0, BLOCK_N1)
@@ -1533,6 +1569,8 @@ dk = tl.zeros([BLOCK_N1, HEAD_DIM], dtype=tl.float32)
 **dk, dv calculations**
 
 In the next section is the dk, dv calculations. K and V for a particular column block are loaded once and stay in SRAM for the entire dK/dV section. `dk` and `dv` are initialised to zero here and will accumulate contributions from every Q row-block.
+
+**Code 19**
 
 ```python
 MASK_BLOCK_M1: tl.constexpr = BLOCK_M1 // BLK_SLICE_FACTOR   # = 32 // 2 = 16
@@ -1549,6 +1587,8 @@ else:
 
 In the causal attention case, column block `j` (at position `start_n`) can only receive gradient contributions from query rows `i >= j`. The diagonal block — where query row and key column indices overlap — needs a per-element triangular mask. That is why we call `_attn_bwd_dkdv` first with `MASK=True` for just this diagonal region, using the finer tile size `MASK_BLOCK_M1 = BLOCK_M1 // BLK_SLICE_FACTOR`. The finer tile is needed because within the diagonal block only half the elements on average are unmasked. The idea is using a smaller `BLOCK_M1` reduces wasted computation on masked positions. After the masked call processes `num_steps * MASK_BLOCK_M1` rows, `start_m` is advanced to the first fully unmasked row-block. From that point every entry in our column block is valid, so the unmasked call runs at full efficiency with the larger `BLOCK_M1` tile. After the masked call, `start_m` is advanced past the diagonal so the unmasked call begins immediately below it.
 
+**Code 20**
+
 ```
 num_steps = (N_CTX - start_m) // BLOCK_M1
 dk, dv = _attn_bwd_dkdv(
@@ -1561,6 +1601,8 @@ In non causal attention, we dont need to think so much. All Q row-blocks strictl
 **The curious case of start_m**
 
 I want to cover the logic surrounding `start_m` in slightly more detail as that part is not obvious. Let us use a concrete example. Say `N=8`, `BLOCK_N1=4`, `BLOCK_M1=4`, `MASK_BLOCK_M1=2`, `BLK_SLICE_FACTOR=2`. This program instance owns column block `j=1`, so `start_n = 1 * 4 = 4` meaning it handles key tokens 4,5,6,7. Consider the full \(8\times 8\) attention matrix where rows are query tokens (i) and columns are key tokens (j). Causal masking means token i can only attend to token j if `j <= i`:
+
+**Code 21**
 
 ```
 key cols:    0 1 2 3 | 4 5 6 7
@@ -1578,6 +1620,8 @@ query row 7: ✓ ✓ ✓ ✓ | ✓ ✓ ✓ ✓
 
 Notice that there are some blocks where rows are fully masked, some blocks where rows are partially masked and some blocks where rows are fully unmasked. Our column block covers key tokens 4–7 (the right half). The `✓` marks in our column block's region are:
 
+**Code 22**
+
 ```
 query row 4: ✓ . . .    ← partial row, needs mask
 query row 5: ✓ ✓ . .    ← partial row, needs mask
@@ -1589,6 +1633,8 @@ Rows 0–3 have zero entries in our column block. They contribute nothing to dK 
 
 Now let's consider a case with both masked and unmasked rows. Consider `N=16`, `BLOCK_N1=4`, `BLOCK_M1=4`, `MASK_BLOCK_M1=2`. Program instance owns column block `j=1`, key tokens 4–7.
 
+**Code 23**
+
 ```
 key cols:    0-3 | 4-7 | 8-11 | 12-15
              ----|-----|------|------
@@ -1599,6 +1645,8 @@ query rows12-15: |  ✓  |      |         ← fully unmasked
 ```
 
 `▲` = partial (diagonal block), `✓` = full (all entries valid).
+
+**Code 24**
 
 ```
 if CAUSAL:
@@ -1617,6 +1665,8 @@ Here all rows above the diagonal are zero and can be skipped. So, `start_m` star
 
 **Writing dV and dK**
 
+**Code 25**
+
 ```python
 dv_ptrs = DV_ptr + offs_n[:, None] * stride_tok + offs_k[None, :] * stride_d
 tl.store(dv_ptrs, dv)
@@ -1629,6 +1679,8 @@ Once we have `dv` we can write it directly. But for`dk` there is a `τ` factor f
 
 **dq section**
 
+**Code 26**
+
 ```python
 start_m = pid * BLOCK_M2
 start_n = 0
@@ -1640,6 +1692,8 @@ m  = tl.load(M_ptr  + offs_m)[:, None]
 ```
 
 After the `dK/dV` work is done, the same program instance can reuse its execution slot to also compute `dq` for query row-block `i = pid`. The grid is sized so that `N/BLOCK_N1 == N/BLOCK_M2` , meaning pid maps equally to both a K/V column block and a Q row-block. We load `Q`, `dO`, and the log-sum-exp slice `M` are loaded fresh. We reshape `m.shape=[BLOCK_M2, 1]` for broadcasting across the `BLOCK_N2` column dimension in `_attn_bwd_dq`.
+
+**Code 27**
 
 ```python
 MASK_BLOCK_N2: tl.constexpr = BLOCK_N2 // BLK_SLICE_FACTOR   # = 32 // 2 = 16
@@ -1658,6 +1712,8 @@ else:
 
 In causal attention, query row `i` can only attend to key columns `j <= i`. Hence we process the diagonal block first with `MASK=True` and the finer tile `MASK_BLOCK_N2`. After the masked call, `end_n` is set to the start of the masked region, and `start_n` is set to cover the remaining unmasked columns `j < diagonal`. This backward scanning direction where we start from the diagonal and move left is arbitrary. We keep the loop structure similar to the dK/dV layout for code reuse and understanding rather than any numerical necessity.
 
+**Code 28**
+
 ```
 dq = _attn_bwd_dq(    ..., start_m, start_n, num_steps, MASK=False,)
 ```
@@ -1668,11 +1724,15 @@ For all key columns strictly to the left of the diagonal, masking is not require
 
 In algorithm 2, for the forward pass, we needed to store two separate vectors per row. The first one was \(\ell _i\), which was the running sum of exponentials and \(m_i\) , which was the running maximum. In the epilogue we had seen that we combine them together into a single vector replacing \(\ell _i\) and \(m_i\). and thus have a single write to HBM. If this statement seems weird, remember that reads and writes to HBM are done in chunks, hence writing once is better than writing twice even though its the same number of values underneath.
 
+**Code 29**
+
 ```python
 m_i += tl.math.log2(l_i)    # single vector replaces both ℓ and m
 ```
 
 Notice that the forward pass uses `tl.math.exp2` instead of `tl.exp` because on NVIDIA hardware `exp2` maps to a single native instruction (`EX2.APPROX`) while `exp` is emulated as `exp2(x / ln2)` in software, requiring an extra multiply. To use `exp2` while computing what is mathematically `exp(x)`, you pre-fold the conversion factor. Take a look at [this issue here](https://github.com/triton-lang/triton/issues/2893).
+
+**Code 30**
 
 ```
 RCP_LN2 = 1.4426950408889634
@@ -1681,6 +1741,8 @@ exp(x) = exp2(x / ln(2)) = exp2(x * RCP_LN2)
 
 In our code, we have K carrying the `sm_scale * RCP_LN2` factor, i.e K is premultiplied with this factor when loaded into the backward kernel. This is done so that `tl.dot(k, qT)` inside `_attn_bwd_dkdv` produces `(τ · K_j Q_i^T) * RCP_LN2 = (τ · K_j Q_i^T) / ln(2)`, and then `exp2` of that gives `exp(τ · K_j Q_i^T)` which is the exactly the correct softmax numerator.
 
+**Code 31**
+
 ```
 dQ_i += dS_ij · (K_j * sm_scale * RCP_LN2)
      = (sm_scale * RCP_LN2) · dS_ij · K_j
@@ -1688,11 +1750,15 @@ dQ_i += dS_ij · (K_j * sm_scale * RCP_LN2)
 
 But the true gradient requires:
 
+**Code 32**
+
 ```
 dQ_i += sm_scale · dS_ij · K_j
 ```
 
 This you can say creates a debt in dQ which needs to be paid back. Pre-scaling K by `sm_scale * RCP_LN2` means every `tl.dot(ds, kT)` inside `_attn_bwd_dq` accumulates in `dq` by an `RCP_LN2` factor relative to the correct value. This is rectified by performing a correction at the end.
+
+**Code 33**
 
 ```python
 dq *= LN2   # LN2 = ln(2) = 1 / RCP_LN2

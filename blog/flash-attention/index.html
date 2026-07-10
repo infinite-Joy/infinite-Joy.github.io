@@ -194,6 +194,7 @@ Attention(Q, K, V) = softmax\left(\frac{QK^T}{\sqrt{d_k}}\right)V \tag{1}
 <p>What if your matrices A and B are too big to fit into the shared memory. You can divide the matrix into blocks of size block size x block size (BSxBS) that can be fit into memory and then proceed with the computation. For our understanding and to keep the math simple let the dimensions for all A, B and C matrices be NxN. Notice that during the computation of matrix C, the result is just a partial sum; so, for the final result all the dot products need to be accumulated into a final sum. Notice that to compute each block in output C you needed to <strong>K = N/BS iterations</strong>. <strong>Total iterations for entire C matrix</strong>: <span class="arithmatex">\(K\times K\)</span> blocks <span class="arithmatex">\(\times\)</span> K iterations per block = <strong><span class="arithmatex">\(K^3\)</span> iterations</strong>. During each tile computation there are <strong>2BSxBS memory operations</strong>. This gives us a total of <strong><span class="arithmatex">\(2K^3\times BS^2\)</span> = <span class="arithmatex">\(2N^3/BS\)</span> memory operations</strong>. Without tiling, we would need approximately <span class="arithmatex">\(2N^3\)</span> memory operations with each element loaded multiple times from slow global memory. With tiling, we achieve a <strong><span class="arithmatex">\(BS\times\)</span> reduction in memory bandwidth</strong> by loading each tile once into fast shared memory and reusing it across multiple computations. This is why tiling is fundamental to efficient GPU matrix multiplication.</p>
 <p><img alt="fig 9: performance comparison" src="/images/posts/flash-attention/fig8-tiling-performance.png" />
 <em>fig 9: performance comparison</em></p>
+<p><strong>Code 1</strong></p>
 <div class="codehilite"><pre><span></span><code>======================================================================
 DETAILED COMPARISON: NAIVE vs TILED
 ======================================================================
@@ -241,6 +242,7 @@ O = P^{\text{dropped}} V \in \mathbb{R}^{N \times d} \tag{6}
 \text{softmax}(x_i) = \frac{e^{x_i}}{\sum_{j=1}^{N} e^{x_j}} \tag{7}
 \]</div>
 <p>In the above equations, equation 2 and 3 can be fused and equation 5 and 6 can be fused. But the softmax is different. There is a fundamental incompatibility between the global nature of the softmax function and the tiling strategy to fit large attention matrix into the fast GPU SRAM memory. Notice from the softmax equation 7, you need to know the global sum of all the values in the row to ensure the proper normalization. But in the tiling strategy discussed above, you only have access to a small block (tile) of a row, you cannot know the global statistics for the entire row until you have seen all the tiles. This is a crucial problem that flash attention solves.</p>
+<p><strong>Code 2</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">naive_softmax</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -255,8 +257,8 @@ O = P^{\text{dropped}} V \in \mathbb{R}^{N \times d} \tag{6}
 <span class="n">Output</span><span class="p">:</span> <span class="n">Result</span><span class="p">:</span> <span class="p">[</span><span class="n">nan</span> <span class="n">nan</span> <span class="n">nan</span><span class="p">]</span>
 </code></pre></div>
 
-<p><em>Code 1: naive softmax in NumPy — large values overflow to NaN</em></p>
-<p>If we try to make some modifications in the softmax calculation in equation 7, we need to keep in mind another issue with the formula. The equation puts a strain on the maximum range our floating point values can hold. The <a href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format#Exponent_encoding">maximum value for float16 representation is 65504</a>, so if the value of x is greater than 11, there will be an overflow and our calculations will be wrong and we will get nans. This is shown in the code above (Code 1) and you can try the full example in the <a href="https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=s-fcjG0Ktaiv">colab code here</a>.</p>
+<p><em>Code 2: naive softmax in NumPy — large values overflow to NaN</em></p>
+<p>If we try to make some modifications in the softmax calculation in equation 7, we need to keep in mind another issue with the formula. The equation puts a strain on the maximum range our floating point values can hold. The <a href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format#Exponent_encoding">maximum value for float16 representation is 65504</a>, so if the value of x is greater than 11, there will be an overflow and our calculations will be wrong and we will get nans. This is shown in Code 2 above and you can try the full example in the <a href="https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=s-fcjG0Ktaiv">colab code here</a>.</p>
 <div class="arithmatex">\[
 \text{softmax}(x_i) = \frac{e^{x_i}}{\sum_{j=1}^{N} e^{x_j}} \tag{7}
 \]</div>
@@ -268,7 +270,8 @@ O = P^{\text{dropped}} V \in \mathbb{R}^{N \times d} \tag{6}
 \]</div>
 <p>To get around this fact, we generally find the maximum value of our tensor and subtract this from the exponent. This makes sure that the sum in the denominator is never greater than the floating point can hold. Doing this is equivalent to the softmax equation 7 as shown in the derivation above. It's just a multiplication of 1/e^m on both the numerator and the denominator.</p>
 <h3 id="safe-softmax-algorithm">Safe Softmax Algorithm<a class="headerlink" href="#safe-softmax-algorithm" title="Link to this section">#</a></h3>
-<p>If we implement the above changes, we get the below implementation (Code 2).</p>
+<p>If we implement the above changes, we get the below implementation (Code 3).</p>
+<p><strong>Code 3</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">safe_softmax_3pass</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -297,8 +300,8 @@ O = P^{\text{dropped}} V \in \mathbb{R}^{N \times d} \tag{6}
     <span class="k">return</span> <span class="n">a</span>
 </code></pre></div>
 
-<p><em>Code 2: safe 3-pass softmax — subtract the row maximum for stability</em></p>
-<p>In the above algorithm, we go over the values and find the maximum value, then we go over the values again to compute the sum of the discounted exponentials and then finally we compute the softmax values. You can check the correctness of this algorithm programmatically as well in this <a href="https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=s-fcjG0Ktaiv">colab link</a>.</p>
+<p><em>Code 3: safe 3-pass softmax — subtract the row maximum for stability</em></p>
+<p>In Code 3, we go over the values and find the maximum value, then we go over the values again to compute the sum of the discounted exponentials and then finally we compute the softmax values. You can check the correctness of this algorithm programmatically as well in this <a href="https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=s-fcjG0Ktaiv">colab link</a>.</p>
 <p>Thus there are 3 iterations to computing the softmax values. This creates repeated access of the HBM memory, which is a massive problem as we have discussed before. We want to reduce this repeated back and forth from the HBM memory. In the flash attention paper, the authors worked out a method to reduce this algorithm to a single pass algorithm and fused it with the other operations in attention.</p>
 <h2 id="online-softmax">Online Softmax<a class="headerlink" href="#online-softmax" title="Link to this section">#</a></h2>
 <p><img alt="Natalia Gimelshein (left) and Maxim Milakov (right)" src="/images/posts/flash-attention/fig11-milakov-gimelshein.jpeg" />
@@ -326,7 +329,8 @@ O = P^{\text{dropped}} V \in \mathbb{R}^{N \times d} \tag{6}
 <div class="arithmatex">\[
 \ell'_i = \ell'_{i-1}\, e^{m_{i-1} - m_i} + e^{x_i - m_i} \tag{15}
 \]</div>
-<p>In the above derivation, in equation 12, we take eq10 and take out the final element. Eq13 and 14 are simple algebraic manipulation, make sure you understand it. Finally in equation 15 we arrive at a recurrence relation between <span class="arithmatex">\(\ell'_i\)</span> and <span class="arithmatex">\(\ell'_{i-1}\)</span>. This rescaling adjusts the previously accumulated denominator whenever the maximum changes, ensuring that <span class="arithmatex">\(\ell'_i\)</span> always represents <span class="arithmatex">\(\sum_{j=1}^{i} \exp(x_j - m_i)\)</span>. Notice that the dependency is only on current max <span class="arithmatex">\(m_i\)</span> and previous max <span class="arithmatex">\(m_{i-1}\)</span>. This enables us to compute <span class="arithmatex">\(m_j\)</span> and <span class="arithmatex">\(\ell'_j\)</span> which are the full sequence within the same for loop. This means that now we can fuse pass1 and pass2 shown in the 3-pass solution into a single loop as shown below (Code 3).</p>
+<p>In the above derivation, in equation 12, we take eq10 and take out the final element. Eq13 and 14 are simple algebraic manipulation, make sure you understand it. Finally in equation 15 we arrive at a recurrence relation between <span class="arithmatex">\(\ell'_i\)</span> and <span class="arithmatex">\(\ell'_{i-1}\)</span>. This rescaling adjusts the previously accumulated denominator whenever the maximum changes, ensuring that <span class="arithmatex">\(\ell'_i\)</span> always represents <span class="arithmatex">\(\sum_{j=1}^{i} \exp(x_j - m_i)\)</span>. Notice that the dependency is only on current max <span class="arithmatex">\(m_i\)</span> and previous max <span class="arithmatex">\(m_{i-1}\)</span>. This enables us to compute <span class="arithmatex">\(m_j\)</span> and <span class="arithmatex">\(\ell'_j\)</span> which are the full sequence within the same for loop. This means that now we can fuse pass1 and pass2 shown in the 3-pass solution into a single loop as shown below (Code 4).</p>
+<p><strong>Code 4</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">softmax_2pass</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    2-pass online softmax algorithm.</span>
@@ -357,8 +361,8 @@ O = P^{\text{dropped}} V \in \mathbb{R}^{N \times d} \tag{6}
     <span class="k">return</span> <span class="n">a</span>
 </code></pre></div>
 
-<p><em>Code 3: fused two-pass online softmax — running max and denominator in one loop</em></p>
-<p>Go through the algorithm shown above. Notice that the current max <span class="arithmatex">\(m_i\)</span> and <span class="arithmatex">\(\ell _i\)</span> are computed within a single for loop. The <code>l_prime</code> value is in accordance with the relation derived in eq15. The correctness comparison between the two algorithms is shown in this <a href="https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=8zrI0zmqnkx7">colab link</a>. However, we still need to compute the softmax in 2 passes. So the obvious question is can we now reduce to a single pass to minimise global I/O?</p>
+<p><em>Code 4: fused two-pass online softmax — running max and denominator in one loop</em></p>
+<p>Go through Code 4, the algorithm shown above. Notice that the current max <span class="arithmatex">\(m_i\)</span> and <span class="arithmatex">\(\ell _i\)</span> are computed within a single for loop. The <code>l_prime</code> value is in accordance with the relation derived in eq15. The correctness comparison between the two algorithms is shown in this <a href="https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=8zrI0zmqnkx7">colab link</a>. However, we still need to compute the softmax in 2 passes. So the obvious question is can we now reduce to a single pass to minimise global I/O?</p>
 <h2 id="flash-attention">Flash Attention<a class="headerlink" href="#flash-attention" title="Link to this section">#</a></h2>
 <p>The answer to the above question is unfortunately NO, but keep in mind that we don't really require the softmax output. The intermediate outputs are not required. What we really want is the final attention output O as shown in equation 6. In the flash attention paper, they worked out a way of finding the output in a single pass using the same “surrogate” trick described above and came up with a recurrence relation. To understand that let's first integrate the overall attention calculation to the softmax algorithm as shown below. First, the notations are defined, and below is the two-pass algorithm.</p>
 <p>NOTATIONS</p>
@@ -502,6 +506,7 @@ m_i^{\text{new}} = \max(m_i, \tilde{m}_{ij}) \in \mathbb{R}^{B_r}
 \]</div>
 <p>In step 12, we compute the local statistics, <span class="arithmatex">\(\tilde{m}_{ij}\)</span> which is the max score in this <span class="arithmatex">\(Q_i \times K_j\)</span> block and <span class="arithmatex">\(\tilde{\ell}_{ij}\)</span> which is the sum of exp(scores) in this block. Then in step 13, we update the global statistics, <strong><span class="arithmatex">\(m_i\)</span></strong> which is the running maximum score seen so far (across all K blocks processed) and <strong><span class="arithmatex">\(\ell _i\)</span></strong> which is the running sum of exp(scores) seen so far (properly rescaled) [see eq15 derivation above], based on the local statistics computed till now.</p>
 <p>In step 14, we apply the <strong>dropout</strong> to the unnormalized attention weights. Notice that we are applying dropout on the unnormalised weights and not on the normalized attention which is still being computed. We’ll normalize them later when we have the final <span class="arithmatex">\(\ell _i\)</span>. This is fine because applying dropout before final normalization is mathematically equivalent and more efficient.</p>
+<p><strong>Code 5</strong></p>
 <div class="codehilite"><pre><span></span><code>14:    On chip, compute P_ij = dropout(P_ij, p_drop)
 15:    Write O_i ← diag(ℓ_i^new)^{-1}(diag(ℓ_i)e^{m_i - m_i^new} O_i + e^{m̃_ij - m_i^new} P̃_ij^dropped V_j) to HBM.
 16:    Write ℓ_i ← ℓ_i^new, m_i ← m_i^new to HBM.
@@ -510,6 +515,7 @@ m_i^{\text{new}} = \max(m_i, \tilde{m}_{ij}) \in \mathbb{R}^{B_r}
 
 <p>Step 15 is the crux of the whole algorithm and the raison d’être. Here we are computing <span class="arithmatex">\(O_i\)</span> based on the equation 25 which was derived earlier and writing it to HBM. Finally in step 16 we update <span class="arithmatex">\(\ell _i\)</span> and <span class="arithmatex">\(m_i\)</span>.</p>
 <h3 id="code">Code<a class="headerlink" href="#code" title="Link to this section">#</a></h3>
+<p><strong>Code 6</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="nd">@triton</span><span class="o">.</span><span class="n">jit</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_flash_fwd_inner</span><span class="p">(</span>
     <span class="n">acc</span><span class="p">,</span> <span class="n">l_i</span><span class="p">,</span> <span class="n">m_i</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span>
@@ -578,10 +584,11 @@ m_i^{\text{new}} = \max(m_i, \tilde{m}_{ij}) \in \mathbb{R}^{B_r}
     <span class="k">return</span> <span class="n">acc</span><span class="p">,</span> <span class="n">l_i</span><span class="p">,</span> <span class="n">m_i</span>
 </code></pre></div>
 
-<p><em>Code 4: <code>_flash_fwd_inner</code> — the online-softmax inner loop</em></p>
-<p>Based on the triton lang implementation for flash attention and to make it compatible to run on the free tier for google colab, we can write the flash attention implementation for Tesla T4 (Turing, sm_75, 48 KB shared memory) as shown in Code 4 and Code 5. You can go run the code in <a href="https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=TLeUTdMy9Czs&amp;line=9&amp;uniqifier=1">this colab link</a>.</p>
-<p>In the code above (Code 4), we have the function <code>_flash_fwd_inner</code> which runs inside <code>_flash_fwd_kernel</code> (Code 5) and implements lines 10–13 of Algorithm 2 for one column-block at a time. The <code>STAGE</code> constexpr selects loop bounds at compile time — <code>STAGE=1</code> visits all column blocks (non-causal), <code>STAGE=2</code> visits only the diagonal block where the triangular mask is actually needed. This avoids applying the expensive <code>tl.where</code> mask on every block when only one block needs it.</p>
+<p><em>Code 6: <code>_flash_fwd_inner</code> — the online-softmax inner loop</em></p>
+<p>Based on the triton lang implementation for flash attention and to make it compatible to run on the free tier for google colab, we can write the flash attention implementation for Tesla T4 (Turing, sm_75, 48 KB shared memory) as shown in Code 6 and Code 7. You can go run the code in <a href="https://colab.research.google.com/drive/1vhvP8kKrfMXi3Yky4y11Id6WM6o8YhBW#scrollTo=TLeUTdMy9Czs&amp;line=9&amp;uniqifier=1">this colab link</a>.</p>
+<p>In Code 6 above, we have the function <code>_flash_fwd_inner</code> which runs inside <code>_flash_fwd_kernel</code> (Code 7) and implements lines 10–13 of Algorithm 2 for one column-block at a time. The <code>STAGE</code> constexpr selects loop bounds at compile time — <code>STAGE=1</code> visits all column blocks (non-causal), <code>STAGE=2</code> visits only the diagonal block where the triangular mask is actually needed. This avoids applying the expensive <code>tl.where</code> mask on every block when only one block needs it.</p>
 <p>In each iteration we load <span class="arithmatex">\(K_j\)</span>. This computes <code>qk = Q_i @ K_j^T</code>, then applies the exp2 trick from the tutorial. Since <code>qk_scale = sm_scale / ln(2)</code> was pre-folded in the outer kernel, <code>tl.math.exp2(qk * qk_scale)</code> is numerically identical to <code>exp(qk * sm_scale)</code> but maps to a single cheaper hardware instruction. The online softmax update from Algorithm 2 line 13 then follows directly where<code>alpha = exp2(m_i - m_ij)</code> rescales the old accumulator before adding the new block's contribution. V is loaded after P is computed rather than before to let the compiler reuse registers. The function returns updated <code>acc, l_i, m_i</code>thus avoiding HBM writes inside this inner 3function.</p>
+<p><strong>Code 7</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="nd">@triton</span><span class="o">.</span><span class="n">jit</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_flash_fwd_kernel</span><span class="p">(</span>
     <span class="n">Q_ptr</span><span class="p">,</span> <span class="n">K_ptr</span><span class="p">,</span> <span class="n">V_ptr</span><span class="p">,</span>
@@ -643,8 +650,9 @@ m_i^{\text{new}} = \max(m_i, \tilde{m}_{ij}) \in \mathbb{R}^{B_r}
     <span class="p">)</span>
 </code></pre></div>
 
-<p><em>Code 5: <code>_flash_fwd_kernel</code> — the forward-pass kernel</em></p>
+<p><em>Code 7: <code>_flash_fwd_kernel</code> — the forward-pass kernel</em></p>
 <p>The <code>_flash_fwd_kernel</code> is the main kernel call. Here we take the four individual strides of the original <code>[B, H, N, d]</code> tensor. Then pointer arithmetic is used to reach this program instance’s (batch, head) slice:</p>
+<p><strong>Code 8</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="n">adj</span>    <span class="o">=</span> <span class="p">(</span><span class="n">off_hz</span> <span class="o">//</span> <span class="n">H</span><span class="p">)</span> <span class="o">*</span> <span class="n">stride_z</span> <span class="o">+</span> <span class="p">(</span><span class="n">off_hz</span> <span class="o">%</span> <span class="n">H</span><span class="p">)</span> <span class="o">*</span> <span class="n">stride_h</span>
 <span class="n">Q_ptr</span> <span class="o">+=</span> <span class="n">adj</span><span class="p">;</span>  <span class="n">K_ptr</span> <span class="o">+=</span> <span class="n">adj</span><span class="p">;</span>  <span class="n">V_ptr</span> <span class="o">+=</span> <span class="n">adj</span><span class="p">;</span>  <span class="n">O_ptr</span> <span class="o">+=</span> <span class="n">adj</span>
 </code></pre></div>
@@ -998,6 +1006,7 @@ d\tilde{\mathbf{K}}_j \leftarrow d\tilde{\mathbf{K}}_j + \tau d\mathbf{S}_{ij}^\
 <h3 id="code_1">Code<a class="headerlink" href="#code_1" title="Link to this section">#</a></h3>
 <p>Now lets go through the code for the backward process</p>
 <p><strong>Attention backward preprocessing part</strong></p>
+<p><strong>Code 9</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="nd">@triton</span><span class="o">.</span><span class="n">jit</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_attn_bwd_preprocess</span><span class="p">(</span>
     <span class="n">O_ptr</span><span class="p">,</span> <span class="n">DO_ptr</span><span class="p">,</span>          <span class="c1"># [B*H, N, d]</span>
@@ -1019,9 +1028,10 @@ d\tilde{\mathbf{K}}_j \leftarrow d\tilde{\mathbf{K}}_j + \tau d\mathbf{S}_{ij}^\
     <span class="n">tl</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">Delta_ptr</span> <span class="o">+</span> <span class="n">off_hz</span> <span class="o">*</span> <span class="n">N_CTX</span> <span class="o">+</span> <span class="n">off_m</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
 </code></pre></div>
 
-<p><em>Code 6: <code>_attn_bwd_preprocess</code> — precompute the D vector</em></p>
-<p>The preprocessing kernel above (Code 6) computes the <code>D</code> buffer. During the backward pass calculation, the calculation of dS is dependent on <code>D_i = rowsum(O_i ⊙ dO_i)</code> for every query row i (check eq 98, 83 and algo 4 step 19, 20). Since the dependency is only on O and dO and not on K and V, we can compute it once upfront and store it in the HBM as a reusable <code>[B·H, N]</code> buffer. The alternative would be to recompute it inside every iteration of the hot dK/dV inner loop, wasting compute and register pressure.</p>
+<p><em>Code 9: <code>_attn_bwd_preprocess</code> — precompute the D vector</em></p>
+<p>The preprocessing kernel in Code 9 above computes the <code>D</code> buffer. During the backward pass calculation, the calculation of dS is dependent on <code>D_i = rowsum(O_i ⊙ dO_i)</code> for every query row i (check eq 98, 83 and algo 4 step 19, 20). Since the dependency is only on O and dO and not on K and V, we can compute it once upfront and store it in the HBM as a reusable <code>[B·H, N]</code> buffer. The alternative would be to recompute it inside every iteration of the hot dK/dV inner loop, wasting compute and register pressure.</p>
 <p>In the forward pass, the loop structure is straightforward: for each Q row-block <code>i</code>, stream over all K/V column-blocks <code>j</code>. Each program instance owns one <code>i</code> and accumulates its output <code>O_i</code> completely before writing to HBM. But things are different in the backward pass. There is a difference in the dependency structure.</p>
+<p><strong>Code 10</strong></p>
 <div class="codehilite"><pre><span></span><code>dV_j  = Σ_i  P_ij^T dO_i          — sums over ALL query rows i, for fixed j
 dK_j  = Σ_i  τ · dS_ij^T Q_i      — sums over ALL query rows i, for fixed j
 dQ_i  = Σ_j  τ · dS_ij K_j        — sums over ALL key cols  j, for fixed i
@@ -1029,6 +1039,7 @@ dQ_i  = Σ_j  τ · dS_ij K_j        — sums over ALL key cols  j, for fixed i
 
 <p>We can try to write all the operations on a single go essentially opting for a fused kernel. In that case we are writing for each (i, j) block computing all three gradients simultaneously. We would be writing partial dK/dV buffers and reducing afterwards. Thus the overall memory that would be required would blow up. As a solution two separate kernels are written, <code>_attn_bwd_dkdv</code> and <code>_attn_bwd_dq</code>. One would do dV, dK together and another would work on dQ.</p>
 <p><strong>Attention backward function for dk dv</strong></p>
+<p><strong>Code 11</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="nd">@triton</span><span class="o">.</span><span class="n">jit</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_attn_bwd_dkdv</span><span class="p">(</span>
     <span class="n">dk</span><span class="p">,</span> <span class="n">dv</span><span class="p">,</span>
@@ -1087,16 +1098,19 @@ dQ_i  = Σ_j  τ · dS_ij K_j        — sums over ALL key cols  j, for fixed i
     <span class="k">return</span> <span class="n">dk</span><span class="p">,</span> <span class="n">dv</span>
 </code></pre></div>
 
-<p><em>Code 7: <code>_attn_bwd_dkdv</code> — accumulate dK and dV for a fixed K/V block</em></p>
-<p>In the above function (Code 7), for a fixed K/V column block j, we stream over all Q row-blocks and accumulates <code>dK_j</code> and <code>dV_j</code> . We are implementing the steps 15, 16, 17, 18, 20 and 22 from the backward pass algorithm 4 that was discussed earlier.</p>
+<p><em>Code 11: <code>_attn_bwd_dkdv</code> — accumulate dK and dV for a fixed K/V block</em></p>
+<p>In Code 11 above, for a fixed K/V column block j, we stream over all Q row-blocks and accumulates <code>dK_j</code> and <code>dV_j</code> . We are implementing the steps 15, 16, 17, 18, 20 and 22 from the backward pass algorithm 4 that was discussed earlier.</p>
+<p><strong>Code 12</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="n">qkT</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">qT</span><span class="p">)</span>               <span class="c1"># [BLOCK_N1, BLOCK_M1]pT  = tl.math.exp2(qkT - m[None, :])</span>
 </code></pre></div>
 
 <p>Notice that here <span class="arithmatex">\(P_{ij}\)</span> is never stored — we recompute it on on the fly from the saved log-sum-exp <code>M</code> . Because <code>qT_ptrs</code> has shape <code>[HEAD_DIM, BLOCK_M1]</code> in index space — dimensions are swapped relative to the usual <code>[BLOCK_M1, HEAD_DIM]</code> layout. Loading from this pointer pattern gives <code>qT = [HEAD_DIM, BLOCK_M1]</code> directly, so <code>tl.dot(k, qT)</code> computes <code>K_j Q_i^T</code> as <code>[BLOCK_N1, HEAD_DIM] × [HEAD_DIM, BLOCK_M1] = [BLOCK_N1, BLOCK_M1]</code> without needing an explicit <code>tl.trans</code> call. Thus we are able to directly arrive at <code>pT</code>.</p>
+<p><strong>Code 13</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="k">if</span> <span class="n">MASK</span><span class="p">:</span>    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">offs_m</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">&gt;=</span> <span class="n">offs_n</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">])</span>    <span class="n">pT</span>   <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">pT</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
 </code></pre></div>
 
 <p>Because <code>pT</code> is transposed — rows are key-block positions <code>j</code>, columns are query-block positions <code>i</code> — we have to specify the causal condition as<code>i &gt;= j</code> (query token can attend to key token only if key comes before or at query position). Zeroing masked positions in <code>pT</code> before accumulating into <code>dV</code> and <code>dK</code> ensures those positions contribute nothing to the gradients. This is consistent with how the causal mask was applied in the forward pass.</p>
+<p><strong>Code 14</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="n">Di</span>   <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">D_ptr</span> <span class="o">+</span> <span class="n">offs_m</span><span class="p">)</span>                 <span class="c1"># [BLOCK_M1] delta</span>
 <span class="n">dpT</span>  <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">tl</span><span class="o">.</span><span class="n">trans</span><span class="p">(</span><span class="n">do</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">tl</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="c1"># [BLOCK_N1, BLOCK_M1]</span>
 <span class="n">dsT</span>  <span class="o">=</span> <span class="n">pT</span> <span class="o">*</span> <span class="p">(</span><span class="n">dpT</span> <span class="o">-</span> <span class="n">Di</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:])</span>
@@ -1105,6 +1119,7 @@ dQ_i  = Σ_j  τ · dS_ij K_j        — sums over ALL key cols  j, for fixed i
 
 <p>For the dk calculation, we load <code>Di</code> is the delta vector <code>[BLOCK_M1]</code> precomputed by <code>_attn_bwd_preprocess</code>. We compute <code>dpT</code> and <code>dsT</code> as per steps 18 and 20. Then we calculate the current <code>dk_j</code> and accumulate into <code>dk</code>.</p>
 <p><strong>Attention backward function for dq</strong></p>
+<p><strong>Code 15</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="nd">@triton</span><span class="o">.</span><span class="n">jit</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_attn_bwd_dq</span><span class="p">(</span>
     <span class="n">dq</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">K_ptr</span><span class="p">,</span> <span class="n">V_ptr</span><span class="p">,</span>
@@ -1156,11 +1171,12 @@ dQ_i  = Σ_j  τ · dS_ij K_j        — sums over ALL key cols  j, for fixed i
     <span class="k">return</span> <span class="n">dq</span>
 </code></pre></div>
 
-<p><em>Code 8: <code>_attn_bwd_dq</code> — accumulate dQ for a fixed query block</em></p>
-<p>The above function <code>_attn_bwd_dq</code> (Code 8) is the mirror image of <code>_attn_bwd_dkdv</code>. Before we fixed j and streamed over query rows, now we are fixing i and streaming over the K/V column blocks. In this function, we are implementing step 21 from the algorithm <code>dQ_i += τ · dS_ij K_j</code>.</p>
+<p><em>Code 15: <code>_attn_bwd_dq</code> — accumulate dQ for a fixed query block</em></p>
+<p>The function <code>_attn_bwd_dq</code> in Code 15 above is the mirror image of <code>_attn_bwd_dkdv</code>. Before we fixed j and streamed over query rows, now we are fixing i and streaming over the K/V column blocks. In this function, we are implementing step 21 from the algorithm <code>dQ_i += τ · dS_ij K_j</code>.</p>
 <p>Another difference is in the calculation of <code>Di</code>. In that function, <code>_attn_bwd_dkdv</code> ,<code>Di</code> was loaded inside the loop because <code>offs_m</code> changed each iteration as the function stepped through different Q row-blocks. Here <code>offs_m</code> is fixed for the entire function call — this is the row-block we own — so <code>Di</code> is loaded once before the loop and reused across all <code>num_steps</code> iterations. Thus we are saving<code>num_steps</code> HBM loads compared to <code>_attn_bwd_dkdv</code>.</p>
 <p>Also for the masking, we need to have query row index &gt;= key column index. Thus the condition <code>offs_m[:, None] &gt;= offs_n[None, :]</code>is the standard causal mask in the natural (non-transposed) orientation. The other calculations, such as the recomputation of <span class="arithmatex">\(P_ij\)</span>, the delta subtraction, the mask application, are mostly identical to <code>_attn_bwd_dkdv</code>.</p>
 <p><strong>The outer function for attention backward</strong></p>
+<p><strong>Code 16</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="nd">@triton</span><span class="o">.</span><span class="n">jit</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_attn_bwd</span><span class="p">(</span>
     <span class="n">Q_ptr</span><span class="p">,</span> <span class="n">K_ptr</span><span class="p">,</span> <span class="n">V_ptr</span><span class="p">,</span> <span class="n">sm_scale</span><span class="p">,</span>
@@ -1276,8 +1292,9 @@ dQ_i  = Σ_j  τ · dS_ij K_j        — sums over ALL key cols  j, for fixed i
     <span class="n">tl</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">dq_ptrs</span><span class="p">,</span> <span class="n">dq</span><span class="p">)</span>
 </code></pre></div>
 
-<p><em>Code 9: <code>_attn_bwd</code> — the outer backward kernel that orchestrates the others</em></p>
-<p>Finally we have the outer function <code>_attn_bwd</code> (Code 9) which is the only kernel that PyTorch's autograd actually launches. It orchestrates the entire backward pass by calling <code>_attn_bwd_preprocess</code>, <code>_attn_bwd_dkdv</code> and <code>_attn_bwd_dq</code> internally.</p>
+<p><em>Code 16: <code>_attn_bwd</code> — the outer backward kernel that orchestrates the others</em></p>
+<p>Finally we have the outer function <code>_attn_bwd</code> (Code 16) which is the only kernel that PyTorch's autograd actually launches. It orchestrates the entire backward pass by calling <code>_attn_bwd_preprocess</code>, <code>_attn_bwd_dkdv</code> and <code>_attn_bwd_dq</code> internally.</p>
+<p><strong>Code 17</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="n">bhid</span>    <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">program_id</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">off_chz</span> <span class="o">=</span> <span class="p">(</span><span class="n">bhid</span> <span class="o">*</span> <span class="n">N_CTX</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">tl</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
 <span class="n">adj</span>     <span class="o">=</span> <span class="p">(</span><span class="n">stride_h</span> <span class="o">*</span> <span class="p">(</span><span class="n">bhid</span> <span class="o">%</span> <span class="n">H</span><span class="p">)</span> <span class="o">+</span> <span class="n">stride_z</span> <span class="o">*</span> <span class="p">(</span><span class="n">bhid</span> <span class="o">//</span> <span class="n">H</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">tl</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
@@ -1288,6 +1305,7 @@ dQ_i  = Σ_j  τ · dS_ij K_j        — sums over ALL key cols  j, for fixed i
 </code></pre></div>
 
 <p>Here in axis 2, we index the flattened (batch, head) pair and index 0 is to identify which K/V column-block this instance owns. So the total number of program instances is <code>(N/BLOCK_N1) × B×H</code>, meaning every K/V column-block for every (batch, head) pair runs in parallel. Because dK and dV are indexed by <code>j</code>, the choice is to index by <code>j</code> (K/V column block) rather than <code>i</code> (Q row block). This gives each instance exclusive ownership of one <code>j</code> avoids any write conflicts when accumulating those gradients. K and V for a particular column block are loaded once and stay in SRAM for the entire dK/dV section. We initialise<code>dk</code> and <code>dv</code> to zero and accumulate contributions from every Q row-block. Thus we have one <code>[BLOCK_N1, HEAD_DIM]</code> tile each for K and V, resident throughout, rather than reloading them for each Q row-block.</p>
+<p><strong>Code 18</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="n">start_n</span> <span class="o">=</span> <span class="n">pid</span> <span class="o">*</span> <span class="n">BLOCK_N1</span>
 <span class="n">offs_n</span>  <span class="o">=</span> <span class="n">start_n</span> <span class="o">+</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">BLOCK_N1</span><span class="p">)</span>
 <span class="n">k</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">K_ptr</span> <span class="o">+</span> <span class="n">offs_n</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">stride_tok</span> <span class="o">+</span> <span class="n">offs_k</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">stride_d</span><span class="p">)</span>
@@ -1298,6 +1316,7 @@ dQ_i  = Σ_j  τ · dS_ij K_j        — sums over ALL key cols  j, for fixed i
 
 <p><strong>dk, dv calculations</strong></p>
 <p>In the next section is the dk, dv calculations. K and V for a particular column block are loaded once and stay in SRAM for the entire dK/dV section. <code>dk</code> and <code>dv</code> are initialised to zero here and will accumulate contributions from every Q row-block.</p>
+<p><strong>Code 19</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="n">MASK_BLOCK_M1</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span> <span class="o">=</span> <span class="n">BLOCK_M1</span> <span class="o">//</span> <span class="n">BLK_SLICE_FACTOR</span>   <span class="c1"># = 32 // 2 = 16</span>
 <span class="k">if</span> <span class="n">CAUSAL</span><span class="p">:</span>
     <span class="n">start_m</span>   <span class="o">=</span> <span class="n">start_n</span>
@@ -1311,6 +1330,7 @@ dQ_i  = Σ_j  τ · dS_ij K_j        — sums over ALL key cols  j, for fixed i
 </code></pre></div>
 
 <p>In the causal attention case, column block <code>j</code> (at position <code>start_n</code>) can only receive gradient contributions from query rows <code>i &gt;= j</code>. The diagonal block — where query row and key column indices overlap — needs a per-element triangular mask. That is why we call <code>_attn_bwd_dkdv</code> first with <code>MASK=True</code> for just this diagonal region, using the finer tile size <code>MASK_BLOCK_M1 = BLOCK_M1 // BLK_SLICE_FACTOR</code>. The finer tile is needed because within the diagonal block only half the elements on average are unmasked. The idea is using a smaller <code>BLOCK_M1</code> reduces wasted computation on masked positions. After the masked call processes <code>num_steps * MASK_BLOCK_M1</code> rows, <code>start_m</code> is advanced to the first fully unmasked row-block. From that point every entry in our column block is valid, so the unmasked call runs at full efficiency with the larger <code>BLOCK_M1</code> tile. After the masked call, <code>start_m</code> is advanced past the diagonal so the unmasked call begins immediately below it.</p>
+<p><strong>Code 20</strong></p>
 <div class="codehilite"><pre><span></span><code>num_steps = (N_CTX - start_m) // BLOCK_M1
 dk, dv = _attn_bwd_dkdv(
     ..., start_n, start_m, num_steps, MASK=False,
@@ -1320,6 +1340,7 @@ dk, dv = _attn_bwd_dkdv(
 <p>In non causal attention, we dont need to think so much. All Q row-blocks strictly below the diagonal (i.e. <code>i &gt; j</code>, rows that unconditionally attended to key position <code>j</code>) are processed without masking. We are specifying<code>start_m = 0</code> so this single call covers the entire sequence. For causal attention it covers everything below the diagonal.</p>
 <p><strong>The curious case of start_m</strong></p>
 <p>I want to cover the logic surrounding <code>start_m</code> in slightly more detail as that part is not obvious. Let us use a concrete example. Say <code>N=8</code>, <code>BLOCK_N1=4</code>, <code>BLOCK_M1=4</code>, <code>MASK_BLOCK_M1=2</code>, <code>BLK_SLICE_FACTOR=2</code>. This program instance owns column block <code>j=1</code>, so <code>start_n = 1 * 4 = 4</code> meaning it handles key tokens 4,5,6,7. Consider the full <span class="arithmatex">\(8\times 8\)</span> attention matrix where rows are query tokens (i) and columns are key tokens (j). Causal masking means token i can only attend to token j if <code>j &lt;= i</code>:</p>
+<p><strong>Code 21</strong></p>
 <div class="codehilite"><pre><span></span><code>key cols:    0 1 2 3 | 4 5 6 7
              --------|--------
 query row 0: ✓ . . . | . . . .   ← cannot attend to keys 4-7
@@ -1334,6 +1355,7 @@ query row 7: ✓ ✓ ✓ ✓ | ✓ ✓ ✓ ✓
 </code></pre></div>
 
 <p>Notice that there are some blocks where rows are fully masked, some blocks where rows are partially masked and some blocks where rows are fully unmasked. Our column block covers key tokens 4–7 (the right half). The <code>✓</code> marks in our column block's region are:</p>
+<p><strong>Code 22</strong></p>
 <div class="codehilite"><pre><span></span><code>query row 4: ✓ . . .    ← partial row, needs mask
 query row 5: ✓ ✓ . .    ← partial row, needs mask
 query row 6: ✓ ✓ ✓ .    ← partial row, needs mask
@@ -1342,6 +1364,7 @@ query row 7: ✓ ✓ ✓ ✓    ← full row, needs mask
 
 <p>Rows 0–3 have zero entries in our column block. They contribute nothing to dK or dV, so we skip them entirely. Rows 4–7 all intersect our column block and need processing. But rows 4–7 are the <strong>diagonal block</strong> — the block where query row index and key column index overlap. Every single one of them needs the per-element triangular mask because some positions are valid and some are not. There are no fully unmasked rows for this particular instance. For column block <code>j=0</code> (key tokens 0–3) every query row 0–7 attends to all those keys, so rows 0–7 would be unmasked.</p>
 <p>Now let's consider a case with both masked and unmasked rows. Consider <code>N=16</code>, <code>BLOCK_N1=4</code>, <code>BLOCK_M1=4</code>, <code>MASK_BLOCK_M1=2</code>. Program instance owns column block <code>j=1</code>, key tokens 4–7.</p>
+<p><strong>Code 23</strong></p>
 <div class="codehilite"><pre><span></span><code>key cols:    0-3 | 4-7 | 8-11 | 12-15
              ----|-----|------|------
 query rows 0-3:  |  .  |      |         ← all zero in our block, skip
@@ -1351,6 +1374,7 @@ query rows12-15: |  ✓  |      |         ← fully unmasked
 </code></pre></div>
 
 <p><code>▲</code> = partial (diagonal block), <code>✓</code> = full (all entries valid).</p>
+<p><strong>Code 24</strong></p>
 <div class="codehilite"><pre><span></span><code>if CAUSAL:
     start_m   = start_n          # = 4  (skip rows 0-3, start at diagonal)
     num_steps = BLOCK_N1 // MASK_BLOCK_M1   # = 4 // 2 = 2 steps of size 2
@@ -1365,6 +1389,7 @@ dk, dv = _attn_bwd_dkdv(..., start_n=4, start_m=8, num_steps=2, MASK=False)
 
 <p>Here all rows above the diagonal are zero and can be skipped. So, <code>start_m</code> starts at <code>start_n</code> because that is the first query row that has any non-zero entries in our column block. After the masked call finishes at <code>start_m = 8</code>, the unmasked call picks up from there and runs to the end of the sequence.</p>
 <p><strong>Writing dV and dK</strong></p>
+<p><strong>Code 25</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="n">dv_ptrs</span> <span class="o">=</span> <span class="n">DV_ptr</span> <span class="o">+</span> <span class="n">offs_n</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">stride_tok</span> <span class="o">+</span> <span class="n">offs_k</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">stride_d</span>
 <span class="n">tl</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">dv_ptrs</span><span class="p">,</span> <span class="n">dv</span><span class="p">)</span>
 <span class="n">dk</span> <span class="o">*=</span> <span class="n">sm_scale</span>
@@ -1374,6 +1399,7 @@ dk, dv = _attn_bwd_dkdv(..., start_n=4, start_m=8, num_steps=2, MASK=False)
 
 <p>Once we have <code>dv</code> we can write it directly. But for<code>dk</code> there is a <code>τ</code> factor from <code>dK_j += τ · dS_ij^T Q_i</code>. Hence we need to scale by <code>sm_scale</code> once here. Applying it as a single scalar multiply on the fully accumulated <code>[BLOCK_N1, HEAD_DIM]</code> buffer is more efficient than multiplying inside <code>_attn_bwd_dkdv</code> at every iteration. Because each program instance owns an exclusive <code>j</code>-indexed region of <code>dK</code> and <code>dV</code>, atomic write is not required.</p>
 <p><strong>dq section</strong></p>
+<p><strong>Code 26</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="n">start_m</span> <span class="o">=</span> <span class="n">pid</span> <span class="o">*</span> <span class="n">BLOCK_M2</span>
 <span class="n">start_n</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">offs_m</span>  <span class="o">=</span> <span class="n">start_m</span> <span class="o">+</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">BLOCK_M2</span><span class="p">)</span>
@@ -1384,6 +1410,7 @@ dk, dv = _attn_bwd_dkdv(..., start_n=4, start_m=8, num_steps=2, MASK=False)
 </code></pre></div>
 
 <p>After the <code>dK/dV</code> work is done, the same program instance can reuse its execution slot to also compute <code>dq</code> for query row-block <code>i = pid</code>. The grid is sized so that <code>N/BLOCK_N1 == N/BLOCK_M2</code> , meaning pid maps equally to both a K/V column block and a Q row-block. We load <code>Q</code>, <code>dO</code>, and the log-sum-exp slice <code>M</code> are loaded fresh. We reshape <code>m.shape=[BLOCK_M2, 1]</code> for broadcasting across the <code>BLOCK_N2</code> column dimension in <code>_attn_bwd_dq</code>.</p>
+<p><strong>Code 27</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="n">MASK_BLOCK_N2</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span> <span class="o">=</span> <span class="n">BLOCK_N2</span> <span class="o">//</span> <span class="n">BLK_SLICE_FACTOR</span>   <span class="c1"># = 32 // 2 = 16</span>
 <span class="k">if</span> <span class="n">CAUSAL</span><span class="p">:</span>
     <span class="n">end_n</span>     <span class="o">=</span> <span class="n">start_m</span> <span class="o">+</span> <span class="n">BLOCK_M2</span>
@@ -1399,30 +1426,36 @@ dk, dv = _attn_bwd_dkdv(..., start_n=4, start_m=8, num_steps=2, MASK=False)
 </code></pre></div>
 
 <p>In causal attention, query row <code>i</code> can only attend to key columns <code>j &lt;= i</code>. Hence we process the diagonal block first with <code>MASK=True</code> and the finer tile <code>MASK_BLOCK_N2</code>. After the masked call, <code>end_n</code> is set to the start of the masked region, and <code>start_n</code> is set to cover the remaining unmasked columns <code>j &lt; diagonal</code>. This backward scanning direction where we start from the diagonal and move left is arbitrary. We keep the loop structure similar to the dK/dV layout for code reuse and understanding rather than any numerical necessity.</p>
+<p><strong>Code 28</strong></p>
 <div class="codehilite"><pre><span></span><code>dq = _attn_bwd_dq(    ..., start_m, start_n, num_steps, MASK=False,)
 </code></pre></div>
 
 <p>For all key columns strictly to the left of the diagonal, masking is not required. Hence we can set <code>MASK</code> as false in this case.</p>
 <p><strong>Writing dQ with LN2 correction</strong></p>
 <p>In algorithm 2, for the forward pass, we needed to store two separate vectors per row. The first one was <span class="arithmatex">\(\ell _i\)</span>, which was the running sum of exponentials and <span class="arithmatex">\(m_i\)</span> , which was the running maximum. In the epilogue we had seen that we combine them together into a single vector replacing <span class="arithmatex">\(\ell _i\)</span> and <span class="arithmatex">\(m_i\)</span>. and thus have a single write to HBM. If this statement seems weird, remember that reads and writes to HBM are done in chunks, hence writing once is better than writing twice even though its the same number of values underneath.</p>
+<p><strong>Code 29</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="n">m_i</span> <span class="o">+=</span> <span class="n">tl</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">l_i</span><span class="p">)</span>    <span class="c1"># single vector replaces both ℓ and m</span>
 </code></pre></div>
 
 <p>Notice that the forward pass uses <code>tl.math.exp2</code> instead of <code>tl.exp</code> because on NVIDIA hardware <code>exp2</code> maps to a single native instruction (<code>EX2.APPROX</code>) while <code>exp</code> is emulated as <code>exp2(x / ln2)</code> in software, requiring an extra multiply. To use <code>exp2</code> while computing what is mathematically <code>exp(x)</code>, you pre-fold the conversion factor. Take a look at <a href="https://github.com/triton-lang/triton/issues/2893">this issue here</a>.</p>
+<p><strong>Code 30</strong></p>
 <div class="codehilite"><pre><span></span><code>RCP_LN2 = 1.4426950408889634
 exp(x) = exp2(x / ln(2)) = exp2(x * RCP_LN2)
 </code></pre></div>
 
 <p>In our code, we have K carrying the <code>sm_scale * RCP_LN2</code> factor, i.e K is premultiplied with this factor when loaded into the backward kernel. This is done so that <code>tl.dot(k, qT)</code> inside <code>_attn_bwd_dkdv</code> produces <code>(τ · K_j Q_i^T) * RCP_LN2 = (τ · K_j Q_i^T) / ln(2)</code>, and then <code>exp2</code> of that gives <code>exp(τ · K_j Q_i^T)</code> which is the exactly the correct softmax numerator.</p>
+<p><strong>Code 31</strong></p>
 <div class="codehilite"><pre><span></span><code>dQ_i += dS_ij · (K_j * sm_scale * RCP_LN2)
      = (sm_scale * RCP_LN2) · dS_ij · K_j
 </code></pre></div>
 
 <p>But the true gradient requires:</p>
+<p><strong>Code 32</strong></p>
 <div class="codehilite"><pre><span></span><code>dQ_i += sm_scale · dS_ij · K_j
 </code></pre></div>
 
 <p>This you can say creates a debt in dQ which needs to be paid back. Pre-scaling K by <code>sm_scale * RCP_LN2</code> means every <code>tl.dot(ds, kT)</code> inside <code>_attn_bwd_dq</code> accumulates in <code>dq</code> by an <code>RCP_LN2</code> factor relative to the correct value. This is rectified by performing a correction at the end.</p>
+<p><strong>Code 33</strong></p>
 <div class="codehilite"><pre><span></span><code><span class="n">dq</span> <span class="o">*=</span> <span class="n">LN2</span>   <span class="c1"># LN2 = ln(2) = 1 / RCP_LN2</span>
 <span class="n">dq_ptrs</span> <span class="o">=</span> <span class="n">DQ_ptr</span> <span class="o">+</span> <span class="n">offs_m</span><span class="p">[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">stride_tok</span> <span class="o">+</span> <span class="n">offs_k</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="p">:]</span> <span class="o">*</span> <span class="n">stride_d</span>
 <span class="n">tl</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">dq_ptrs</span><span class="p">,</span> <span class="n">dq</span><span class="p">)</span>

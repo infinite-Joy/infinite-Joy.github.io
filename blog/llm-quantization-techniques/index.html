@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="GGUF GPTQ AWQ BitNet">
+    <meta name="author" content="Joydeep Bhattacharjee">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="LLM Quantization Techniques">
+    <meta property="og:description" content="GGUF GPTQ AWQ BitNet">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://infinite-joy.github.io/blog/llm-quantization-techniques/">
+    
+
+    <link rel="canonical" href="https://infinite-joy.github.io/blog/llm-quantization-techniques/">
+
+    <title>LLM Quantization Techniques</title>
+
+    <!-- No-flash theme: set before paint -->
+    <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PVKZ8S6D');</script>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YFFWNGH33K"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-YFFWNGH33K');
+    </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Site CSS -->
+    <link rel="stylesheet" href="/assets/css/site.css">
+    
+    <link rel="stylesheet" href="/assets/css/blog.css">
+    <link rel="stylesheet" href="/assets/css/highlight.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+
+
+    <!-- RSS autodiscovery -->
+    <link rel="alternate" type="application/rss+xml" title="Joydeep Bhattacharjee" href="/feed.xml">
+
+    
+    <meta property="article:published_time" content="2025-08-12">
+    <meta property="og:type" content="article">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "LLM Quantization Techniques",
+      "description": "GGUF GPTQ AWQ BitNet",
+      "datePublished": "2025-08-12",
+      "author": { "@type": "Person", "name": "Joydeep Bhattacharjee" },
+      "url": "https://infinite-joy.github.io/blog/llm-quantization-techniques/"
+    }
+    </script>
+
+</head>
+<body>
+
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PVKZ8S6D"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+    <!-- NAV -->
+    <nav>
+        <div class="container">
+            <div class="nav-inner">
+                <a href="/" class="nav-brand">Joydeep B.</a>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Toggle navigation">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="/#about">About</a></li>
+                    <li><a href="/#writing">Writing</a></li>
+                    <li><a href="/#videos">Videos</a></li>
+                    <li><a href="/#books">Books</a></li>
+                    <li><a href="/#experience">Experience</a></li>
+                    <li><a href="/#mentorship">Mentorship</a></li>
+                    <li><a href="/blog/">Blog</a></li>
+                    <li><a href="https://topmate.io/joydeep_bhattacharjee" class="nav-cta" target="_blank" rel="noopener">Book a Call</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    
+    <div id="reading-progress"></div>
+
+    <main class="post-main">
+        <div class="container post-container">
+
+            <header class="post-header">
+                
+                <h1 class="post-title">LLM Quantization Techniques</h1>
+                <p class="post-dek">GGUF GPTQ AWQ BitNet</p>
+                <div class="post-meta">
+                    <span>12 August 2025</span>
+                    <span>&middot;</span>
+                    <span>46 min read</span>
+                    
+                </div>
+            </header>
+
+            
+
+            <div class="post-body">
+                <div class="toc">
+<ul>
+<li><a href="#setup">SetUp</a><ul>
+<li><a href="#dataset">Dataset</a></li>
+<li><a href="#calculate-perplexity">Calculate Perplexity</a></li>
+<li><a href="#generate-response">Generate response</a></li>
+<li><a href="#memory-utilization">Memory Utilization</a></li>
+</ul>
+</li>
+<li><a href="#optimum-quanto">Optimum Quanto</a></li>
+<li><a href="#bitsandbytes">BitsAndBytes</a><ul>
+<li><a href="#code-and-benchmarking">Code and Benchmarking</a></li>
+</ul>
+</li>
+<li><a href="#gptq">GPTQ</a><ul>
+<li><a href="#role-of-hessian-in-gptq">Role of Hessian in GPTQ</a></li>
+<li><a href="#cholesky-decomposition">Cholesky Decomposition</a></li>
+<li><a href="#algorithm">Algorithm</a></li>
+<li><a href="#code">Code</a></li>
+</ul>
+</li>
+<li><a href="#awq-activation-aware-weight-quantization">AWQ: Activation Aware Weight Quantization</a><ul>
+<li><a href="#awq-quantization-error-and-loss-function">AWQ Quantization Error and Loss Function</a></li>
+<li><a href="#autoawq-implementation">AutoAWQ Implementation</a></li>
+<li><a href="#usage-code-and-benchmarking">Usage Code and Benchmarking</a></li>
+</ul>
+</li>
+<li><a href="#gguf">GGUF</a><ul>
+<li><a href="#gguf-quantization-implementation">GGUF Quantization Implementation</a></li>
+<li><a href="#code-and-benchmarking_1">Code and Benchmarking</a></li>
+</ul>
+</li>
+<li><a href="#hqq-half-quadratic-quantization">HQQ: Half Quadratic Quantization</a><ul>
+<li><a href="#hqq-quantization-theory-and-derivation-of-algorithm">HQQ Quantization Theory and Derivation of Algorithm</a></li>
+<li><a href="#hqq-algorithm-and-implementation">HQQ Algorithm and Implementation</a></li>
+<li><a href="#code-and-benchmarking_2">Code and Benchmarking</a></li>
+</ul>
+</li>
+<li><a href="#bitnet">BitNet</a><ul>
+<li><a href="#158-bits">1.58 bits?</a></li>
+<li><a href="#quantization-formula">Quantization Formula</a></li>
+<li><a href="#architecture">Architecture</a></li>
+</ul>
+</li>
+<li><a href="#references">References:</a></li>
+</ul>
+</div>
+<p><img alt="img-00.png" src="/images/posts/llm-quantization-techniques/img-00.png" />
+<em>Image 1</em></p>
+<p>This is the second part of the series on LLM Quantization. In the previous blog post we discussed about the theory behind LLM Quantization such as Linear Quantization, Activation Quantization and Quantization Aware Training [<a href="https://medium.com/@joydeep31415/llm-quantization-explained-4c7ebc7ed4ab">blog</a> and <a href="https://youtu.be/jygIliDVYbY?si=1AFhZS88P4yqpnqn">video</a>]. In this post, we will discuss about the various specific algorithms and the associated libraries such as GPTQ, AWQ, GGUF, HQQ and BitNet.</p>
+<h2 id="setup">SetUp<a class="headerlink" href="#setup" title="Link to this section">#</a></h2>
+<h3 id="dataset">Dataset<a class="headerlink" href="#dataset" title="Link to this section">#</a></h3>
+<p>Before moving into discussing about the different libraries, lets start with developing some common code that can be utilised for benchmarking.</p>
+<p><strong>Code 1</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># call notebook login</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">huggingface_hub</span><span class="w"> </span><span class="kn">import</span> <span class="n">notebook_login</span>
+<span class="n">notebook_login</span><span class="p">()</span>
+
+<span class="c1"># install required libraries</span>
+<span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">q</span> <span class="n">datasets</span>
+<span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">q</span> <span class="n">nvidia</span><span class="o">-</span><span class="n">ml</span><span class="o">-</span><span class="n">py3</span>
+
+<span class="c1"># load the dataset.</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dataset</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s1">&#39;semeru/code-text-python&#39;</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s1">&#39;test[:100]&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span><span class="si">=}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># save the dataset in a file</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;dataset.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fw</span><span class="p">:</span>
+  <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;original_string&#39;</span><span class="p">]:</span>
+    <span class="n">fw</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+
+<p>In Code 1, we login into huggingface. This assumes that you are running in notebook hence we are using the <code>notebook_login</code> method. Install the library <code>datasets</code> for loading our favorite dataset and and <code>nvidia-ml-py3</code> to get memory usage. Load the dataset <code>semeru/code-text-python</code>. Seeing that the code completion use case is quite popular for LLMs these days, so I thought of benchmarking using a code dataset. I am using just 100 samples to make the code run faster in general but you should probably use more samples and representative of your use case.</p>
+<h3 id="calculate-perplexity">Calculate Perplexity<a class="headerlink" href="#calculate-perplexity" title="Link to this section">#</a></h3>
+<p><strong>Code 2</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s1">&#39;cuda&#39;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s1">&#39;cpu&#39;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">calculate_perplexity</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">modelname</span><span class="p">):</span>
+<span class="w">  </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  Calculate the perplexity of a language model on a given dataset.</span>
+
+<span class="sd">  &quot;&quot;&quot;</span>
+  <span class="n">max_length</span> <span class="o">=</span> <span class="mi">100</span>
+  <span class="n">stride</span> <span class="o">=</span> <span class="mi">50</span>
+  <span class="n">encodings</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;original_string&#39;</span><span class="p">]),</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&quot;pt&quot;</span><span class="p">)</span>
+  <span class="n">seq_len</span> <span class="o">=</span> <span class="n">encodings</span><span class="o">.</span><span class="n">input_ids</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+  <span class="n">nll_sum</span> <span class="o">=</span> <span class="mf">0.0</span>
+  <span class="n">n_tokens</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">prev_end_loc</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">for</span> <span class="n">begin_loc</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">,</span> <span class="n">stride</span><span class="p">)):</span>
+      <span class="n">end_loc</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">begin_loc</span> <span class="o">+</span> <span class="n">max_length</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">)</span>
+      <span class="n">trg_len</span> <span class="o">=</span> <span class="n">end_loc</span> <span class="o">-</span> <span class="n">prev_end_loc</span>  <span class="c1"># may be different from stride on last loop</span>
+      <span class="n">input_ids</span> <span class="o">=</span> <span class="n">encodings</span><span class="o">.</span><span class="n">input_ids</span><span class="p">[:,</span> <span class="n">begin_loc</span><span class="p">:</span><span class="n">end_loc</span><span class="p">]</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+      <span class="n">target_ids</span> <span class="o">=</span> <span class="n">input_ids</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+      <span class="n">target_ids</span><span class="p">[:,</span> <span class="p">:</span><span class="o">-</span><span class="n">trg_len</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span>
+
+      <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+          <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">input_ids</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">target_ids</span><span class="p">)</span>
+
+          <span class="c1"># loss is calculated using CrossEntropyLoss which averages over valid labels</span>
+          <span class="c1"># N.B. the model only calculates loss over trg_len - 1 labels, because it internally shifts the labels</span>
+          <span class="c1"># to the left by 1.</span>
+          <span class="n">neg_log_likelihood</span> <span class="o">=</span> <span class="n">outputs</span><span class="o">.</span><span class="n">loss</span>
+
+      <span class="c1"># Accumulate the total negative log-likelihood and the total number of tokens</span>
+      <span class="n">num_valid_tokens</span> <span class="o">=</span> <span class="p">(</span><span class="n">target_ids</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>  <span class="c1"># number of valid tokens in target_ids</span>
+      <span class="n">batch_size</span> <span class="o">=</span> <span class="n">target_ids</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+      <span class="n">num_loss_tokens</span> <span class="o">=</span> <span class="n">num_valid_tokens</span> <span class="o">-</span> <span class="n">batch_size</span>  <span class="c1"># subtract batch_size due to internal label shift</span>
+      <span class="n">nll_sum</span> <span class="o">+=</span> <span class="n">neg_log_likelihood</span> <span class="o">*</span> <span class="n">num_loss_tokens</span>
+      <span class="n">n_tokens</span> <span class="o">+=</span> <span class="n">num_loss_tokens</span>
+
+      <span class="n">prev_end_loc</span> <span class="o">=</span> <span class="n">end_loc</span>
+      <span class="k">if</span> <span class="n">end_loc</span> <span class="o">==</span> <span class="n">seq_len</span><span class="p">:</span>
+          <span class="k">break</span>
+
+  <span class="n">avg_nll</span> <span class="o">=</span> <span class="n">nll_sum</span> <span class="o">/</span> <span class="n">n_tokens</span>  <span class="c1"># average negative log-likelihood per token</span>
+  <span class="n">ppl</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">avg_nll</span><span class="p">)</span>
+
+  <span class="nb">print</span><span class="p">()</span>
+  <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Perplexity for model name </span><span class="si">{</span><span class="n">modelname</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">ppl</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="n">ppl</span>
+</code></pre></div>
+
+<p>Code 2 is to calculate the perplexity for a specific model and dataset. Most of the code for this is taken from the <a href="https://huggingface.co/docs/transformers/en/perplexity">huggingface documentation</a>. Here we are passing the tokens via the model and then taking the average of the loss. Finally, we take the exp of the average loss.</p>
+<h3 id="generate-response">Generate response<a class="headerlink" href="#generate-response" title="Link to this section">#</a></h3>
+<p><strong>Code 3</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_response</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">):</span>
+  <span class="n">messages</span> <span class="o">=</span> <span class="p">[</span>
+      <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;You are a pirate chatbot who always responds in pirate speak!&quot;</span><span class="p">},</span>
+      <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Who are you?&quot;</span><span class="p">},</span>
+  <span class="p">]</span>
+
+  <span class="n">input_ids</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">apply_chat_template</span><span class="p">(</span>
+      <span class="n">messages</span><span class="p">,</span>
+      <span class="n">add_generation_prompt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+      <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&quot;pt&quot;</span>
+  <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+  <span class="n">terminators</span> <span class="o">=</span> <span class="p">[</span>
+      <span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token_id</span><span class="p">,</span>
+      <span class="n">tokenizer</span><span class="o">.</span><span class="n">convert_tokens_to_ids</span><span class="p">(</span><span class="s2">&quot;&lt;|eot_id|&gt;&quot;</span><span class="p">)</span>
+  <span class="p">]</span>
+
+  <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+      <span class="n">input_ids</span><span class="p">,</span>
+      <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+      <span class="n">eos_token_id</span><span class="o">=</span><span class="n">terminators</span><span class="p">,</span>
+      <span class="n">do_sample</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+      <span class="n">temperature</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span>
+      <span class="n">top_p</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+  <span class="p">)</span>
+  <span class="n">response</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">input_ids</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:]</span>
+  <span class="k">return</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Code 3 defines a common function for generating the response based on the model and tokenizer. We create a dictionary based on the chat template and create input ids based on it. We pass the input ids via the model to generate the outputs. Temperature is kept at 0.6, top p is 0.9 and max new tokens is 256. We take the top output and remove the input ids to get the generated tokens. These are then decoded to get the text.</p>
+<h3 id="memory-utilization">Memory Utilization<a class="headerlink" href="#memory-utilization" title="Link to this section">#</a></h3>
+<p><strong>Code 4</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">nvidia_smi</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_gpu_memory_utilisation</span><span class="p">():</span>
+  <span class="n">nvidia_smi</span><span class="o">.</span><span class="n">nvmlInit</span><span class="p">()</span>
+
+  <span class="n">deviceCount</span> <span class="o">=</span> <span class="n">nvidia_smi</span><span class="o">.</span><span class="n">nvmlDeviceGetCount</span><span class="p">()</span>
+  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">deviceCount</span><span class="p">):</span>
+      <span class="n">handle</span> <span class="o">=</span> <span class="n">nvidia_smi</span><span class="o">.</span><span class="n">nvmlDeviceGetHandleByIndex</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+      <span class="n">info</span> <span class="o">=</span> <span class="n">nvidia_smi</span><span class="o">.</span><span class="n">nvmlDeviceGetMemoryInfo</span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+      <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Device </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">, Memory : (</span><span class="si">{:.2f}% f</span><span class="s2">ree): </span><span class="si">{}</span><span class="s2">(GB total), </span><span class="si">{}</span><span class="s2"> (GB free), </span><span class="si">{}</span><span class="s2"> (GB used)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">nvidia_smi</span><span class="o">.</span><span class="n">nvmlDeviceGetName</span><span class="p">(</span><span class="n">handle</span><span class="p">),</span> <span class="mi">100</span><span class="o">*</span><span class="n">info</span><span class="o">.</span><span class="n">free</span><span class="o">/</span><span class="n">info</span><span class="o">.</span><span class="n">total</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">total</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span><span class="o">**</span><span class="mi">3</span><span class="p">),</span> <span class="n">info</span><span class="o">.</span><span class="n">free</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span><span class="o">**</span><span class="mi">3</span><span class="p">),</span> <span class="n">info</span><span class="o">.</span><span class="n">used</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span><span class="o">**</span><span class="mi">3</span><span class="p">)))</span>
+
+  <span class="n">nvidia_smi</span><span class="o">.</span><span class="n">nvmlShutdown</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Code 4 defines a common function to get the gpu memory utilization. For this we are using the nvidia-smi library that we installed earlier.</p>
+<h2 id="optimum-quanto">Optimum Quanto<a class="headerlink" href="#optimum-quanto" title="Link to this section">#</a></h2>
+<p><img alt="Linear Quantization | Image by Author" src="/images/posts/llm-quantization-techniques/linear-quantization-image-by-author.png" />
+<em>Image 2: Linear Quantization | Image by Author</em></p>
+<p>We will start with quantization and how to do linear quantization using OptimumQuanto. We have discussed about OptimumQuanto in the previous video as well. This is a fairly new library with release in October 2023. Because this library directly implements linear quantization which we have talked about extensively in the <a href="https://medium.com/@joydeep31415/llm-quantization-explained-4c7ebc7ed4ab">previous blog</a> we are discussing this first.</p>
+<p><a href="https://medium.com/@joydeep31415/llm-quantization-explained-4c7ebc7ed4ab">LLM Quantization Explained. Shrinking AI models from feast to fit… | by joydeep bhattacharjee | Medium</a></p>
+<p><strong>Code 5</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">q</span> <span class="n">optimum</span><span class="o">-</span><span class="n">quanto</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoModelForCausalLM</span><span class="p">,</span> <span class="n">AutoTokenizer</span>
+<span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;meta-llama/Llama-3.2-1B-Instruct&quot;</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">low_cpu_mem_usage</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">optimum.quanto</span><span class="w"> </span><span class="kn">import</span> <span class="n">quantize</span><span class="p">,</span> <span class="n">qint8</span>
+<span class="n">quantize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">qint8</span><span class="p">)</span>
+
+<span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;tell me a joke about LLM quantization.&quot;</span>
+<span class="n">inputs</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&quot;pt&quot;</span><span class="p">)</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">,</span> <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</code></pre></div>
+
+<p>In Code 5, we pass the model id and the tokenizer using the classes <code>AutoModelForCausalLM</code> and <code>AutoTokenizer</code> classes. We get copy the model id from huggingface. We use the <code>quantize</code> method from the library to quantize the model. For this we pass the quantization type for the weights and the activations and based on this only the weights or both weights and activations will be quantized. If you are doing activation quantization then you will need to run it through a calibration data but it was not happening in colab and was getting killed due to memory error so not showing the code here but you can check out the method in their official <a href="https://github.com/huggingface/optimum-quanto">github page</a>.</p>
+<h2 id="bitsandbytes">BitsAndBytes<a class="headerlink" href="#bitsandbytes" title="Link to this section">#</a></h2>
+<p><img alt="image from paper: https://arxiv.org/abs/2208.07339" src="/images/posts/llm-quantization-techniques/image-from-paper.png" />
+<em>Image 3: image from paper: <a href="https://arxiv.org/abs/2208.07339">https://arxiv.org/abs/2208.07339</a></em></p>
+<p>Next, we will start with bits and bytes. This paper came out in June 2022. It started out with the research regarding quantization at hugging phase and its FP8 implementation. The research was primarily done by Tim Dattmers, who is a big name in the quantization community. In the last 10 odd years, he has done a lot of research with big names like Int8 quantization and qlora. In the LLM.int8 paper, they basically studied the effect of outliers in the transformers and did mixed precision decomposition for better output. They implemented this using blockwise quantization, which we have also seen in the previous video. This is for the 8-bit quantization. For moving to 4-bit quantization, qlora was introduced in bits and bytes.</p>
+<h3 id="code-and-benchmarking">Code and Benchmarking<a class="headerlink" href="#code-and-benchmarking" title="Link to this section">#</a></h3>
+<p><strong>Code 6</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">q</span> <span class="n">transformers</span> <span class="n">accelerate</span> <span class="n">bitsandbytes</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">AutoModelForCausalLM</span><span class="p">,</span> <span class="n">BitsAndBytesConfig</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+<span class="n">quantization_config</span> <span class="o">=</span> <span class="n">BitsAndBytesConfig</span><span class="p">(</span><span class="n">load_in_8bit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;meta-llama/Meta-Llama-3-8B-Instruct&quot;</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span>
+    <span class="n">model_id</span><span class="p">,</span>
+    <span class="n">quantization_config</span><span class="o">=</span><span class="n">quantization_config</span><span class="p">,</span>
+    <span class="n">device_map</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">get_gpu_memory_utilisation</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;response from model:&#39;</span><span class="p">,</span> <span class="n">generate_response</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">))</span>
+<span class="n">calculate_perplexity</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">model_id</span><span class="p">)</span>
+<span class="c1"># Output</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Device 0: b&#39;Tesla T4&#39;, Memory : (40.83% free): 15.0(GB total), 6.1251220703125 (GB free), 8.8748779296875 (GB used)</span>
+<span class="sd">response from model: Arrrr, me hearty! Me name be Captain Chatbot, the scurviest pirate to ever sail the Seven Seas! I be a swashbucklin&#39; chatbot, here to regale ye with tales o&#39; adventure, answer yer questions, and maybe even steal yer treasure... er, I mean, yer attention! So hoist the colors, me hearty, and let&#39;s set sail fer a chat like no other!</span>
+<span class="sd">99%|█████████▉| 396/398 [01:14&lt;00:00,  5.29it/s]</span>
+<span class="sd">Perplexity for model name meta-llama/Meta-Llama-3-8B-Instruct: 5.3226</span>
+<span class="sd">&#39;&#39;&#39;</span>
+</code></pre></div>
+
+<p>In Code 6, to quantize and load the model in 8bit using bitsandbytes we create the quantization config using the <code>BitsAndBytesConfig</code> class and then pass this config when creating the model using <code>AutoModelForCausalLM</code>. We can then get the gpu memory utilisation and perplexity using the functions we had defined earlier.</p>
+<p><strong>Code 7</strong></p>
+<div class="codehilite"><pre><span></span><code>      Metrics    UnQ     Q
+0      Memory  12.41  8.87
+1    Time (m)  10.90  1.40
+2  Perplexity   5.28  5.32
+</code></pre></div>
+
+<p><img alt="Bitsandbytes comparison" src="/images/posts/llm-quantization-techniques/bitsandbytes-comparison.png" />
+<em>Image 4: Bitsandbytes comparison</em></p>
+<p>If we now plot the comparison graphs from Code 7, perplexity is slightly degraded between unquantized and quantized model from 5.28 to 5.32 which is less than 1% degradation. While cumulative time improves from 10.9m to 1.4m or 87% improvement and memory improves from 12.41 GB to 8.87 Gb which is 28.5% improvement. So just moving from bf16 to int8 gives a lot of improvement without much change in perplexity</p>
+<h2 id="gptq">GPTQ<a class="headerlink" href="#gptq" title="Link to this section">#</a></h2>
+<p><img alt="GPTQ algorithm from paper: https://arxiv.org/abs/2210.17323" src="/images/posts/llm-quantization-techniques/gptq-algorithm-from-paper.png" />
+<em>Image 5: GPTQ algorithm from paper: <a href="https://arxiv.org/abs/2210.17323">https://arxiv.org/abs/2210.17323</a></em></p>
+<p>Now let’s talk about the GPTQ algorithm. This algorithm was submitted in 31 October 2022. GPTQ is a post-training quantization method to make the model smaller with a calibration dataset. For every layer L in the network, we want to find a quantized version <span class="arithmatex">\(\hat{W}\)</span> of the original weights <span class="arithmatex">\(W\)</span>. This is called the layer-wise compression problem, shown in equation 1.</p>
+<div class="arithmatex">\[
+\underset{\hat{W}}{\operatorname{argmin}} \left\| WX - \hat{W}X \right\|_2^2 \tag{1}
+\]</div>
+<p>Concretely, as shown in equation 1, if <span class="arithmatex">\(W\)</span> is the weights of the linear layer and <span class="arithmatex">\(x\)</span> is the input corresponding to a small set of m data points running through the network, then the objective is to find a matrix of quantized weights <span class="arithmatex">\(\hat{W}\)</span> which minimizes the squared error relative to the full precision layer output. Hence, we can say that we are finding the <span class="arithmatex">\(\hat{W}\)</span> for the argmin of the squared error of the outputs where <span class="arithmatex">\(x\)</span> is a small calibration dataset of activations.</p>
+<p>So GPTQ has several key insights to make it more effective than simpler quantization approaches.</p>
+<ol>
+<li>First is processes weights in order of importance, focusing on the most impactful weights first.</li>
+<li>Second, it uses the Hessian matrix to understand the complex interaction between different weights.</li>
+<li>Third, it quantizes weights column by column in blocks for efficiency.</li>
+<li>And most importantly, it redistributes quantization errors to minimize their impact on model performance.</li>
+</ol>
+<h3 id="role-of-hessian-in-gptq">Role of Hessian in GPTQ<a class="headerlink" href="#role-of-hessian-in-gptq" title="Link to this section">#</a></h3>
+<p><img alt="image by author" src="/images/posts/llm-quantization-techniques/image-by-author.png" />
+<em>Image 6: image by author</em></p>
+<p>When we quantize the original weights in 32 bit to 4-bit representation, each weight gets rounded to the nearest available value in our 4-bit representation. This introduces quantization errors, the differences between the original and the quantized values. In naive quantization, these errors accumulate and cause significant performance degradation. The brilliance of GPTQ is that it doesn’t just accept these errors, it redistributes them to minimize their impact. This is the <strong>essence of GPTQ</strong> — it doesn’t just minimize total error, it <strong>strategically redistributes errors to prevent any weight from becoming a performance bottleneck</strong> due to excessive quantization error.</p>
+<p><img alt="GPTQ framework | image by author" src="/images/posts/llm-quantization-techniques/gptq-framework-image-by-author.png" />
+<em>Image 7: GPTQ framework | image by author</em></p>
+<p>The secret sauce of GPTQ is the Hessian matrix. The Hessian captures how the model’s error changes with respect to the weight changes, essentially a sensitivity map showing which weights are most important. The inverse of the Hessian tells us how to optimally distribute quantization errors across the weights. Specifically, we want to make larger adjustments to weights that have less impact on the model output.</p>
+<p>In the top row of Image 7, you can see a heatmap showing the second-order derivatives matrix that captures how model error changes with weight perturbations. Red boxes highlight areas of high sensitivity where weights strongly interact and affect model output. In the second panel of Image 7, the inverted sensitivity map that reveals where larger quantization adjustments can be safely made. This matrix is the “secret sauce” that tells us how to optimally distribute errors. The bar chart comparing diagonal elements of H (sensitivity) versus <span class="arithmatex">\(H^{-1}\)</span> (adjustment factors), showing the inverse relationship — weights with high sensitivity receive small adjustments. In the flow diagram see how the original weights transform through quantization errors, matrix multiplication with <span class="arithmatex">\(H^{-1}\)</span>, to produce optimal adjustments that minimize overall model degradation. We can now do a comparison between naive quantization (direct error application) and GPTQ’s optimal distribution (<span class="arithmatex">\(H^{-1}\)</span>-guided), demonstrating how the inverse Hessian redistributes errors more effectively. The last panel of Image 7 shows the inverse Hessian which acts as a smart error redistribution mechanism, allowing larger adjustments to less sensitive weights while preserving critical model parameters.</p>
+<h3 id="cholesky-decomposition">Cholesky Decomposition<a class="headerlink" href="#cholesky-decomposition" title="Link to this section">#</a></h3>
+<p><img alt="cholesky decomposition | image by author" src="/images/posts/llm-quantization-techniques/cholesky-decomposition-image-by-author.png" />
+<em>Image 8: cholesky decomposition | image by author</em></p>
+<p>Image 8 illustrates <strong>Cholesky Decomposition</strong>, a powerful technique in linear algebra. It starts with a <strong>Hermitian Positive Definite matrix</strong><code>**A**</code>. Using Cholesky decomposition, we factorize <code>A</code> into a <strong>lower triangular matrix</strong><code>**L**</code> such that equation 2 holds:</p>
+<div class="arithmatex">\[
+A = L \cdot L^T \tag{2}
+\]</div>
+<p>The last panel confirms this by showing that multiplying <code>L</code> by its transpose reconstructs the original matrix, as stated in equation 2.</p>
+<p>To make computations more efficient, GPTQ uses this Cholesky decomposition. The Cholesky decomposition provides several benefits.</p>
+<ul>
+<li><strong>Efficiency:</strong> It’s ~<span class="arithmatex">\(2\times\)</span> faster than LU decomposition for solving linear systems.</li>
+<li><strong>Stability:</strong> Helps maintain numerical stability in GPTQ quantization.</li>
+<li><strong>Error Redistribution:</strong>In GPTQ, Cholesky is applied to the <strong>inverse Hessian matrix</strong>, allowing precise redistribution of quantization errors.</li>
+</ul>
+<h3 id="algorithm">Algorithm<a class="headerlink" href="#algorithm" title="Link to this section">#</a></h3>
+<p><img alt="GPTQ algorithm from paper: https://arxiv.org/abs/2210.17323" src="/images/posts/llm-quantization-techniques/gptq-algorithm-from-paper.png" />
+<em>Image 9: GPTQ algorithm from paper: <a href="https://arxiv.org/abs/2210.17323">https://arxiv.org/abs/2210.17323</a></em></p>
+<p>Now lets go over the algorithm as mentioned in the paper:</p>
+<ol>
+<li><strong>Initialization</strong>:</li>
+</ol>
+<ul>
+<li>A zero matrix <span class="arithmatex">\(Q\)</span> is initialized to store the quantized version of the weight matrix <span class="arithmatex">\(W\)</span>.</li>
+<li>A second zero matrix <span class="arithmatex">\(E\)</span> is initialized to accumulate quantization errors for each block of columns.</li>
+</ul>
+<ol>
+<li><strong>Preprocessing</strong>:</li>
+</ol>
+<ul>
+<li>The inverse Hessian matrix H−1 is computed in advance, as given in equation 3</li>
+</ul>
+<div class="arithmatex">\[
+H^{-1} = (2XX^T + \lambda I)^{-1} \tag{3}
+\]</div>
+<ul>
+<li>To make computation more efficient, the Cholesky decomposition of this inverse Hessian is precomputed. This decomposition helps in scaling the updates during error compensation.</li>
+</ul>
+<ol>
+<li><strong>Block-wise Quantization</strong>:</li>
+</ol>
+<ul>
+<li>The algorithm processes the weight matrix W in blocks of columns of size B.</li>
+<li>For each column in a block:</li>
+<li>The column is quantized and the result is stored in the corresponding column of Q.</li>
+<li>The quantization error (difference between original and quantized column) is computed and scaled using the diagonal element of the Hessian inverse.</li>
+<li>This error is then propagated within the current block using the Hessian inverse to adjust subsequent columns.</li>
+</ul>
+<p><strong>2. Error Compensation for Remaining Weights</strong>:</p>
+<ul>
+<li>Once a block is processed, the accumulated error for that block is used to update all remaining weights to the right of the current block.</li>
+<li>This ensures that quantization-induced distortions don’t accumulate unchecked.</li>
+</ul>
+<p><strong>3. Efficiency and Accuracy</strong>:</p>
+<ul>
+<li>The algorithm proceeds from left to right across the matrix, quantizing and updating in blocks.</li>
+<li>This block-wise strategy ensures that local weight interactions are preserved and accounted for using second-order information, significantly improving quantization accuracy while keeping computational costs manageable.</li>
+</ul>
+<p>If you are interested in the code, take a look at the <code>quantize</code> method in <a href="https://github.com/ModelCloud/GPTQModel/blob/main/gptqmodel/quantization/gptq.py#L270">GPTQModel library</a>.</p>
+<h3 id="code">Code<a class="headerlink" href="#code" title="Link to this section">#</a></h3>
+<p><strong>Code 8</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="o">-</span><span class="n">q</span> <span class="n">accelerate</span> <span class="n">optimum</span> <span class="n">transformers</span>
+<span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="n">gptqmodel</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">build</span><span class="o">-</span><span class="n">isolation</span>
+<span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="s2">&quot;numpy&lt;2&quot;</span> <span class="c1"># GPTQ model does not work with numpy2</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoModelForCausalLM</span><span class="p">,</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">GPTQConfig</span>
+<span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;meta-llama/Meta-Llama-3-8B-Instruct&quot;</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span>
+<span class="n">gptq_config</span> <span class="o">=</span> <span class="n">GPTQConfig</span><span class="p">(</span><span class="n">bits</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;c4&quot;</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">model_seqlen</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+<span class="n">quantized_model</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="n">device_map</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span> <span class="n">quantization_config</span><span class="o">=</span><span class="n">gptq_config</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Now lets quantize llama3 using GPTQ so that we can compare with earlier methods (Code 8). We can use the GPTQConfig class to directly quantize and load the model, but this was giving me memory error in colab.</p>
+<p><strong>Code 9</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">gptqmodel</span><span class="w"> </span><span class="kn">import</span> <span class="n">GPTQModel</span>
+<span class="n">model_id</span> <span class="o">=</span> <span class="s1">&#39;astronomer/Llama-3-8B-Instruct-GPTQ-4-Bit&#39;</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">GPTQModel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">tokenizer</span>
+</code></pre></div>
+
+<p>So I loaded an already quantized model and used the <code>GPTQModel</code> class from the <a href="https://github.com/ModelCloud/GPTQModel/tree/main">library</a> (Code 9). Now we can get the gpu utilization and perplexity using our functions defined before. Below are the results.</p>
+<p><strong>Code 10</strong></p>
+<div class="codehilite"><pre><span></span><code>      Metrics    UnQ     Q  GPTQ
+0      Memory  12.41  8.87  5.99
+1    Time (m)  10.90  1.40  1.60
+2  Perplexity   5.28  5.32  5.69
+</code></pre></div>
+
+<p><img alt="GPTQ: comparison with 8bit quantization" src="/images/posts/llm-quantization-techniques/gptq-comparison-with-8bit-quantization.png" />
+<em>Image 10: GPTQ: comparison with 8bit quantization</em></p>
+<p>As you can see in Code 10, perplexity has gone down more: 5.69 compared to 5.32 as that of bitsandbytes. The memory has improved: 5.99 GB compared with 8.87 of bitsandbytes but the total time has degraded from 1.40 mins to 1.60 mins still far better than the unquantized model.</p>
+<h2 id="awq-activation-aware-weight-quantization">AWQ: Activation Aware Weight Quantization<a class="headerlink" href="#awq-activation-aware-weight-quantization" title="Link to this section">#</a></h2>
+<p><img alt="AWQ: Activation-aware Weight Quantization for On-Device LLM Compression and Acceleration" src="/images/posts/llm-quantization-techniques/awq-activation-aware-weight-quantization-for-on-de.png" />
+<em>Image 11: <a href="https://arxiv.org/pdf/2306.00978">AWQ: Activation-aware Weight Quantization for On-Device LLM Compression and Acceleration</a></em></p>
+<p>Moving on let’s talk about activation quantization or AWQ. It was published in June 1, 2023. Activation-aware quantization doesn’t quantize all the weights, but instead it preserves a small percentage of the weights that are important for LLM performance. This significantly reduces quantization loss such that you can run models in 4-bit precision without experiencing any performance degradation. So, let’s go over the theory a little bit.</p>
+<div class="arithmatex">\[
+y = wx \tag{4}
+\]</div>
+<p>If <span class="arithmatex">\(w\)</span> is the weight matrix and <span class="arithmatex">\(x\)</span> is the inputs, then the output activations <span class="arithmatex">\(y\)</span> is going to be the matrix product of <span class="arithmatex">\(w\)</span> and <span class="arithmatex">\(x\)</span>, as shown in equation 4.</p>
+<div class="arithmatex">\[
+y \approx Q(w)x \tag{5}
+\]</div>
+<p>If Q is both the quantization — dequantization weight matrix, then the goal is to find such a Q that the output of <span class="arithmatex">\(Q(w)x\)</span> should be almost equal to <span class="arithmatex">\(y\)</span> as shown in equation 5.</p>
+<div class="arithmatex">\[
+\Delta = \frac{\max(|w|)}{2^{b-1} - 1} \tag{6}
+\]</div>
+<div class="arithmatex">\[
+Q(w) = \Delta \cdot \text{Round}\left(\frac{w}{\Delta}\right) \tag{7}
+\]</div>
+<p>So we can bring in a scaling parameter <span class="arithmatex">\(\Delta\)</span>, in the absmax form, divide the weights by this <span class="arithmatex">\(\Delta\)</span> and then perform a rounding operation on it. This will be the quantization operation. To perform the dequantization, we can multiply the quantized weights with the scaling <span class="arithmatex">\(\Delta\)</span>. This operation is shown in equations 6 and 7.</p>
+<h3 id="awq-quantization-error-and-loss-function">AWQ Quantization Error and Loss Function<a class="headerlink" href="#awq-quantization-error-and-loss-function" title="Link to this section">#</a></h3>
+<div class="arithmatex">\[
+Err = |wx - Q(w)x| \tag{8}
+\]</div>
+<div class="arithmatex">\[
+Err = \left|wx - \Delta\,Round\left(\frac{w}{\Delta}\right)x\right| \tag{9}
+\]</div>
+<div class="arithmatex">\[
+Err = \left|\Delta\frac{w}{\Delta}x - \Delta\,Round\left(\frac{w}{\Delta}\right)x\right| \tag{10}
+\]</div>
+<div class="arithmatex">\[
+Err = \Delta\left|\frac{w}{\Delta} - Round\left(\frac{w}{\Delta}\right)\right|x \tag{11}
+\]</div>
+<p>So now let’s explore the error <code>Err</code> due to quantization. We can define it as the absolute error between the actual output and the output due to quantization, giving equation 8. So, we can replace the <span class="arithmatex">\(Q(w)\)</span> part with the formula that we had in the previous slide and divide the scale parameter <span class="arithmatex">\(\Delta\)</span> to the actual weights w, giving equation 9 and equation 10. Thus, we can take out the <span class="arithmatex">\(\Delta\)</span> from both the values, take it outside and also take out the inputs <span class="arithmatex">\(x\)</span> from both the values and take it outside, arriving at equation 11. <span class="arithmatex">\(\Delta\)</span> would be positive because if you see the formula for <span class="arithmatex">\(\Delta\)</span>, there is the absolute function there as well. The weights x would be positive because we will run them through the ReLU function which also keeps the value of <span class="arithmatex">\(\Delta\)</span> only the positive values.</p>
+<div class="arithmatex">\[
+RoundErr\left(\frac{w}{\Delta}\right) = \left|\frac{w}{\Delta} - Round\left(\frac{w}{\Delta}\right)\right| \tag{12}
+\]</div>
+<div class="arithmatex">\[
+Err = \Delta \, RoundErr\left(\frac{w}{\Delta}\right) x \tag{13}
+\]</div>
+<div class="arithmatex">\[
+\mathbb{E}\left(RoundErr\left(\frac{w}{\Delta}\right)\right) = 0.25, \text{ assuming uniform dist} \tag{14}
+\]</div>
+<div class="arithmatex">\[
+Err \propto x, \text{ for a single group} \tag{15}
+\]</div>
+<p>If we take the middle value and call it <span class="arithmatex">\(\text{RoundErr}(w/\Delta)\)</span>, as in equation 12, then we can replace the part with round error function, giving equation 13. We will use this later. If we assume each variable in <span class="arithmatex">\(W/\Delta\)</span> is a uniform distribution, the absolute error will also form a uniform distribution in the range 0, 0.5. Expectation of the round error of <span class="arithmatex">\(W/\Delta\)</span> is 0.25 which is constant, as in equation 14. In this case, the quantization absolute error of weight only quantization is proportional to the quantization scale <span class="arithmatex">\(\Delta\)</span> and the input activation x. In a single group, <span class="arithmatex">\(\Delta\)</span> is constant for everyone. So for a single group, this quantization error is proportional to x, as in equation 15. In other words, we can say that the quantization error of weight only quantization is activation aware. If the input activation magnitude is small, the quantization error is small and if the input activation magnitude is large, the quantization error is large. Therefore, if we could somehow reduce the input activation magnitude in weight only quantization, the quantization error can be reduced. These overall ideas are shown in equations 12–15.</p>
+<div class="arithmatex">\[ y = wx \tag{16} \]</div>
+<div class="arithmatex">\[ y = w \cdot diag(s) \, diag(s)^{-1} x \tag{17} \]</div>
+<div class="arithmatex">\[ y = Q\left(w \cdot diag(s)\right) \left(diag(s)^{-1} x\right) \tag{18} \]</div>
+<div class="arithmatex">\[ \Delta' = \frac{\max\left(|w \cdot diag(s)|\right)}{2^{b-1} - 1} \tag{19} \]</div>
+<div class="arithmatex">\[ Q(ws) = \Delta' \cdot Round\frac{w \cdot diag(s)}{\Delta'} \tag{20} \]</div>
+<div class="arithmatex">\[ Err' = \Delta' \, RoundErr\left(\frac{ws}{\Delta'}\right)\left(\frac{x}{s}\right) \tag{21} \]</div>
+<div class="arithmatex">\[ \mathbb{E}\left(RoundErr\left(\frac{ws}{\Delta'}\right)\right) = 0.25, \text{ assuming uniform dist} \tag{22} \]</div>
+<p>So if we continue to the previous equations that we had discussed, equation 16, we want to reduce the magnitude of the activations in the input. We can inversely scale the activations and then to counter that, we will scale the weights as well, which is almost similar to quantizing the scaled weights as seen in equation 17 and equation 18. So now we can replace w by ws in the equations discussed in equation 19 and equation 20. Finally, we can give the error equation as seen in equation 21. If <span class="arithmatex">\(W/\Delta\)</span> is a uniform distribution, then <span class="arithmatex">\(\text{RoundErr}(ws/\Delta')\)</span> is also a uniform distribution and the expectation of that will also be 0.25, as shown in equation 22.</p>
+<div class="arithmatex">\[
+\frac{Err'}{Err} = \frac{\Delta' RoundErr\left(\frac{ws}{\Delta'}\right)\left(\frac{x}{s}\right)}{\Delta \, RoundErr\left(\frac{w}{\Delta}\right)(x)} \tag{23}
+\]</div>
+<div class="arithmatex">\[
+= \frac{\Delta'}{\Delta} \cdot \frac{1}{s} \tag{24}
+\]</div>
+<p>So now we can do a comparison between Err’ and Err, giving equation 23. We divide by both the forms because the expectation of the round error is the same. We cancel out the round error parts and also x gets cancelled. So the remaining becomes <span class="arithmatex">\(\Delta'\)</span> by <span class="arithmatex">\(\Delta\)</span> into 1/s, as shown in equation 24. We want to move towards lower error. That means Err’ needs to be less than Err. One way would be to go higher and higher s while keeping <span class="arithmatex">\(\Delta'\)</span> close to <span class="arithmatex">\(\Delta\)</span>.</p>
+<div class="arithmatex">\[
+s^* = \arg\min \mathcal{L}(s) \tag{25}
+\]</div>
+<div class="arithmatex">\[
+\mathcal{L} = \left\| Q\big(W \cdot \text{diag}(s)\big)\big(\text{diag}(s)^{-1}X\big) - WX \right\| \tag{26}
+\]</div>
+<p>From the analysis till now, the objective can be said as finding the best s, per equation 25, where loss is the least squares between the difference between the quantized scaled weights and inverse scale of the activations and the original multiplication of the weights and activations, as defined in equation 26.</p>
+<h3 id="autoawq-implementation">AutoAWQ Implementation<a class="headerlink" href="#autoawq-implementation" title="Link to this section">#</a></h3>
+<p><strong>Code 11</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">quantize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">)),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;AWQ&quot;</span><span class="p">):</span>
+        <span class="o">...</span>
+
+        <span class="c1"># [STEP 1]: Get layer, extract linear modules, extract input features</span>
+        <span class="n">named_linears</span> <span class="o">=</span> <span class="n">get_named_linears</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="c1"># Filter out the linear layers we don&#39;t want to exclude</span>
+        <span class="n">named_linears</span> <span class="o">=</span> <span class="n">exclude_layers_to_not_quantize</span><span class="p">(</span>
+            <span class="n">named_linears</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules_to_not_convert</span>
+        <span class="p">)</span>
+
+        <span class="n">input_feat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_input_feat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">named_linears</span><span class="p">)</span>
+        <span class="n">clear_memory</span><span class="p">()</span>
+
+        <span class="c1"># [STEP 2]: Compute and apply scale list</span>
+        <span class="n">module_config</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">awq_model</span><span class="o">.</span><span class="n">get_layers_for_scaling</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">input_feat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">module_kwargs</span>
+        <span class="p">)</span>
+        <span class="n">scales_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_search_best_scale</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="o">**</span><span class="n">layer</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">module_config</span>
+        <span class="p">]</span>
+        <span class="n">apply_scale</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">scales_list</span><span class="p">,</span> <span class="n">input_feat_dict</span><span class="o">=</span><span class="n">input_feat</span><span class="p">)</span>
+        <span class="n">scales_list</span> <span class="o">=</span> <span class="n">append_str_prefix</span><span class="p">(</span>
+            <span class="n">scales_list</span><span class="p">,</span> <span class="n">get_op_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
+        <span class="p">)</span>
+
+        <span class="c1"># [STEP 3]: Compute and apply clipping list</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_clip</span><span class="p">:</span>
+            <span class="n">clip_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_search_best_clip</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">named_linears</span><span class="p">,</span> <span class="n">input_feat</span>
+            <span class="p">)</span>
+            <span class="n">apply_clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">clip_list</span><span class="p">)</span>
+            <span class="n">clip_list</span> <span class="o">=</span> <span class="n">append_str_prefix</span><span class="p">(</span>
+                <span class="n">clip_list</span><span class="p">,</span> <span class="n">get_op_name</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># [STEP 4]: Quantize weights</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">export_compatible</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_apply_quant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">named_linears</span><span class="p">)</span>
+
+        <span class="n">clear_memory</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Now since we have gone through the theory, we can now go through Code 11 and it would make sense to us. The code is taken from <a href="https://github.com/casper-hansen/AutoAWQ/blob/main/awq/quantize/quantizer.py">casper-hansen/auto-awq</a>. If you go through the quantize method, you will see step one is get the layer extract linear modules extract input features, and then we filter out the linear layers we don’t want to exclude. Then we search for the best scale and apply the best scale. Next, we compute the clipping list and apply the clipping list. Finally, we quantize the weights. The quantizing the weights is a part is simple. If we know the scales and the zeros, we can apply these scales and zeros and perform the quantization. So, point is how to search for the best scale. So, for this, we go to the search best scale method. Next, we can search for the best clip and apply that to the modules. Now that we have the quantized layers we can replace the original model with the quantized weights for the final model.</p>
+<p><strong>Code 12</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_compute_best_scale</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">w_mean</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">x_mean</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">module2inspect</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+    <span class="n">linears2scale</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">],</span>
+    <span class="n">fp16_output</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span><span class="o">=</span><span class="p">{},</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute loss and select best scales</span>
+
+<span class="sd">    L(s) = || Q(W * s) (s^-1 * X) - W * X ||</span>
+<span class="sd">    Q: weight quantization function | pseudo_quantize_tensor(W * s)</span>
+<span class="sd">    X: inputs from calib dataset    | X</span>
+<span class="sd">    W: original weights in FP16     | layer</span>
+<span class="sd">    s: per channel scaling factor   | s^-1 * X</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n_grid</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">best_ratio</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">best_scales</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">best_error</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+
+    <span class="n">org_sd</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">module2inspect</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+    <span class="n">device</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">device</span>
+    <span class="n">x_mean</span> <span class="o">=</span> <span class="n">x_mean</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">w_mean</span> <span class="o">=</span> <span class="n">w_mean</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ratio</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_grid</span><span class="p">):</span>
+        <span class="c1"># create new scales</span>
+        <span class="n">ratio</span> <span class="o">=</span> <span class="n">ratio</span> <span class="o">/</span> <span class="n">n_grid</span>
+
+        <span class="c1"># NOTE: s^-1 * x is fused here, according to paper</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">duo_scaling</span><span class="p">:</span>
+            <span class="n">scales</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_mean</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">ratio</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">w_mean</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ratio</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-4</span><span class="p">))</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">scales</span> <span class="o">=</span> <span class="n">x_mean</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">ratio</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">scales</span> <span class="o">=</span> <span class="n">scales</span> <span class="o">/</span> <span class="p">(</span><span class="n">scales</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">*</span> <span class="n">scales</span><span class="o">.</span><span class="n">min</span><span class="p">())</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span>
+        <span class="n">scales_view</span> <span class="o">=</span> <span class="n">scales</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="c1"># avoid scaling values that overflow</span>
+        <span class="n">scales</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">scales</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">scales</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">scales</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="c1"># Q(W * s)</span>
+        <span class="k">for</span> <span class="n">fc</span> <span class="ow">in</span> <span class="n">linears2scale</span><span class="p">:</span>
+            <span class="n">fc</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">scales_view</span><span class="p">)</span>
+            <span class="n">fc</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pseudo_quantize_tensor</span><span class="p">(</span><span class="n">fc</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">scales_view</span>
+            <span class="p">)</span>
+
+        <span class="c1"># W * X</span>
+        <span class="n">int_w_output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_module_forward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">module2inspect</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">int_w_output</span> <span class="o">=</span> <span class="n">int_w_output</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">int_w_output</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">,</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">int_w_output</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+
+        <span class="c1"># compute mean squared error (L2 norm)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_loss</span><span class="p">(</span><span class="n">fp16_output</span><span class="p">,</span> <span class="n">int_w_output</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+
+        <span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">loss</span> <span class="o">&lt;</span> <span class="n">best_error</span><span class="p">:</span>
+            <span class="n">best_error</span> <span class="o">=</span> <span class="n">loss</span>
+            <span class="n">best_ratio</span> <span class="o">=</span> <span class="n">ratio</span>
+            <span class="n">best_scales</span> <span class="o">=</span> <span class="n">scales</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+        <span class="n">module2inspect</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">org_sd</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">best_ratio</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">history</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">Exception</span>
+
+    <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">best_scales</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">best_scales</span>
+
+    <span class="k">return</span> <span class="n">best_scales</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+</code></pre></div>
+
+<p>Code 12 is the code related to computing the best scale. So for this, we start with the absmax of the weights. We compute the per-channel mean of the of the input activation with chunking. Then the weights * scale is pseudo quantized. Then we compute the output activation. Based on this activation the loss is calculated. So, we set the best scale based on wherever the loss is the minimum. Thus, you can see we are doing a grid search here. Next let's go to Code 13, the <code>self._compute_loss</code> function.</p>
+<p><strong>Code 13</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">_compute_loss</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">fp16_output</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">int_w_output</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="o">...</span>
+
+    <span class="c1"># Compute the loss for each chunk</span>
+    <span class="k">for</span> <span class="n">fp16_chunk</span><span class="p">,</span> <span class="n">int_w_chunk</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">fp16_chunks</span><span class="p">,</span> <span class="n">int_w_chunks</span><span class="p">):</span>
+        <span class="n">chunk_loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">fp16_chunk</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="o">-</span> <span class="n">int_w_chunk</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">))</span>\
+            <span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">loss</span> <span class="o">+=</span> <span class="n">chunk_loss</span>
+
+    <span class="c1"># Normalize the loss by the total number of elements</span>
+    <span class="n">loss</span> <span class="o">/=</span> <span class="n">num_elements</span>
+
+    <span class="k">return</span> <span class="n">loss</span>
+</code></pre></div>
+
+<p>In Code 13, the <code>_compute_loss</code> method, some chunking is done, but the important thing is the squared difference between fp16 chunk and the quantized w chunk is done and then they are summed up to get the chunk loss. The chunk loss are all added up and finally normalized by the total number of element to get the final loss.</p>
+<h3 id="usage-code-and-benchmarking">Usage Code and Benchmarking<a class="headerlink" href="#usage-code-and-benchmarking" title="Link to this section">#</a></h3>
+<p><strong>Code 14</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">q</span> <span class="n">transformers</span> <span class="n">accelerate</span> <span class="n">autoawq</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">awq</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoAWQForCausalLM</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoTokenizer</span>
+<span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;meta-llama/Meta-Llama-3-8B-Instruct&quot;</span>
+<span class="n">quant_config</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;zero_point&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;q_group_size&quot;</span><span class="p">:</span> <span class="mi">128</span><span class="p">,</span> <span class="s2">&quot;w_bit&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">:</span><span class="s2">&quot;GEMM&quot;</span><span class="p">}</span>
+
+<span class="c1"># Load model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoAWQForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Quantize</span>
+<span class="n">model</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">quant_config</span><span class="o">=</span><span class="n">quant_config</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Code 14 shows you can quantize using autoawq similar to how we had quantized before, by setting up a <code>quant_config</code>.</p>
+<p><strong>Code 15</strong></p>
+<div class="codehilite"><pre><span></span><code>      Metrics    UnQ     Q  GPTQ    AWQ
+0      Memory  12.41  8.87  5.99  5.695
+1    Time (m)  10.90  1.40  1.60  2.710
+2  Perplexity   5.28  5.32  5.69  5.490
+</code></pre></div>
+
+<p><img alt="AWQ comparison" src="/images/posts/llm-quantization-techniques/awq-comparison.png" />
+<em>Image 12: AWQ comparison</em></p>
+<p>When compared with other models in Code 15, and especially GPTQ, the memory is the best till now, while total time for inference has degraded as compared with GPTQ. Interestingly perplexity is slightly better than GPTQ. As usual, make your own comparisons to find the best algorithm for your use case.</p>
+<h2 id="gguf">GGUF<a class="headerlink" href="#gguf" title="Link to this section">#</a></h2>
+<p><img alt="gguf file | source: GGUF" src="/images/posts/llm-quantization-techniques/gguf-file-source-gguf.png" />
+<em>Image 13: gguf file | source: <a href="https://huggingface.co/docs/hub/en/gguf">GGUF</a></em></p>
+<p>So now let’s talk about GGUF. GGUF was introduced by the llama.cpp team on August 2021–23. It’s a replacement for GGML. So GGUF is not a quantization technology but specifically it is used for storing the model weights and running them on consumer hardware such as our laptop or edge devices. Ideally any number of quantization techniques can be used in GGUF. Mostly you will find that they are weight quantization techniques with different hybrid schemes such int4 for some of the weights and int8 for some other weights. The specific quantization technique that is used is linear quantization.</p>
+<h3 id="gguf-quantization-implementation">GGUF Quantization Implementation<a class="headerlink" href="#gguf-quantization-implementation" title="Link to this section">#</a></h3>
+<div class="arithmatex">\[
+x_{min} = \min(x), \quad x_{max} = \max(x) \tag{27}
+\]</div>
+<div class="arithmatex">\[
+[q_{min} = 0, \quad q_{max} = 255] \tag{28}
+\]</div>
+<div class="arithmatex">\[
+s = \frac{x_{max} - x_{min}}{q_{max} - q_{min}} \tag{29}
+\]</div>
+<div class="arithmatex">\[
+z = q_{min} - \frac{x_{min}}{s} \tag{30}
+\]</div>
+<div class="arithmatex">\[
+q = round\left(\frac{x}{s} + z\right) \tag{31}
+\]</div>
+<div class="arithmatex">\[
+x_{dequantized} = s \cdot (q - z) \tag{32}
+\]</div>
+<p>The first four bits is the GGUF magic number then the next four bits is the GGUF version, the next eight bits is the tensor count and then the next eight bits is the metadata of the kv count. Then we have the key value pairs various metadata key value pairs and then the rest of the files with the tensor values so the quantization in GGUF is based on linear quantization. In linear quantization, we can take the quantization operation as the inverse scale of the weights w and a zero-point z and then we can do a rounding operation on that so the de-quantization process should remove the zero point and multiply with the scale now this scale can be the min max scale and scalar so we take the min max of x and the min max of the quantized range because we want to fit the full range of x to the full range of quantization, as in equation 27 and equation 28. So <span class="arithmatex">\(s = \frac{x_{max} - x_{min}}{q_{max} - q_{min}}\)</span> as in equation 29, and hence <span class="arithmatex">\(z = q_{min} - \frac{x_{min}}{s}\)</span> as in equation 30. The quantized value q is found using equation 31, and the dequantized value using equation 32.</p>
+<p>The quant descriptions are mentioned in the hugging phase documentation. For example, Q4_1: 4-bit round-to-nearest quantization (<code>q</code>). Each block has 32 weights. Weight formula: <code>w = q * block_scale + block_minimum</code>. [<a href="https://huggingface.co/docs/hub/en/gguf#quantization-types">source</a>]</p>
+<p><strong>Code 16</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">Q4_1</span><span class="p">(</span><span class="n">__Quant</span><span class="p">,</span> <span class="n">qtype</span><span class="o">=</span><span class="n">GGMLQuantizationType</span><span class="o">.</span><span class="n">Q4_1</span><span class="p">):</span>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">quantize_blocks</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">blocks</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">n_blocks</span> <span class="o">=</span> <span class="n">blocks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="nb">max</span> <span class="o">=</span> <span class="n">blocks</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="nb">min</span> <span class="o">=</span> <span class="n">blocks</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">d</span> <span class="o">=</span> <span class="p">(</span><span class="nb">max</span> <span class="o">-</span> <span class="nb">min</span><span class="p">)</span> <span class="o">/</span> <span class="mi">15</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
+            <span class="nb">id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">d</span><span class="p">)</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">trunc</span><span class="p">((</span><span class="n">blocks</span> <span class="o">-</span> <span class="nb">min</span><span class="p">)</span> <span class="o">*</span> <span class="nb">id</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">0.5</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+
+        <span class="n">qs</span> <span class="o">=</span> <span class="n">qs</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">n_blocks</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">block_size</span> <span class="o">//</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">qs</span> <span class="o">=</span> <span class="n">qs</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">|</span> <span class="p">(</span><span class="n">qs</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">&lt;&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+
+        <span class="n">d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="nb">min</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">d</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">qs</span><span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+
+<p>So now if we go through the llama.cpp gguf code implementation in quants.py as shown in Code 16. Taking the same example of Q4_1 class, we have the max is the maximum of the block and minimum as the minimum of the block. So your denominator becomes a (max — min)/15. 15 because that is <span class="arithmatex">\(2^4 - 1\)</span> where b=4 is the number of bytes. So then you can compute the quantization scale qs which is (max-min)/(range in the lower bit) as we have already discussed. Then you can apply the rounding function. This is how you calculate the quantized value. Check out the code in the source as well.</p>
+<h3 id="code-and-benchmarking_1">Code and Benchmarking<a class="headerlink" href="#code-and-benchmarking_1" title="Link to this section">#</a></h3>
+<p><strong>Code 17</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">huggingface_hub</span><span class="w"> </span><span class="kn">import</span> <span class="n">hf_hub_download</span>
+<span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;QuantFactory/Meta-Llama-3-8B-Instruct-GGUF&quot;</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;Meta-Llama-3-8B-Instruct.Q4_K_S.gguf&#39;</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="n">hf_hub_download</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span>
+                             <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+                             <span class="n">local_dir</span><span class="o">=</span><span class="s1">&#39;/content&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;My model path: &quot;</span><span class="p">,</span> <span class="n">model_path</span><span class="p">)</span>
+</code></pre></div>
+
+<p>I did not try to quantize the models because of high compute requirements and was only trying this out in colab, so downloaded the model from QuantFactory repo and saved in the content folder (Code 17).</p>
+<p><strong>Code 18</strong></p>
+<div class="codehilite"><pre><span></span><code>git clone https://github.com/ggml-org/llama.cpp
+cd llama.cpp/
+cmake -B build -DGGML_CUDA=ON
+cmake --build build --config Release
+./build/bin/llama-perplexity \
+    -m /content/Meta-Llama-3-8B-Instruct.Q4_K_S.gguf \
+    -f dataset.txt
+</code></pre></div>
+
+<p>Now we can install the llama-cpp-python and use the Llama class to get the results, but we need to calculate the perplexity. So we will use the perplexity command that is there in the llama.cpp repo and to do that we need to install llama.cpp from source. Then in the build folder we can access the llama-perplexity command, and we will pass the dataset. This will generate the perplexity for us (Code 18).</p>
+<p><strong>Code 19</strong></p>
+<div class="codehilite"><pre><span></span><code>      Metrics    UnQ  GPTQ    AWQ    GGUF
+0      Memory  12.41  5.99  5.695  4.3620
+1    Time (m)  10.90  1.60  2.710  1.4800
+2  Perplexity   5.28  5.69  5.490  3.2154
+</code></pre></div>
+
+<p><img alt="GGUF comparison" src="/images/posts/llm-quantization-techniques/gguf-comparison.png" />
+<em>Image 14: GGUF comparison</em></p>
+<p>Now we can plot the comparison with GPTQ and AWQ from Code 19. You can see for the GGUF model, there is big improvement in all the metrics. Interestingly the perplexity is even better than the unquantized model which is slightly weird. Disclaimer here: Please don't deploy on my benchmarks, do your own checks before deploying to production.</p>
+<h2 id="hqq-half-quadratic-quantization">HQQ: Half Quadratic Quantization<a class="headerlink" href="#hqq-half-quadratic-quantization" title="Link to this section">#</a></h2>
+<p><img alt="source: https://mobiusml.github.io/hqq_blog/" src="/images/posts/llm-quantization-techniques/img-30.png" />
+<em>Image 15: source: <a href="https://mobiusml.github.io/hqq_blog/">https://mobiusml.github.io/hqq_blog/</a></em></p>
+<p>Now let's go over Half Quadratic Quantization. This came out in November 2023. In their blog they mentioned some points about previous quantization algorithms.</p>
+<ol>
+<li>The calibration data that is used can negatively affect the quality of calibration.</li>
+<li>Calibration can be a heavy computational process especially for large language models.</li>
+</ol>
+<p>So in the blog they mentioned that they have developed this algorithm which minimizes errors in the weights themselves preserving the model’s fundamental building blocks. This method uses sparsity promoting loss function where we take lp norm&lt;1 which more accurately represents the distribution of outlier weights which are often critical to model performance. They use mathematical decomposition to break the overall problem into simpler sub problems and solve those sub problems in a few steps instead of using gradient descent methods. They use closed form solutions for each step so that they can do things faster because gradient descent may take thousands of iterations. The quantization is done on the gpu with half precision and uses the CPU to transfer data once the solution is done.</p>
+<h3 id="hqq-quantization-theory-and-derivation-of-algorithm">HQQ Quantization Theory and Derivation of Algorithm<a class="headerlink" href="#hqq-quantization-theory-and-derivation-of-algorithm" title="Link to this section">#</a></h3>
+<div class="arithmatex">\[
+Q_{z,s} = round\left(z + \frac{W}{s}\right) = W_q \tag{33}
+\]</div>
+<div class="arithmatex">\[
+Q_{z,s}^{-1} = s(W_q - z) \tag{34}
+\]</div>
+<p>Now lets go over the theory and try to derive the algorithm. This will give us an understanding of why the HQQ algorithm works like this and how to solves the previous problems. The notation is slightly different where Q means only quantization and <span class="arithmatex">\(Q^{-1}\)</span> means dequantization. This is slightly different from what we had discussed in the AWQ section. So as seen in equation 33, the quantization is a function of zero-point z and scaling parameter s and we scale the weights W by s and then add the zero point and then perform rounding operation on it to get Wq, the quantized weights. Equation 34 shows the corresponding dequantization.</p>
+<div class="arithmatex">\[
+E(W) = W - Q_{z,s}^{-1}\left(Q_{z,s}(W)\right) \tag{35}
+\]</div>
+<div class="arithmatex">\[
+\arg\min_{z,s} \phi(E(W)) = \arg\min_{z,s}\left(W - Q_z^{-1}\left(Q_z(W)\right)\right) \tag{36}
+\]</div>
+<div class="arithmatex">\[
+\phi(E) = \|e_i\|_p^p,\ 0 &lt; p &lt; 1 \tag{37}
+\]</div>
+<p>From this we can say that the dequantization operation is removing the zero point and then multiplying with the scale. If correct s and z are chosen, then post-dequantization the weights should be close to the original prequantization weights. So in equation 35, we can define the error of the weights due to the quantization dequantization process to be the difference between the original weights and the weights after the quantization dequantization process. If we define a monotonic function transformation <span class="arithmatex">\(\phi\)</span> on this error E, we arrive at equation 36, which is defined as the arg min of the overall error condition on some specific z and s.</p>
+<p><img alt="lp space, 0&lt;p&lt;1, source: Lp space — Wikipedia" class="diagram" src="/images/posts/llm-quantization-techniques/lp-space-0p1-source-lp-space-wikipedia.png" />
+<em>Image 16: lp space, 0&lt;p&lt;1, source: <a href="https://en.wikipedia.org/wiki/Lp_space">Lp space — Wikipedia</a></em></p>
+<p>In the paper the authors considered <span class="arithmatex">\(\phi\)</span> as the lp norm of the error where p is between 0 and 1. They chose this because this is a sparsity promoting loss function. Defining <span class="arithmatex">\(\phi\)</span> in this manner, as in equation 37, makes the equation nonconvex. In equation 37, i is there as a subscript of e denoting that the error considered is for the <span class="arithmatex">\(i^{th}\)</span> block.</p>
+<div class="arithmatex">\[
+W_e = W - Q_z^{-1}\left(Q_z(W)\right) \tag{38}
+\]</div>
+<div class="arithmatex">\[
+\underset{z, W_e}{\text{argmin}} \; \phi(W_e) + \frac{\beta}{2} \left\| W_e - \left(W - Q_z^{-1}\left(Q_z(W)\right)\right) \right\|_2^2 \tag{39}
+\]</div>
+<div class="arithmatex">\[
+1^{\text{st}} \text{ term} = \phi(W_e), \quad 2^{\text{nd}} \text{ term} = \frac{\beta}{2} \left\| W_e - \left(W - Q_z^{-1}\left(Q_z(W)\right)\right) \right\|_2^2 \tag{40}
+\]</div>
+<p>So, from equation 35, we can arrive at equation 39, where the quantization error is given by We, as defined in equation 38. After that they applied the <a href="https://en.wikipedia.org/wiki/Penalty_method">penalty method</a> where they applied <span class="arithmatex">\(\phi\)</span> on this We and also applied a multiplying factor <span class="arithmatex">\(\beta\)</span> on the difference between We and the quantization error for a specific z and We. The goal is to find the best z and We so that we reach the argmin of this augmented function. The authors assumed that scaling is assumed to be constant to make the equations and derivations simpler; so Q is only dependent on z. Notice that both the terms in equation 40 are positive, so we can optimize them independently. So we can find the minimum of the first term and then find the minimum of the second term and we will be able to arrive at the overall minimum.</p>
+<p>Why this formulation in equation 39 works is because when <span class="arithmatex">\(\beta\)</span> is large, this forces the solution of the We to be the same as the quantization error. And when <span class="arithmatex">\(\beta\)</span> is infinite we recover the original problem exactly. But for finite <span class="arithmatex">\(\beta\)</span>, we have a smoother problem which we can solve iteratively.</p>
+<div class="arithmatex">\[
+f(u) = |u|^p + \frac{\beta}{2}(u-x)^2 \tag{41}
+\]</div>
+<div class="arithmatex">\[
+\text{Considering } u&gt;0,\ f(u) = u^p + \frac{\beta}{2}(u-x)^2 \tag{42}
+\]</div>
+<div class="arithmatex">\[
+f'(u) = pu^{p-1} + \beta(u-x) = 0 \tag{43}
+\]</div>
+<div class="arithmatex">\[
+u - x = -\frac{p}{\beta}u^{p-1} \tag{44}
+\]</div>
+<div class="arithmatex">\[
+u = x - \frac{p}{\beta}u^{p-1} \tag{45}
+\]</div>
+<p>Now lets say we are only trying to solve for the first term identified in equation 40, from the objective in equation 39, and only trying to solve for We. Let's denote that as u, the quantization error as x and denote the overall optimization equation as f(u) just to make it simpler to the eyes. So, <span class="arithmatex">\(f(u)\)</span> is the sum of p norm of u and <span class="arithmatex">\((u-x)^2\)</span> multiplied with <span class="arithmatex">\(\beta/2\)</span>, as in equation 41. This is just a rewriting of equation 39 with new terms, restricted to <span class="arithmatex">\(u &gt; 0\)</span> in equation 42. Since error will be positive, so can we remove the modulus operation here. We want to get to the minimum of this function f, so we can set derivative as 0, giving equation 43, and then rearrange some terms, giving equation 44 and equation 45. This results in the final equation for u.</p>
+<div class="arithmatex">\[
+u = x - \frac{1}{\beta}u^{p-1} = \max\left(0, x - \frac{1}{\beta}u^{p-1}\right), \quad u &gt; 0 \tag{46}
+\]</div>
+<div class="arithmatex">\[
+u = \max\left(0, x - \frac{1}{\beta}x^{p-1}\right) = \max\left(0, \operatorname{sign}(x)|x| - \frac{1}{\beta}(\operatorname{sign}(x)|x|)^{p-1}\right) \tag{47}
+\]</div>
+<div class="arithmatex">\[
+\operatorname{shrink}_{l_p}\left(x, \frac{1}{\beta}\right) = \operatorname{sign}(x) \max\left(0, |x| - \frac{|x|^{p-1}}{\beta}\right) \tag{48}
+\]</div>
+<div class="arithmatex">\[
+W_e^{t+1} = \operatorname{shrink}_p(x, \beta) = \operatorname{sign}(x) \, \operatorname{relu}\left(|x| - \frac{|x|^{p-1}}{\beta}\right) \tag{49}
+\]</div>
+<p>Now lets look at equation 49. Since <span class="arithmatex">\(p\)</span> is between 0 and 1 and <span class="arithmatex">\(\beta\)</span> is large, we can absorb <span class="arithmatex">\(p\)</span> in <span class="arithmatex">\(\beta\)</span>, giving equation 46. So <span class="arithmatex">\(p/\beta\)</span> is just written as <span class="arithmatex">\(1/\beta\)</span>. Since <span class="arithmatex">\(u\)</span> must be positive as its just another term for We, so we can write that the minimum value of <span class="arithmatex">\(u\)</span> will be 0 and hence this is given by <span class="arithmatex">\(\max\left(0, x - \frac{1}{\beta}u^{p-1}\right)\)</span>, as in equation 46. In equation 47, since we want the best <code>We</code> aka <span class="arithmatex">\(u\)</span> to be the same as quantization error <span class="arithmatex">\(x\)</span>, hence we replace <span class="arithmatex">\(u\)</span> by <span class="arithmatex">\(x\)</span>. This means that when we apply the shrinking operation, as in equation 48, this is the same as multiplying with the <span class="arithmatex">\(\operatorname{sign}(x)\)</span> function and the function <span class="arithmatex">\(|x| - \frac{|x|^{p-1}}{\beta}\)</span> clipped at 0. Hence this can be the <code>We</code> at for the next iteration t+1, giving equation 49, and we change the max function clipped a 0 with the relu function which is mathematically equivalent by definition.</p>
+<div class="arithmatex">\[
+t_2 = \underset{z, W_e}{\text{argmin}} \frac{\beta}{2} \left\| W_e - \left( W - Q_z^{-1}(Q_z(W)) \right) \right\|_2^2 \tag{50}
+\]</div>
+<div class="arithmatex">\[
+t_2 = \underset{z}{\text{argmin}} \frac{1}{2} \left\| W_e^{t+1} - \left( W - Q_z^{-1}(Q_z(W)) \right) \right\|_2^2 \tag{51}
+\]</div>
+<div class="arithmatex">\[
+W_q^{t+1} = \left( Q_z(W) \right) = \left\lfloor \frac{W}{s} + z^t \right\rfloor \tag{52}
+\]</div>
+<div class="arithmatex">\[
+Q_z^{-1}\left(W_q^{t+1}\right) = s W_q^{t+1} - z \tag{53}
+\]</div>
+<div class="arithmatex">\[
+t_2 = \underset{z}{\text{argmin}} \frac{1}{2} \left\| W_e^{t+1} - \left( W - \left( s W_q^{t+1} - z \right) \right) \right\|_2^2 \tag{54}
+\]</div>
+<p>So, we can see that the 1st term in equation 40 is reduced, giving equation 50, so we can take a look at the 2nd term of the equation. We have found the best <span class="arithmatex">\(W_e\)</span> for the next iteration (t+1), so we will replace We with <span class="arithmatex">\(W_e^{t+1}\)</span> and say that now we only need to optimize for <span class="arithmatex">\(z\)</span>, as in equation 51. Equation 52 tells us that the new quantized weights <span class="arithmatex">\(W_q\)</span> is the inverse scaling of <span class="arithmatex">\(W\)</span>, and we add the current <span class="arithmatex">\(z\)</span> and then we perform the rounding operation. So the dequantized version, shown in equation 53, would be scaling <span class="arithmatex">\(W_q^{t+1}\)</span> with s and then removing the <span class="arithmatex">\(z\)</span>. We can now use this definition of <span class="arithmatex">\(Q^{-1}\)</span> and replace the <span class="arithmatex">\(Q^{-1}(Q(W))\)</span> part of the equation, arriving at equation 54.</p>
+<div class="arithmatex">\[
+t_2 = \operatorname*{argmin}_{z} \frac{1}{2}\left\| W_e^{t+1} - \left(W - (sW_q^{t+1} - z)\right) \right\|_2^2 \tag{55}
+\]</div>
+<div class="arithmatex">\[
+= \operatorname*{argmin}_{z} \frac{1}{2}\left\| W_e^{t+1} - W + sW_q^{t+1} - z \right\|_2^2 \tag{56}
+\]</div>
+<div class="arithmatex">\[
+= \operatorname*{argmin}_{z} \frac{1}{2}\left\| -z + sW_q^{t+1} - W + W_e^{t+1} \right\|_2^2 \tag{57}
+\]</div>
+<div class="arithmatex">\[
+= \operatorname*{argmin}_{z} \frac{1}{2}\left\| z - sW_q^{t+1} + W - W_e^{t+1} \right\|_2^2 \tag{58}
+\]</div>
+<div class="arithmatex">\[
+= \operatorname*{argmin}_{z} \frac{1}{2}\left\| z - \left(sW_q^{t+1} - (W - W_e^{t+1})\right) \right\|_2^2 \tag{59}
+\]</div>
+<div class="arithmatex">\[
+= \operatorname*{argmin}_{z} \frac{1}{2}\left\| z - s\left(W_q^{t+1} - \frac{W - W_e^{t+1}}{s}\right) \right\|_2^2 \tag{60}
+\]</div>
+<p>So now we can take the equation for t2 in equation 54, giving equation 55, and remove all the brackets, giving equation 56. In equation 57, we can bring <span class="arithmatex">\(-z\)</span> to the front, <span class="arithmatex">\(sW_q^{t+1}\)</span> term after that, then <span class="arithmatex">\(-W\)</span> and then <span class="arithmatex">\(W_e^{t+1}\)</span>. In equation 58, inverting all the signs because doing that has no effect on <span class="arithmatex">\(l_2\)</span> norm (Homework: check the validity of this statement). In equation 59, we again do some bracketing. In equation 60, we take the s outside the bracket.</p>
+<div class="arithmatex">\[
+t_2 = \operatorname*{argmin}_{z} \frac{1}{2}\left\lVert z - s\left(W_q^{t+1} - \frac{W - W_e^{t+1}}{s}\right)\right\rVert_2^2 \tag{61}
+\]</div>
+<div class="arithmatex">\[
+\text{This has the form: } \min \lVert z - a \rVert^2 \tag{62}
+\]</div>
+<div class="arithmatex">\[
+\text{Hence solution: } z = a \tag{63}
+\]</div>
+<div class="arithmatex">\[
+\min t_2 \overset{means}{\implies} z^{t+1} = W_q^{t+1} - \frac{W - W_e^{t+1}}{s} \tag{64}
+\]</div>
+<div class="arithmatex">\[
+z^{t+1} \leftarrow \left\langle W_q^{t+1} - \frac{W - W_e^{t+1}}{s} \right\rangle \tag{65}
+\]</div>
+<p>We have now arrived at the equation for the t2 term, equation 61. This has the same form of <span class="arithmatex">\(\min \lVert z-a \rVert^2\)</span>, as in equation 62. Analytically, the solution where the norm is the minimum is when <span class="arithmatex">\(z = a\)</span>, per equation 63 (do you see it?). So, we can say that reducing t2 means, in step (t+1) the value of z we can consider to be <span class="arithmatex">\(W_q^{t+1} - \frac{W - W_e^{t+1}}{s}\)</span>, as in equation 64. I am not sure where the s went but this is the term that the solution that they mentioned in the paper and the blog.</p>
+<p>Quantization is done in a block or similar group. This means that z is shared across the group solution and becomes the mean over the relevant data set. This last line, equation 65, means that we are taking the mean in the group for the next value of z.</p>
+<h3 id="hqq-algorithm-and-implementation">HQQ Algorithm and Implementation<a class="headerlink" href="#hqq-algorithm-and-implementation" title="Link to this section">#</a></h3>
+<div class="arithmatex">\[
+W_e^{t+1} = shrink_p(x, \beta) = sign(x) \, relu\left(|x| - \frac{|x|^{p-1}}{\beta}\right) \tag{66}
+\]</div>
+<div class="arithmatex">\[
+z^{t+1} \leftarrow \left\langle W_q^{t+1} - \frac{W - W_e^{t+1}}{s} \right\rangle \tag{67}
+\]</div>
+<div class="arithmatex">\[
+\beta^{t+1} \leftarrow \kappa \beta^t \tag{68}
+\]</div>
+<p>Now having discussed all this theory, we can talk about the final algorithm. In the first step we find the next value for <span class="arithmatex">\(W_e\)</span>. This comes from equation 66. Once we have the best value for <span class="arithmatex">\(W_e\)</span> for the current z, we find the best value for z which comes from equation 67. Finally, we increase <span class="arithmatex">\(\beta\)</span> by some constant <span class="arithmatex">\(\kappa\)</span>, as in equation 68, so that beta keeps on increasing in each iteration. This was one of the initial conditions when specifying the penalty method in equation 39, and based on which all the derivation lies.</p>
+<p><strong>Code 20</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">optimize_weights_proximal_v2</span><span class="p">(</span>
+    <span class="o">...</span>
+    <span class="c1"># Optimize for zero-point</span>
+    <span class="n">best_error</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">1e4</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">scale_prev</span><span class="p">,</span> <span class="n">zero_prev</span> <span class="o">=</span> <span class="n">scale</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span> <span class="n">zero</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">iters</span><span class="p">):</span>
+        <span class="n">W_q</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">W_f</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">+</span> <span class="n">zero</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">min_max</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">min_max</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">W_r</span> <span class="o">=</span> <span class="p">(</span><span class="n">W_q</span> <span class="o">-</span> <span class="n">zero</span><span class="p">)</span> <span class="o">/</span> <span class="n">scale</span>
+
+        <span class="c1"># current_error = float(torch.pow(torch.abs(W_f - W_r), max(0.80, lp_norm)).mean())</span>
+        <span class="n">current_error</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">W_f</span> <span class="o">-</span> <span class="n">W_r</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">current_error</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">early_stop</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">best_error</span> <span class="o">-</span> <span class="n">current_error</span> <span class="o">&gt;</span> <span class="n">tol</span><span class="p">:</span>
+                <span class="n">best_error</span> <span class="o">=</span> <span class="n">current_error</span>
+                <span class="n">scale_prev</span><span class="p">,</span> <span class="n">zero_prev</span> <span class="o">=</span> <span class="n">scale</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span> <span class="n">zero</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">scale</span><span class="p">,</span> <span class="n">zero</span> <span class="o">=</span> <span class="n">scale_prev</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span> <span class="n">zero_prev</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+                <span class="k">break</span>
+
+        <span class="n">W_e</span> <span class="o">=</span> <span class="n">shrink_lp_op</span><span class="p">(</span><span class="n">W_f</span> <span class="o">-</span> <span class="n">W_r</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">lp_norm</span><span class="p">)</span>
+        <span class="n">zero</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">W_q</span> <span class="o">-</span> <span class="p">(</span><span class="n">W_f</span> <span class="o">-</span> <span class="n">W_e</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">beta</span> <span class="o">*=</span> <span class="n">kappa</span>
+</code></pre></div>
+
+<p>If you see in Code 20, the official implementation of HQQ, this algorithm is implemented. Each iteration we compute the quantized weights <code>W_q</code> and the de-quantized weights <code>W_r</code>for the best zero found in the last iteration. So, we find <code>W_e</code> based on the <code>shrinking_lp_op</code> and then we find the <code>zero</code> which is the mean of <code>(W_q — (W_f — W_e)*scale)</code> as per the formula. Then we increment beta with kappa. They took inverse scale instead of the scale because it they found that it helps better with stability of the algorithm. That is why there is a multiplication with scale instead of doing divide by scale as mentioned in the theory. Also note in the code that, if the error is not improving it means that we have found the minimum and then we come out of the loop. This is the early stop condition.</p>
+<p><strong>Code 21</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">shrink_lp_op</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lp_norm</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+    <span class="o">...</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">sub_</span><span class="p">((</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">beta</span><span class="p">)</span> <span class="o">*</span> <span class="n">out</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">lp_norm</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">clamp_min_</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">out</span>
+</code></pre></div>
+
+<p>In Code 21, the shrinking operator function <code>shrink_lp_op</code>, first the absolute value is taken, then we raise to the power of <code>(lp_norm-1)</code> and then multiply with <code>1/beta</code> and then we do clamp minimum instead of taking the relu function. And then we multiply with the sign function. This is in line with the resolution for <span class="arithmatex">\(W_e^{t+1}\)</span> with some coding modifications, that I am assuming, for the sake of making the code faster.</p>
+<h3 id="code-and-benchmarking_2">Code and Benchmarking<a class="headerlink" href="#code-and-benchmarking_2" title="Link to this section">#</a></h3>
+<p><strong>Code 22</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">q</span> <span class="n">hqq</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoModelForCausalLM</span><span class="p">,</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">HqqConfig</span>
+<span class="n">quant_config</span> <span class="o">=</span> <span class="n">HqqConfig</span><span class="p">(</span><span class="n">nbits</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">group_size</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+<span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;meta-llama/Meta-Llama-3-8B-Instruct&quot;</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span>
+    <span class="n">model_id</span><span class="p">,</span>
+    <span class="n">torch_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">,</span>
+    <span class="n">device_map</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+    <span class="n">quantization_config</span><span class="o">=</span><span class="n">quant_config</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="c1"># benchmarking</span>
+<span class="n">get_gpu_memory_utilisation</span><span class="p">()</span>
+<span class="n">calculate_perplexity</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">model_id</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Code 22 shows running HQQ quantization, done using the general huggingface pattern where we create the config and pass the config to <code>AutoModelForCausalLM</code>. We can choose different configuration such as <code>nbits</code> and <code>group_size</code>. Based on this we can do the benchmarking.</p>
+<p><strong>Code 23</strong></p>
+<div class="codehilite"><pre><span></span><code>      Metrics    UnQ    AWQ    GGUF     HQQ
+0      Memory  12.41  5.695  4.3620  6.0330
+1    Time (m)  10.90  2.710  1.4800  3.9000
+2  Perplexity   5.28  5.490  3.2154  5.5294
+</code></pre></div>
+
+<p><img alt="HQQ Comparison" src="/images/posts/llm-quantization-techniques/hqq-comparison.png" />
+<em>Image 17: HQQ Comparison</em></p>
+<p>In my experiments in Code 23, HQQ is slightly higher than AWQ and if you remember AWQ was activation quantization while HQQ is only weights. You might be disheartened to see that after so much high level maths the results are quite poor but don’t discount HQQ so fast, the algorithm is really quite fast. It is probably the only one that I could complete in colab, for the other models I had to download already quantized models so in a way this is quite good. Maybe in your case you might actually get good results so try it out and reach out to me and we can discuss more on this. I have shared my linkedin link at the end.</p>
+<h2 id="bitnet">BitNet<a class="headerlink" href="#bitnet" title="Link to this section">#</a></h2>
+<p>Till now we have been talking about 8-bit and 4-bit quantization techniques. Currently 4-bit quantization with some amount of Qlora training is the industry standard. The next frontier in this field is somewhere between 1-bit and 2-bit LLMs. The most famous of these models is the bitnet by Microsoft. <a href="https://github.com/microsoft/BitNet?tab=readme-ov-file#whats-new">Checkout the history</a> of bitnet implementation. I will write the ones which I think are the major milestones.</p>
+<ul>
+<li>10/17/2023 <a href="https://arxiv.org/abs/2310.11453">BitNet: Scaling 1-bit Transformers for Large Language Models</a>. Here they experimented with pure 1 bit.</li>
+<li>02/27/2024 <a href="https://arxiv.org/abs/2402.17764">The Era of 1-bit LLMs: All Large Language Models are in 1.58 Bits</a>. But then they found that just 1 bit is not making the cut. So they moved to 1.58 bits.</li>
+<li>10/17/2024 bitnet.cpp 1.0 released.</li>
+<li>10/21/2024 <a href="https://arxiv.org/abs/2410.16144">1-bit AI Infra: Part 1.1, Fast and Lossless BitNet b1.58 Inference on CPUs</a>. This is about how to efficiently store in the hardware using efficient bitpacking algorithms.</li>
+<li>11/08/2024 <a href="https://arxiv.org/abs/2411.04965">BitNet a4.8: 4-bit Activations for 1-bit LLMs</a>. This is the current final architecture.</li>
+</ul>
+<h3 id="158-bits">1.58 bits?<a class="headerlink" href="#158-bits" title="Link to this section">#</a></h3>
+<p><img alt="A cat can alternate between solid liquid and gas | source https://shirtoid.com/204331/three-states-of-matter/" src="/images/posts/llm-quantization-techniques/a-cat-can-alternate-between-solid-liquid-and-gas-s.jpeg" />
+<em>Image 18: A cat can alternate between solid liquid and gas | source <a href="https://shirtoid.com/204331/three-states-of-matter/">https://shirtoid.com/204331/three-states-of-matter/</a></em></p>
+<p>Lets first understand the rational behind the name 1.58. Our current hardware system is made up of bits. It means you have two values in your representation. If you want to store 4 values, you need 2bits. 10-bit means you have 2 to the power 10 values. So, if you have 3 values that means 1-bit is not enough while 2-bits is too much. So in bit system you need <span class="arithmatex">\(\log_2(3) = 1.58\)</span> bits. Or if your hardware can support 3 values in a single bit (also called a trit) then you need <span class="arithmatex">\(\log_3(3) = 1\)</span> <a href="https://en.wikipedia.org/wiki/Ternary_numeral_system">trit</a>. Make sure that this logic makes sense before we proceed.</p>
+<p><img alt="showcasing 1, -1 and 0 with push, pull and zen" src="/images/posts/llm-quantization-techniques/showcasing-1-1-and-0-with-push-pull-and-zen.png" />
+<em>Image 19: showcasing 1, -1 and 0 with push, pull and zen</em></p>
+<p>You can choose any 3 numbers as the values in your ternary number system. In traditional matrix multiplication, you have many floating point operations. But notice that in this new system if you have the numbers plus 1, 0 and minus 1 that means selecting the value if it is plus 1, not selecting the value if it is 0 and penalizing the value if it is minus 1. As per experiments in the paper, this can result in 16 times faster operations.</p>
+<h3 id="quantization-formula">Quantization Formula<a class="headerlink" href="#quantization-formula" title="Link to this section">#</a></h3>
+<div class="arithmatex">\[
+Q_w(W) = \alpha \cdot \text{RoundClip}\left(\frac{W}{\alpha+\epsilon}, -1, 1\right), \text{where } \alpha = \text{mean}(|W|) \tag{69}
+\]</div>
+<div class="arithmatex">\[
+Q_{INT4}(X) = \frac{\beta}{\sqrt{7}} \cdot \text{RoundClip}\left(\frac{\sqrt{7}}{\beta+\epsilon}X, -8, 7\right), \text{where } \beta = \text{mean}(|X|) \tag{70}
+\]</div>
+<div class="arithmatex">\[
+Q_{INT8}(X) = \frac{\gamma}{127} \cdot \text{RoundClip}\left(\frac{127X}{\gamma+\epsilon}, -128, 127\right), \text{where } \gamma = \text{max}(|X|) \tag{71}
+\]</div>
+<p>Equation 69 is for weight quantization to -1, 0 and 1. Equation 70 and equation 71 are for activation quantization based on the quantization type, whether int4 quantization is done or int8 quantization is done. Here <span class="arithmatex">\(\alpha\)</span>, <span class="arithmatex">\(\beta\)</span> and <span class="arithmatex">\(\gamma\)</span> and the mean of the absolute values of the block, mean of the absolute values of the activations and the max of the activation values in the block. <span class="arithmatex">\(\epsilon\)</span> is a small value so that we dont have rounding error.</p>
+<h3 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Link to this section">#</a></h3>
+<p><img alt="source: 2310.11453" src="/images/posts/llm-quantization-techniques/source-231011453.png" />
+<em>Image 20: source: <a href="https://arxiv.org/pdf/2310.11453">2310.11453</a></em></p>
+<p>Image 20 showcases that the Q, K, V, and Out projection as well as the Feed-forward networks are changed to BitLinear layers.</p>
+<p><img alt="source: https://arxiv.org/pdf/2411.04965" src="/images/posts/llm-quantization-techniques/img-48.png" />
+<em>Image 21: source: <a href="https://arxiv.org/pdf/2411.04965">https://arxiv.org/pdf/2411.04965</a></em></p>
+<p>Regarding the activation quantization, as mentioned in the previous section a mixture of 4bit and 8bit quantization is used. Notice that the input activations are generally in 4-bit quantization while the output activations are generally maintained at 8-bit activations in the layer. Another interesting change in the paper, they did 50% top-k sparsification for the attention scores. This strategy along with hybrid quantization is done to reduce the errors due to outlier channels of the activations. Also, there is the benefit of reducing the computational requirements of the model.</p>
+<p>Another reason why Bitnet is fast and takes up less memory is because of the use of efficient storage technique also known as bitpacking. The authors compared between two strategies TL2 and TL1. LUT (Look Up Table) based algorithm is used to efficiently calculated the outputs. So quantization is not the only reason that BitNet is fast, there are a lot of other improvements also go in to make inference faster.</p>
+<p><strong>Code 24</strong></p>
+<div class="codehilite"><pre><span></span><code>!bash -c &quot;$(wget -O - https://apt.llvm.org/llvm.sh)&quot;
+!git clone --recursive https://github.com/microsoft/BitNet.git
+%cd BitNet
+# Pip installation
+!pip install --upgrade pip  &gt;&gt; log.bitnet
+!pip install -r requirements.txt &gt;&gt; log.bitnet
+# download the model and convert
+hf_model_name = &quot;HF1BitLLM/Llama3-8B-1.58-100B-tokens&quot;
+model_quant_type = &quot;tl2&quot; # tl1 or tl2
+!python3 setup_env.py --hf-repo {hf_model_name} -q {model_quant_type}  &gt;&gt; log.bitnet
+# run perplexity
+!./build/bin/llama-perplexity -m models/Llama3-8B-1.58-100B-tokens/ggml-model-tl2.gguf -f dataset.txt
+</code></pre></div>
+
+<p>Code 24 shows how to run bitnet: we need to do some LLVM installs and then install bitnet from scratch. Bitnet.cpp code is formed from llamacpp. Hence running process is quite similar to GGUF as we have seen earlier. Similarly, we can also calculate the perplexity using the <code>llama-perplexity</code> command. But the perplexity that we are seeing is quite low. Now you might be wondering why we discussed on this topic if its not that usable as compared to other algorithms that we have discussed till now. I believe we are almost there with BitNet and things will be comparable soon.</p>
+<p>Finally, we are at the end of this blog. Thanks for reading this lengthy article. I tried to give a comprehensive and non trivial view into the various popular algorithms related to LLM Quantization such as GPTQ, AWQ, GGUF, HQQ and BitNet. Special thanks to <a href="https://www.linkedin.com/in/iabhibits">Abhishek Kumar</a>, a lot of the content in this post is based on our discussions. If you want to discuss about your project or career please reach out to me at LinkedIn or Topmate.</p>
+<h2 id="references">References:<a class="headerlink" href="#references" title="Link to this section">#</a></h2>
+<ul>
+<li>Colab notebook: <a href="https://colab.research.google.com/drive/1p5TVl_I5dFf3K2njZ76EXuPxcUtpI0ZU#scrollTo=VQ_fcJ0_nd9x">https://colab.research.google.com/drive/1p5TVl_I5dFf3K2njZ76EXuPxcUtpI0ZU</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Perplexity">Perplexity — Wikipedia</a></li>
+<li><a href="https://github.com/huggingface/optimum-quanto">GitHub — huggingface/optimum-quanto: A pytorch quantization backend for optimum</a></li>
+<li>LLM int8 paper: <a href="https://arxiv.org/abs/2208.07339">https://arxiv.org/abs/2208.07339</a></li>
+<li>GPTQ paper: <a href="https://arxiv.org/abs/2210.17323">https://arxiv.org/abs/2210.17323</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Hessian_matrix">Hessian matrix — Wikipedia</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Cholesky_decomposition">Cholesky decomposition — Wikipedia</a></li>
+<li><a href="https://arxiv.org/pdf/2306.00978">AWQ: Activation-aware Weight Quantization for On-Device LLM Compression and Acceleration</a></li>
+<li>Auto-AWQ: <a href="https://github.com/casper-hansen/AutoAWQ/blob/main/awq/quantize/quantizer.py">AutoAWQ/awq/quantize/quantizer.py at main · casper-hansen/AutoAWQ · GitHub</a></li>
+<li>GGUF quantization: <a href="https://huggingface.co/docs/hub/en/gguf#quantization-types">https://huggingface.co/docs/hub/en/gguf#quantization-types</a></li>
+<li>Penalty Method: <a href="https://en.wikipedia.org/wiki/Penalty_method">Penalty method — Wikipedia</a></li>
+<li>BitNet history: <a href="https://github.com/microsoft/BitNet?tab=readme-ov-file#whats-new">https://github.com/microsoft/BitNet?tab=readme-ov-file#whats-new</a></li>
+<li>Ternary Number System: <a href="https://en.wikipedia.org/wiki/Ternary_numeral_system">https://en.wikipedia.org/wiki/Ternary_numeral_system</a></li>
+</ul>
+            </div>
+
+            <footer class="post-footer">
+                <a href="/blog/" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> All posts</a>
+            </footer>
+
+        </div>
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p class="footer-text">Copyright &copy; Joydeep Bhattacharjee 2026 &middot; Bengaluru, India</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/site.js"></script>
+    
+    <script>
+        const bar = document.getElementById('reading-progress');
+        window.addEventListener('scroll', () => {
+            const doc = document.documentElement;
+            const pct = doc.scrollTop / (doc.scrollHeight - doc.clientHeight);
+            bar.style.width = (pct * 100) + '%';
+        });
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+
+            document.querySelectorAll(".arithmatex").forEach(function(block) {
+                var katexDisplay = block.querySelector(".katex-display");
+                if (!katexDisplay) return;
+                var tag = katexDisplay.querySelector(".katex-html > .tag");
+                if (!tag) return;
+
+                var text = tag.textContent.trim();
+                tag.style.display = "none";
+
+                // auto-render wraps each math segment in its own <span>, so
+                // katex-display is never a direct child of block — rebuild
+                // block's children instead of assuming a fixed depth.
+                var wrapper = document.createElement("div");
+                wrapper.className = "eq-scroll-wrapper";
+                wrapper.appendChild(katexDisplay);
+
+                var label = document.createElement("span");
+                label.className = "eq-tag-label";
+                label.textContent = text;
+
+                block.replaceChildren(wrapper, label);
+                block.classList.add("eq-tagged");
+            });
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Shrinking AI models from feast to fit without starving their intelligence.">
+    <meta name="author" content="Joydeep Bhattacharjee">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="LLM Quantization Explained">
+    <meta property="og:description" content="Shrinking AI models from feast to fit without starving their intelligence.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://infinite-joy.github.io/blog/llm-quantization-explained/">
+    
+
+    <link rel="canonical" href="https://infinite-joy.github.io/blog/llm-quantization-explained/">
+
+    <title>LLM Quantization Explained</title>
+
+    <!-- No-flash theme: set before paint -->
+    <script>(function(){var t=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();</script>
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PVKZ8S6D');</script>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-YFFWNGH33K"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-YFFWNGH33K');
+    </script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Site CSS -->
+    <link rel="stylesheet" href="/assets/css/site.css">
+    
+    <link rel="stylesheet" href="/assets/css/blog.css">
+    <link rel="stylesheet" href="/assets/css/highlight.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+
+
+    <!-- RSS autodiscovery -->
+    <link rel="alternate" type="application/rss+xml" title="Joydeep Bhattacharjee" href="/feed.xml">
+
+    
+    <meta property="article:published_time" content="2025-04-30">
+    <meta property="og:type" content="article">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "LLM Quantization Explained",
+      "description": "Shrinking AI models from feast to fit without starving their intelligence.",
+      "datePublished": "2025-04-30",
+      "author": { "@type": "Person", "name": "Joydeep Bhattacharjee" },
+      "url": "https://infinite-joy.github.io/blog/llm-quantization-explained/"
+    }
+    </script>
+
+</head>
+<body>
+
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PVKZ8S6D"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+    <!-- NAV -->
+    <nav>
+        <div class="container">
+            <div class="nav-inner">
+                <a href="/" class="nav-brand">Joydeep B.</a>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Toggle navigation">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="/#about">About</a></li>
+                    <li><a href="/#writing">Writing</a></li>
+                    <li><a href="/#videos">Videos</a></li>
+                    <li><a href="/#books">Books</a></li>
+                    <li><a href="/#experience">Experience</a></li>
+                    <li><a href="/#mentorship">Mentorship</a></li>
+                    <li><a href="/blog/">Blog</a></li>
+                    <li><a href="https://topmate.io/joydeep_bhattacharjee" class="nav-cta" target="_blank" rel="noopener">Book a Call</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    
+    <div id="reading-progress"></div>
+
+    <main class="post-main">
+        <div class="container post-container">
+
+            <header class="post-header">
+                
+                <h1 class="post-title">LLM Quantization Explained</h1>
+                <p class="post-dek">Shrinking AI models from feast to fit without starving their intelligence.</p>
+                <div class="post-meta">
+                    <span>30 April 2025</span>
+                    <span>&middot;</span>
+                    <span>23 min read</span>
+                    
+                </div>
+            </header>
+
+            
+
+            <div class="post-body">
+                <div class="toc">
+<ul>
+<li><a href="#cpus-and-gpus">CPUs and GPUs</a></li>
+<li><a href="#quantization">Quantization</a></li>
+<li><a href="#quantization-error">Quantization Error</a></li>
+<li><a href="#brain-float-16">Brain Float 16</a></li>
+<li><a href="#linear-quantization">Linear Quantization</a></li>
+<li><a href="#activation-quantization">Activation Quantization</a></li>
+<li><a href="#dynamic-quantization">Dynamic Quantization</a></li>
+<li><a href="#block-quantization">Block Quantization</a></li>
+<li><a href="#quantization-aware-training">Quantization Aware Training</a></li>
+<li><a href="#qlora">QLoRA</a></li>
+<li><a href="#final-thoughts-and-workflow">Final thoughts and workflow</a></li>
+<li><a href="#references">References:</a></li>
+</ul>
+</div>
+<p><img alt="img-00.png" src="/images/posts/llm-quantization-explained/img-00.png" />
+<em>Image 1</em></p>
+<p>LLMs have a large number of parameters in them and this is what makes them so intelligent. But because of this same property they are slow and consume a lot of memory. <strong>LLM quantization</strong> is a methodology where we reduce the precision of the weights and activations in LLM so that they consume less memory and run faster without a big drop in accuracy. In this post, I will go through various quantization levels such as fp16, bf16, int8 and int4 data types. I will then cover various techniques such as Linear Quantization, Activation Quantization, Block quantization and Quantization Aware Training to understand how better and better quantization levels are achieved in LLMs.</p>
+<h2 id="cpus-and-gpus">CPUs and GPUs<a class="headerlink" href="#cpus-and-gpus" title="Link to this section">#</a></h2>
+<p>First lets through a little bit of the background first.</p>
+<p><img alt="CPU architecture. source: CPU vs GPU: What’s best for Machine Learning? | Aerospike" src="/images/posts/llm-quantization-explained/cpu-architecture-source-cpu-vs-gpu-whats-best-for-.png" />
+<em>Image 2: CPU architecture. source: <a href="https://aerospike.com/blog/cpu-vs-gpu/">CPU vs GPU: What’s best for Machine Learning? | Aerospike</a></em></p>
+<p>A CPU consists of a few cores optimized for general-purpose sequential serial processing. CPUs are designed to complete tasks with the lowest possible latency and can quickly switch between operations. There is the PCI bus, system agent, memory controller and DDR memory. There is the L3 cache for all the cores. L2 supports individual cores. Separate L1 data cache for data and instructions. If data isn’t found in the cache layers, the CPU retrieves it from the main memory, prioritizing low-latency access for efficiency.</p>
+<p><img alt="GPU architecture source: CPU vs GPU: What’s best for Machine Learning? | Aerospike" src="/images/posts/llm-quantization-explained/gpu-architecture-source-cpu-vs-gpu-whats-best-for-.png" />
+<em>Image 3: GPU architecture source: <a href="https://aerospike.com/blog/cpu-vs-gpu/">CPU vs GPU: What’s best for Machine Learning? | Aerospike</a></em></p>
+<p>In GPUs there are massive number of cores. For example, the latest H100 series from NVIDIA has <a href="https://en.wikipedia.org/wiki/Hopper_%28microarchitecture%29#H100_accelerator_and_DGX_H100">16896 cores</a>. Since there are so many cores, there are processor clusters of streaming multiprocessors. Each SM typically has an L1 cache for quick access to instructions. The SMs utilize a shared L2 cache before accessing high-speed memory. Unlike CPUs, GPUs are designed to tolerate higher memory latency. They dedicate more transistors to computation rather than caching. The architecture focuses on keeping the GPU busy with parallel computations despite slower memory access. So the difference is that:</p>
+<ul>
+<li>CPU: Optimized for low-latency, sequential processing.</li>
+<li>GPU: Optimized for high-throughput, parallel processing.</li>
+</ul>
+<p>Thus, GPU operations becomes faster if there is less transfer of data and more focus on computation.</p>
+<h2 id="quantization">Quantization<a class="headerlink" href="#quantization" title="Link to this section">#</a></h2>
+<p>As you know the weights in the LLMs as well as the input data is converted to tensors.</p>
+<p><img alt="Tensors. source: machine learning — Why the sudden fascination with tensors? — Cross Validated" src="/images/posts/llm-quantization-explained/tensors-source-machine-learning-why-the-sudden-fas.png" />
+<em>Image 4: Tensors. source: <a href="https://stats.stackexchange.com/questions/198061/why-the-sudden-fascination-with-tensors">machine learning — Why the sudden fascination with tensors? — Cross Validated</a></em></p>
+<p>With quantization you convert a model weights and activations from higher precision to lower precision. Quantization makes inference faster because Reducing precision speeds up inference time because it requires less memory, less bandwidth is required for transfer of data and less time for calculations. Traditionally the preferred precision that was utilised was either <a href="https://en.wikipedia.org/wiki/Single-precision_floating-point_format">floating point 32 or floating point 16</a>. Generally, these data is converted from FP16 to INT8. Even INT4 quantization has been quite successful and now efforts are being made so that <a href="https://arxiv.org/pdf/2306.08162">INT2 is being explored</a>.</p>
+<h2 id="quantization-error">Quantization Error<a class="headerlink" href="#quantization-error" title="Link to this section">#</a></h2>
+<p>Before understanding how to check the effect of quantization, let's consider the simplest way to perform quantization. We do this almost every day in our day to day lives — Rounding. In rounding we will just reduce the precision of the weights and activations of the model. In literature this is called the Round to Nearest or RTN approach. Rounding by itself, although looks simple, is a rabbit hole in itself. <a href="https://en.wikipedia.org/wiki/Rounding">Ideal characteristics of rounding methods</a> include:</p>
+<ol>
+<li>Rounding should be done by a function or some method such that same input should always mean same output.</li>
+<li>Calculations done with rounding should be close to those done without rounding.</li>
+<li>Rounding should preserve <a href="https://en.wikipedia.org/wiki/Symmetry_in_mathematics">symmetries</a> that already exist between the domain and range. With finite precision (or a discrete domain), this translates to removing <a href="https://en.wikipedia.org/wiki/Bias_%28statistics%29">bias</a>.</li>
+<li>Generally rounding is done to improve speed so that objective must be achieved.</li>
+</ol>
+<p>By default if you create a random matrix in torch it will create the float values in float32 precision. A floating-point variable can represent a wider range of numbers than a fixed-point variable of the same bit width at the cost of precision. <a href="https://en.wikipedia.org/wiki/Single-precision_floating-point_format">As per Wikipedia</a> the range for floating 32 is 3.4028235 <span class="arithmatex">\(\times\)</span> <span class="arithmatex">\(1^{038}\)</span>. In Code 1, if we initiate a 3x3 matrix with float32 and then round the values to float16, then the memory gets halved. Taking the absolute values of the difference and then taking the sum gives the overall error.</p>
+<p><strong>Code 1</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+<span class="n">mat</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;total memory taken&#39;</span><span class="p">,</span> <span class="n">mat</span><span class="o">.</span><span class="n">element_size</span><span class="p">()</span> <span class="o">*</span> <span class="n">mat</span><span class="o">.</span><span class="n">nelement</span><span class="p">())</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;dtype of each data point:&#39;</span><span class="p">,</span> <span class="n">mat</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+<span class="n">mat_1</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">mat_1</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;total memory taken&#39;</span><span class="p">,</span> <span class="n">mat_1</span><span class="o">.</span><span class="n">element_size</span><span class="p">()</span> <span class="o">*</span> <span class="n">mat_1</span><span class="o">.</span><span class="n">nelement</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;total difference:&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">mat</span> <span class="o">-</span> <span class="n">mat_1</span><span class="p">)</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+
+<span class="c1"># Output</span>
+<span class="n">tensor</span><span class="p">([[</span><span class="mf">0.2512</span><span class="p">,</span> <span class="mf">0.7639</span><span class="p">,</span> <span class="mf">0.4204</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.6266</span><span class="p">,</span> <span class="mf">0.0650</span><span class="p">,</span> <span class="mf">0.4428</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.9170</span><span class="p">,</span> <span class="mf">0.5509</span><span class="p">,</span> <span class="mf">0.1463</span><span class="p">]])</span>
+<span class="n">total</span> <span class="n">memory</span> <span class="n">taken</span> <span class="mi">36</span>
+<span class="n">dtype</span> <span class="n">of</span> <span class="n">each</span> <span class="n">data</span> <span class="n">point</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span>
+<span class="n">tensor</span><span class="p">([[</span><span class="mf">0.2512</span><span class="p">,</span> <span class="mf">0.7637</span><span class="p">,</span> <span class="mf">0.4204</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.6265</span><span class="p">,</span> <span class="mf">0.0650</span><span class="p">,</span> <span class="mf">0.4429</span><span class="p">],</span>
+        <span class="p">[</span><span class="mf">0.9170</span><span class="p">,</span> <span class="mf">0.5508</span><span class="p">,</span> <span class="mf">0.1462</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+<span class="n">total</span> <span class="n">memory</span> <span class="n">taken</span> <span class="mi">18</span>
+<span class="n">total</span> <span class="n">difference</span><span class="p">:</span> <span class="n">tensor</span><span class="p">(</span><span class="mf">0.0007</span><span class="p">)</span>
+</code></pre></div>
+
+<p>Running Code 1 may result in different matrices and different quantization error every time you run it because the matrices are initialised randomly.</p>
+<p>Quantization Error is the difference between the original values of the tensor and its quantized values. No matter whatever number you want to identify. In many cases you are quantizing in any case for example in case of irrational numbers because of the inherent limitations of computer systems. And then there is additional loss of precision because you want to expand your range of numbers that you want to represent. So here you can understand that if you want to give form to knowledge you are in any case bringing in some loss in information.</p>
+<p><img alt="The illusion of exactness" src="/images/posts/llm-quantization-explained/the-illusion-of-exactness.png" />
+<em>Image 5: The illusion of exactness</em></p>
+<p>So, the question becomes what an “ACCEPTABLE” loss of precision and is my ideal scenario would be what the accuracy on your domain is and on your benchmark dataset, but if you are creating a general model in which case this is probably not there, maybe quantization error is fine. In the next section, we will go through another popular data type bfloat16 and then compare the Quantization Error between rounding to fp16 and bf16 and see which one is closer to fp32 values.</p>
+<h2 id="brain-float-16">Brain Float 16<a class="headerlink" href="#brain-float-16" title="Link to this section">#</a></h2>
+<p><img alt="bfloat16 range comparison" src="/images/posts/llm-quantization-explained/bfloat16-range-comparison.png" />
+<em>Image 6: bfloat16 range comparison</em></p>
+<p>For deep learning applications google came up with this format called <a href="https://en.wikipedia.org/wiki/Bfloat16_floating-point_format">brain float 16 or bfloat16</a> which has the same number of bits as float16 but the dynamic range is the same as float32 because exponent size of bfloat16 floating point is the same as float32. As per available literature Training behavior with bfloat16 setting is more robust and is less prone to underflows, overflows, or any other numerical instability during training compared to training with pure float32 dtype. So, in many ways bfloat is really useful if you are doing training. You can go through the code in this <a href="https://colab.research.google.com/drive/1p5TVl_I5dFf3K2njZ76EXuPxcUtpI0ZU?usp=sharing">colab</a>.</p>
+<p><img alt="difference between float16 and bfloat16" src="/images/posts/llm-quantization-explained/difference-between-float16-and-bfloat16.png" />
+<em>Image 7: difference between float16 and bfloat16</em></p>
+<p>Interestingly similar to the errors that we got from f16 quantization, we check the quantization error for bf16 as well. To compare we take the sum of the absolute values of the errors. The error for bf16 is more. I took 1000 random tensors. and then took the distribution of the errors. If the matrix is small then the bf16 errors are wider, but if we increase the size of the matrix then the bf16 errors become more pronounced and separated out.</p>
+<p>Even though bf16 is not enough with todays quantization needs, you will be able to load a decent llm such as llama3 8b model on colab which has around 16gb gpu memory. The unquantized one was giving memory error but using bf16 total around 12gb is being used.</p>
+<p><strong>Code 2</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">AutoModelForCausalLM</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+<span class="n">model_id</span> <span class="o">=</span> <span class="s2">&quot;meta-llama/Meta-Llama-3-8B-Instruct&quot;</span>
+
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_id</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span>
+    <span class="n">model_id</span><span class="p">,</span>
+    <span class="n">torch_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">,</span> <span class="c1"># without this it will give memory error in colab</span>
+    <span class="n">device_map</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+
+<p>In terms of quantization, based on what you are quantizing, there are two types of quantization: model quantization and activation quantization. Since in bf16 you are just reducing the precision of the model weights from fp32 to bf16, this is a type of model quantization.</p>
+<h2 id="linear-quantization">Linear Quantization<a class="headerlink" href="#linear-quantization" title="Link to this section">#</a></h2>
+<p><img alt="showcasing linear quantization with z and s values" src="/images/posts/llm-quantization-explained/showcasing-linear-quantization-with-z-and-s-values.png" />
+<em>Image 8: showcasing linear quantization with z and s values</em></p>
+<p>In linear quantization you find the zero point and scale values assuming the unquantized values follow a normal distribution. You can do this for both the model weights and the activations. If you are finding the zero point then this is asymmetric else you can just define the scale in which case this will be called symmetric. As you can see in equations 1–6, you scale the total range to fit as per the range of the quantized values and so this is also called affine quantization. The zero-point is there to ensure that zero in the floating-point range is accurately represented by an integer. This maintains numerical accuracy and stability, especially for values close to zero. Then you quantize whatever values comes. The rounding operation ensures that the final result is a discrete integer, suitable for storage and computation in lower precision formats. During inference, the dequantized values are used for calculations to achieve higher precision, although only the quantized weights are stored.</p>
+<div class="arithmatex">\[
+x_{min} = \min(x), \quad x_{max} = \max(x) \tag{1}
+\]</div>
+<div class="arithmatex">\[
+q_{min} = 0, \quad q_{max} = 255 \tag{2}
+\]</div>
+<div class="arithmatex">\[
+s = \frac{x_{max} - x_{min}}{q_{max} - q_{min}} \tag{3}
+\]</div>
+<div class="arithmatex">\[
+z = q_{min} - \frac{x_{min}}{s} \tag{4}
+\]</div>
+<div class="arithmatex">\[
+q = round\left(\frac{x}{s} + z\right) \tag{5}
+\]</div>
+<div class="arithmatex">\[
+x_{dequantized} = s \cdot (q - z) \tag{6}
+\]</div>
+<p>You can perform linear quantization on the models using optimum quanto library from huggingface. I am taking model “meta-llama/Llama-3.2–1B-Instruct” and loading it is taking 4714 MB of memory in float32. You can check this by printing the dtype of the weights. I can then quantize it using the quanto library and post quantization the memory actually increases to 5716 MB. Code 3 shows the print of the same decoder layer from unquantized to quantized. Observe the the Linear class has been changed to QLinear.</p>
+<p><strong>Code 3</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># Original float32 weights</span>
+LlamaDecoderLayer<span class="o">(</span>
+<span class="w">  </span><span class="o">(</span>self_attn<span class="o">)</span>:<span class="w"> </span>LlamaSdpaAttention<span class="o">(</span>
+<span class="w">    </span><span class="o">(</span>q_proj<span class="o">)</span>:<span class="w"> </span>Linear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">out_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">bias</span><span class="o">=</span>False<span class="o">)</span>
+<span class="w">    </span><span class="o">(</span>k_proj<span class="o">)</span>:<span class="w"> </span>Linear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">out_features</span><span class="o">=</span><span class="m">512</span>,<span class="w"> </span><span class="nv">bias</span><span class="o">=</span>False<span class="o">)</span>
+<span class="w">    </span><span class="o">(</span>v_proj<span class="o">)</span>:<span class="w"> </span>Linear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">out_features</span><span class="o">=</span><span class="m">512</span>,<span class="w"> </span><span class="nv">bias</span><span class="o">=</span>False<span class="o">)</span>
+<span class="w">    </span><span class="o">(</span>o_proj<span class="o">)</span>:<span class="w"> </span>Linear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">out_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">bias</span><span class="o">=</span>False<span class="o">)</span>
+<span class="w">    </span><span class="o">(</span>rotary_emb<span class="o">)</span>:<span class="w"> </span>LlamaRotaryEmbedding<span class="o">()</span>
+<span class="w">  </span><span class="o">)</span>
+<span class="w">  </span><span class="o">(</span>mlp<span class="o">)</span>:<span class="w"> </span>LlamaMLP<span class="o">(</span>
+<span class="w">    </span><span class="o">(</span>gate_proj<span class="o">)</span>:<span class="w"> </span>Linear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">out_features</span><span class="o">=</span><span class="m">8192</span>,<span class="w"> </span><span class="nv">bias</span><span class="o">=</span>False<span class="o">)</span>
+<span class="w">    </span><span class="o">(</span>up_proj<span class="o">)</span>:<span class="w"> </span>Linear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">out_features</span><span class="o">=</span><span class="m">8192</span>,<span class="w"> </span><span class="nv">bias</span><span class="o">=</span>False<span class="o">)</span>
+<span class="w">    </span><span class="o">(</span>down_proj<span class="o">)</span>:<span class="w"> </span>Linear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">8192</span>,<span class="w"> </span><span class="nv">out_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">bias</span><span class="o">=</span>False<span class="o">)</span>
+<span class="w">    </span><span class="o">(</span>act_fn<span class="o">)</span>:<span class="w"> </span>SiLU<span class="o">()</span>
+<span class="w">  </span><span class="o">)</span>
+<span class="w">  </span><span class="o">(</span>input_layernorm<span class="o">)</span>:<span class="w"> </span>LlamaRMSNorm<span class="o">((</span><span class="m">2048</span>,<span class="o">)</span>,<span class="w"> </span><span class="nv">eps</span><span class="o">=</span>1e-05<span class="o">)</span>
+<span class="w">  </span><span class="o">(</span>post_attention_layernorm<span class="o">)</span>:<span class="w"> </span>LlamaRMSNorm<span class="o">((</span><span class="m">2048</span>,<span class="o">)</span>,<span class="w"> </span><span class="nv">eps</span><span class="o">=</span>1e-05<span class="o">)</span>
+<span class="o">)</span>
+
+<span class="c1"># Quantized weights</span>
+LlamaDecoderLayer<span class="o">(</span>
+<span class="w">  </span><span class="o">(</span>self_attn<span class="o">)</span>:<span class="w"> </span>LlamaSdpaAttention<span class="o">(</span>
+<span class="w">    </span><span class="o">(</span>q_proj<span class="o">)</span>:<span class="w"> </span>QLinear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">out_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">bias</span><span class="o">=</span>False<span class="o">)</span>
+<span class="w">    </span><span class="o">(</span>k_proj<span class="o">)</span>:<span class="w"> </span>QLinear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">out_features</span><span class="o">=</span><span class="m">512</span>,<span class="w"> </span><span class="nv">bias</span><span class="o">=</span>False<span class="o">)</span>
+<span class="w">    </span><span class="o">(</span>v_proj<span class="o">)</span>:<span class="w"> </span>QLinear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">out_features</span><span class="o">=</span><span class="m">512</span>,<span class="w"> </span><span class="nv">bias</span><span class="o">=</span>False<span class="o">)</span>
+<span class="w">    </span><span class="o">(</span>o_proj<span class="o">)</span>:<span class="w"> </span>QLinear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">out_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">bias</span><span class="o">=</span>False<span class="o">)</span>
+<span class="w">    </span><span class="o">(</span>rotary_emb<span class="o">)</span>:<span class="w"> </span>LlamaRotaryEmbedding<span class="o">()</span>
+<span class="w">  </span><span class="o">)</span>
+<span class="w">  </span><span class="o">(</span>mlp<span class="o">)</span>:<span class="w"> </span>LlamaMLP<span class="o">(</span>
+<span class="w">    </span><span class="o">(</span>gate_proj<span class="o">)</span>:<span class="w"> </span>QLinear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">out_features</span><span class="o">=</span><span class="m">8192</span>,<span class="w"> </span><span class="nv">bias</span><span class="o">=</span>False<span class="o">)</span>
+<span class="w">    </span><span class="o">(</span>up_proj<span class="o">)</span>:<span class="w"> </span>QLinear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">out_features</span><span class="o">=</span><span class="m">8192</span>,<span class="w"> </span><span class="nv">bias</span><span class="o">=</span>False<span class="o">)</span>
+<span class="w">    </span><span class="o">(</span>down_proj<span class="o">)</span>:<span class="w"> </span>QLinear<span class="o">(</span><span class="nv">in_features</span><span class="o">=</span><span class="m">8192</span>,<span class="w"> </span><span class="nv">out_features</span><span class="o">=</span><span class="m">2048</span>,<span class="w"> </span><span class="nv">bias</span><span class="o">=</span>False<span class="o">)</span>
+<span class="w">    </span><span class="o">(</span>act_fn<span class="o">)</span>:<span class="w"> </span>SiLU<span class="o">()</span>
+<span class="w">  </span><span class="o">)</span>
+<span class="w">  </span><span class="o">(</span>input_layernorm<span class="o">)</span>:<span class="w"> </span>LlamaRMSNorm<span class="o">((</span><span class="m">2048</span>,<span class="o">)</span>,<span class="w"> </span><span class="nv">eps</span><span class="o">=</span>1e-05<span class="o">)</span>
+<span class="w">  </span><span class="o">(</span>post_attention_layernorm<span class="o">)</span>:<span class="w"> </span>LlamaRMSNorm<span class="o">((</span><span class="m">2048</span>,<span class="o">)</span>,<span class="w"> </span><span class="nv">eps</span><span class="o">=</span>1e-05<span class="o">)</span>
+<span class="o">)</span>
+</code></pre></div>
+
+<p>Why more memory for the quantized model? Probably because the library is storing the weights as well as the quantized and scale values as I have called the freeze method in the <a href="https://colab.research.google.com/drive/1p5TVl_I5dFf3K2njZ76EXuPxcUtpI0ZU#scrollTo=-RfCtn09T2H5">code</a>. As per the documentation the weights are dynamically quantized, hence you need to call freeze to have them beforehand. When we print one of the mlp gate proj weight we can see Code 4. You can see that the weights and the scale values are given.</p>
+<p><strong>Code 4</strong></p>
+<div class="codehilite"><pre><span></span><code>&lt;class &#39;optimum.quanto.tensor.weights.qbytes.WeightQBytesTensor&#39;&gt;(tensor([[ 54, -26, -29,  ...,   7,  57,  76],
+        [-19,  44,   3,  ..., -54, -30,   5],
+        [-41, -15,   0,  ...,  -9, -19, -45],
+        ...,
+        [ 34, -40, -33,  ...,  50, -74, -24],
+        [ -4, -19,   2,  ...,  -6,  11, -24],
+        [-41,   9,  15,  ..., -21, -12,  12]], dtype=torch.int8), scale=tensor([[0.0005],
+        [0.0005],
+        [0.0006],
+        ...,
+        [0.0006],
+        [0.0006],
+        [0.0006]]), dtype=torch.float32)
+</code></pre></div>
+
+<p>And if you check with the original weights the attention weights are the same. But if you check the mlp weights there is a difference there.</p>
+<p>before quantization: 0.026000977, -0.012329102, -0.013977051, <span class="arithmatex">\(\dots\)</span></p>
+<p>after quantization: 0.025951955, -0.012495386, -0.013937162, <span class="arithmatex">\(\dots\)</span></p>
+<h2 id="activation-quantization">Activation Quantization<a class="headerlink" href="#activation-quantization" title="Link to this section">#</a></h2>
+<p><img alt="Outliers in activations" src="/images/posts/llm-quantization-explained/outliers-in-activations.png" />
+<em>Image 9: Outliers in activations</em></p>
+<p>Now why to limit quantization to only the weights when you can do activation quantization as well. Although activation quantization looks like it has better promise it is harder to achieve. Why? Because unlike weights, which are static (constant) once the model is trained, activations are dynamic. This means that activations change with each input to the network, making their range harder to predict.</p>
+<p>LLMs are notoriously difficult to quantize due to the outliers in the activations. In case of weights, the weight distribution is quite uniform and flat, which is easy to quantize. From the analysis done in the <a href="https://arxiv.org/html/2211.10438v7">smoothquant </a>paper:</p>
+<ul>
+<li>Outliers make activation quantization difficult. The scale of outliers in activations is ∼<span class="arithmatex">\(100\times\)</span> larger than most of the activation values. In the case of per-tensor quantization, the large outliers dominate the maximum magnitude measurement, leading to low effective quantization bits/levelsfor non-outlier channels. For non-outlier channels, the effective quantization levels would be very small (2–3), leading to large quantization errors.</li>
+<li>Outliers persist in fixed channels. Outliers appear in a small fraction of the channels. If one channel has an outlier, it persistently appears in all tokens. The variance amongst the channels for a given token is large (the activations in some channels are very large, but most are small), but the variance between the magnitudes of a given channel across tokens is small (outlier channels are consistently large).</li>
+</ul>
+<p><img alt="img-10.png" src="/images/posts/llm-quantization-explained/img-10.png" />
+<em>Image 10</em></p>
+<p>For activation quantization you can understand that you will need a calibration data to compute the activation quantization parameters. For example in optimum quanto library, if you pass the option to perform activation quantization then you need to provide some calibration data. The library will then track <a href="https://github.com/huggingface/optimum-quanto/blob/main/optimum/quanto/calibrate.py#L37">maximum absolute values per channel</a> during forward passes. Use these absmax values to derive per-channel scaling factors and apply them during quantization.</p>
+<p><strong>Code 5</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">optimum.quanto</span><span class="w"> </span><span class="kn">import</span> <span class="n">quantize</span><span class="p">,</span> <span class="n">qint8</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">optimum.quanto</span><span class="w"> </span><span class="kn">import</span> <span class="n">Calibration</span>
+
+<span class="n">quantize</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">qint8</span><span class="p">,</span> <span class="n">activations</span><span class="o">=</span><span class="n">qint8</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">Calibration</span><span class="p">(</span><span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">):</span>
+    <span class="n">model</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+</code></pre></div>
+
+<h2 id="dynamic-quantization">Dynamic Quantization<a class="headerlink" href="#dynamic-quantization" title="Link to this section">#</a></h2>
+<p><img alt="img-11.png" src="/images/posts/llm-quantization-explained/img-11.png" />
+<em>Image 11</em></p>
+<p>In the previous section, we discussed an example of static quantization where we calculate the zeropoint and scale prior to inference using a calibration dataset. In contrast we can do dynamic quantization as well where we calculate the parameters during runtime and not utilize a calibration dataset.</p>
+<p>Steps for dynamic quantization:</p>
+<ol>
+<li>After data passes a hidden layer, its activations are collected:</li>
+<li>This distribution of activations is then used to calculate the zeropoint (z) and scale factor (s) values dynamically based on the data range observed at runtime. This ensures that the scale factor is “tuned” so that as much signal as possible about each observed dataset is preserved.</li>
+<li>The process is repeated each time data passes through a new layer. Therefore, each layer has its own separate z and s values and therefore different quantization schemes.</li>
+</ol>
+<p>The model parameters are known during model conversion and they are converted ahead of time and stored in INT8 form. Arithmetic in the quantized model is done using vectorized INT8 instructions. Accumulation is typically done with INT16 or INT32 to avoid overflow. This higher precision value is scaled back to INT8 if the next layer is quantized or converted to FP32 for output.</p>
+<p>Dynamic quantization is relatively free of tuning parameters which makes it well suited to be added into production pipelines. In general, dynamic quantization tends to be a bit more accurate since it only attempts to calculate the s and z values per hidden layer. However, it might increase compute time as these values need to be calculated.</p>
+<h2 id="block-quantization">Block Quantization<a class="headerlink" href="#block-quantization" title="Link to this section">#</a></h2>
+<p><img alt="img-12.png" src="/images/posts/llm-quantization-explained/img-12.png" />
+<em>Image 12</em></p>
+<p>As we have discussed till the main problem with linear quantization is that Outliers can have a disproportionate impact on scaling: the full range of the lower-precision data type isn’t used effectively — which lowers the quantized model’s accuracy.</p>
+<p>The solution to this is quantizing in blocks, whereby weights are divided into groups of 64 or 128, for example, according to their value. Each block is then quantized individually to mitigate the effect of outliers and increase precision.</p>
+<p>Something to factor in, however, is that while an LLM’s weights and activations will be quantized to reduce its size, they will be dequantized at inference time, so the necessary computations during forward and backward propagation can be performed with a higher-precision data type.</p>
+<p>This means that the scaling factors for each block must also be stored. Consequently, the more blocks that are used during the quantization process, the higher the accuracy — but the higher the number of scaling factors that must also be saved.</p>
+<p>The famous <a href="https://github.com/ggerganov/llama.cpp/discussions/4068#discussioncomment-7566463">GGUF quantization</a> uses this block methodology to quantize the LLMs. As per their the comments in that discussion:</p>
+<h2 id="quantization-aware-training">Quantization Aware Training<a class="headerlink" href="#quantization-aware-training" title="Link to this section">#</a></h2>
+<p><img alt="img-13.png" src="/images/posts/llm-quantization-explained/img-13.png" />
+<em>Image 13</em></p>
+<p>There are two ways you can perform quantization: Post training quantization where we take an already trained model and perform quantization on it. The methods that we have been discussing before are post training quantization methods. Post-training quantization (PTQ) schemes quantize models in a greedy fashion. Specifically, these algorithms usually optimize an auxiliary loss function representing the distance between the quantized and unquantized operands and parameters in the network. The optimization is applied on a per-layer basis using only a few training samples, known as the calibration set. Although these approaches are computationally inexpensive, they often decrease network<br />
+accuracy.</p>
+<p>There are various recipes to perform QAT, from starting with an untrained model to starting with a pretrained model. All recipes change the training regimen to include the quantization error in the training loss by inserting fake-quantization operations into the training graph to simulate the quantization of data and parameters. These operations are called ‘fake’ because they quantize the data, but then immediately dequantize the data so the operation’s compute remains in float-point precision. This trick adds quantization noise without changing much in the deep-learning framework.</p>
+<p>In the forward-pass, you fake-quantize the floating-point weights and activations and use these fake-quantized weights and activations to perform the layer’s operation. In the backward pass, you use the weights’ gradients to update the floating-point weights. To deal with the quantization gradient, which is zero almost everywhere except for points where it is undefined, you use the (straight-through estimator (STE), which passes the gradient as-is through the fake-quantization operator. When the QAT process is done, the fake-quantization layers hold the quantization scales that you use to quantize the weights and activations that the model is used for inference.</p>
+<p>Lets suppose we want to binarize the activations of a layer using the following function.</p>
+<p><img alt="img-14.png" src="/images/posts/llm-quantization-explained/img-14.png" />
+<em>Image 14</em></p>
+<p>This function will return 1 for every value that is greater than 0 otherwise it will return 0. This is similar to quantization operation since you are reducing the precision of the output activations.</p>
+<p>As mentioned earlier, the problem with this function is that its gradient is zero. To overcome this issue we will use a straight-through estimator in the backward pass.</p>
+<p><img alt="img-15.png" src="/images/posts/llm-quantization-explained/img-15.png" />
+<em>Image 15</em></p>
+<p>A straight-through estimator is exactly what it sounds like. It estimates the gradients of a function. Specifically, it ignores the derivative of the threshold function and passes on the incoming gradient as if the function was an identity function.</p>
+<h2 id="qlora">QLoRA<a class="headerlink" href="#qlora" title="Link to this section">#</a></h2>
+<p><img alt="Image source QLoRA paper" src="/images/posts/llm-quantization-explained/image-source-qlora-paper.png" />
+<em>Image 16: Image source QLoRA paper</em></p>
+<p>Current popular methods in QAT is <a href="https://arxiv.org/abs/2305.14314">QLoRA </a>where we finetune the performance of LLMs to bring up the loss in accuracy. I have talked about efficient finetuning of transformers using QLoRA in this video. Check it out.</p>
+<p>The steps for the algorithm as discussed in the paper are discussed below.</p>
+<p>The weights of pretrained neural networks are assumed to follow a zero-centered normal distribution, meaning they are distributed around a central value of zero. The weights are normalized in the range of [-1, 1]. This normalization is achieved by diving each weight by absmax algorithm which we discussed before. By normalizing the input data, we are distributing the weights around zero and the less bits are required to store the exponential data of a tensor/weight parameter.</p>
+<p>The exact values for NF4 data type (16 bins) are as follows: These values are there in the paper.</p>
+<p>[-1.0, -0.6961928009986877, -0.5250730514526367, -0.39491748809814453, -0.28444138169288635, -0.18477343022823334, -0.09105003625154495, 0.0, 0.07958029955625534, 0.16093020141124725, 0.24611230194568634, 0.33791524171829224, 0.44070982933044434, 0.5626170039176941, 0.7229568362236023, 1.0]</p>
+<p>Next block quantization is done. We have already discussed about block quantization. Block-wise quantization divides input tensors into smaller blocks and quantizes each block independently which reduces the problem of outlier. In this process we split the input tensor into chunks, and each chuck is quantized independently with each having their own quantization constant (total bins of datatype/absolute max tensor). Even with outliers we get much higher quantization precision and stability with block wise k-bit quantization by confining outliers to blocks. They flatten the weights and do the absmax normalization after dividing into equal sized blocks. You take each block and divide to 16 bins and then map to the closest NF4 level.</p>
+<p>Next is double quantization. Double Quantization (DQ) is a process of quantizing the quantization constants for additional memory savings. QLoRA quantizes weights in blocks of 64, and while this facilitates precise 4-bit quantization, you also have to account for the scaling factors of each block — which increases the amount of memory required. DQ addresses this issue by performing a second round of quantization on the scaling factors for each block. The 32-bit scaling factors are compiled into blocks of 256 and quantized to 8-bit. Consequently, where a 32-bit scaling factor for each block of previously added 0.5 bits per weight, DQ brings this down to only 0.127 bits. If you argue that is this really required? Doesn't it seem insignificant, then actually when combined in a 65B LLM this saves 3 GB of memory.</p>
+<p>The storage part is also interesting and worth mentioning. This part depends on the library and is not actually mentioned in the paper. It turns out the author of bitsandbytes which is the official implementation of qlora converts the 4-bit values into 8-bit by packing two 4 bit values into a single 8-bit value, this results ofcourse, in a different shape for the quantized tensor. This is because PyTorch does not support 4-bit data types and the smallest type it supports is 8-bits. The reason it uses an 8-bit integer format and not an 8-bit floating point format FP8 is due to the lack of native support for FP8 in PyTorch. The packing operation is exactly what Pytorch’s new data type ‘quantized 4-bit integer’ torch.quint4x2 does as well, as you can see in the<a href="https://pytorch.org/docs/stable/tensors.html#id11"> documentation.</a></p>
+<p>If code is what you connect with more, Code 6 is the code for the above description.</p>
+<p><strong>Code 6</strong></p>
+<div class="codehilite"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+<span class="n">NF4_quant_levels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.6961928009986877</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5250730514526367</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.39491748809814453</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.28444138169288635</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.18477343022823334</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.09105003625154495</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.07958029955625534</span><span class="p">,</span> <span class="mf">0.16093020141124725</span><span class="p">,</span> <span class="mf">0.24611230194568634</span><span class="p">,</span> <span class="mf">0.33791524171829224</span><span class="p">,</span> <span class="mf">0.44070982933044434</span><span class="p">,</span> <span class="mf">0.5626170039176941</span><span class="p">,</span> <span class="mf">0.7229568362236023</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+
+<span class="c1">#  binary representation of uint4 values (used 4-bit binaries instead of decimals for illustration purposes)</span>
+<span class="n">nf4_quant_4bit</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mb">0b0000</span><span class="p">,</span> <span class="mb">0b0001</span><span class="p">,</span> <span class="mb">0b0010</span><span class="p">,</span> <span class="mb">0b0011</span><span class="p">,</span> <span class="mb">0b0100</span><span class="p">,</span> <span class="mb">0b0101</span><span class="p">,</span> <span class="mb">0b0110</span><span class="p">,</span> <span class="mb">0b0111</span><span class="p">,</span> <span class="mb">0b1000</span><span class="p">,</span> <span class="mb">0b1001</span><span class="p">,</span> <span class="mb">0b1010</span><span class="p">,</span> <span class="mb">0b1011</span><span class="p">,</span> <span class="mb">0b1100</span><span class="p">,</span> <span class="mb">0b1101</span><span class="p">,</span> <span class="mb">0b1110</span><span class="p">,</span> <span class="mb">0b1111</span><span class="p">])</span>
+
+<span class="c1"># generated tensor of [5, 4] shape</span>
+<span class="n">W</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span> <span class="mf">0.4767</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2921</span><span class="p">,</span>  <span class="mf">0.0787</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1018</span><span class="p">],</span>
+                  <span class="p">[</span><span class="o">-</span><span class="mf">0.3453</span><span class="p">,</span>  <span class="mf">0.3834</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0107</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4692</span><span class="p">],</span>
+                  <span class="p">[</span><span class="o">-</span><span class="mf">0.4072</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2996</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4942</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2640</span><span class="p">],</span>
+                  <span class="p">[</span> <span class="mf">0.0125</span><span class="p">,</span>  <span class="mf">0.2962</span><span class="p">,</span>  <span class="mf">0.3123</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4705</span><span class="p">],</span>
+                  <span class="p">[</span><span class="o">-</span><span class="mf">0.1982</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1545</span><span class="p">,</span>  <span class="mf">0.3358</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4086</span><span class="p">]])</span>
+
+<span class="n">flat_W</span> <span class="o">=</span> <span class="n">W</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+<span class="c1"># normalize the tensor using absmax to fit within [-1, 1]</span>
+<span class="n">max_val</span> <span class="o">=</span> <span class="n">flat_W</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<span class="n">normalized_W</span> <span class="o">=</span> <span class="n">flat_W</span> <span class="o">/</span> <span class="n">max_val</span>
+
+<span class="c1"># map each input value to its nearest quantization level - then to its 4-bit binary representation</span>
+<span class="n">quantized_W_4bits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">normalized_W</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">normalized_W</span><span class="p">):</span>
+    <span class="n">closest_level</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">NF4_quant_levels</span> <span class="o">-</span> <span class="n">val</span><span class="p">))</span> <span class="c1"># get the index of closest quantization level</span>
+    <span class="n">quantized_W_4bits</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">nf4_quant_4bit</span><span class="p">[</span><span class="n">closest_level</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">quantized_W_4bits</span><span class="p">)</span>
+<span class="c1"># Output: [15,  2,  9,  5,  1, 14,  7,  0,  1,  2,  0,  2,  7, 13, 13,  0,  3,  4, 14,  1]</span>
+
+<span class="n">packed_W_8bits</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">quantized_W_4bits</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
+    <span class="c1"># Courtesy of https://www.geeksforgeeks.org/store-two-numbers-in-one-byte-using-bit-manipulation/</span>
+    <span class="c1"># take each pair of 4-bit values in quantized_W_4bits and combine them into packed_W_8bits by shifting</span>
+    <span class="c1"># the first 4 bits to the left using the left shift operator &#39;&lt;&lt;&#39; and combining them using the OR | operation</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">(</span><span class="n">quantized_W_4bits</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xff</span>
+    <span class="n">result</span> <span class="o">=</span>  <span class="n">result</span> <span class="o">|</span> <span class="n">quantized_W_4bits</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">packed_W_8bits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+<span class="c1"># set it as torch.uint8</span>
+<span class="n">packed_W_8bits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">packed_W_8bits</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">packed_W_8bits</span><span class="p">)</span>
+<span class="c1"># Output: tensor([242, 149,  30, 112,  18,   2, 125, 208,  52, 225], dtype=torch.uint8)</span>
+</code></pre></div>
+
+<p>Code reference: <a href="https://manalelaidouni.github.io/4Bit-Quantization-Models-QLoRa.html">https://manalelaidouni.github.io/4Bit-Quantization-Models-QLoRa.html</a></p>
+<h2 id="final-thoughts-and-workflow">Final thoughts and workflow<a class="headerlink" href="#final-thoughts-and-workflow" title="Link to this section">#</a></h2>
+<p>If after all this information you are confused about which quantization algorithm to choose and how to go about it here is a nice flowchart that is derived from the steps mentioned in the <a href="https://huggingface.co/docs/optimum/v1.7.1/concept_guides/quantization">huggingface documentation</a>.</p>
+<p><img alt="img-18.png" src="/images/posts/llm-quantization-explained/img-18.png" />
+<em>Image 17</em></p>
+<p>To effectively quantize a model to int8, the steps to follow are:</p>
+<ol>
+<li>Choose which operators to quantize. Good operators to quantize are the one dominating it terms of computation time, for instance linear projections and matrix multiplications.</li>
+<li>Try post-training dynamic quantization, if it is fast enough stop here, otherwise continue to step 3.</li>
+<li>Try post-training static quantization which can be faster than dynamic quantization but often with a drop in terms of accuracy. Apply observers to your models in places where you want to quantize. implies defining which quantization scheme to use.</li>
+<li>Perform calibration.</li>
+<li>Convert the model to its quantized form: the observers are removed and the float32 operators are converted to their int8 coutnerparts.</li>
+<li>Evaluate the quantized model: is the accuracy good enough? If yes, stop here, otherwise start again at step 3 but with quantization aware training this time.</li>
+</ol>
+<p>Concerned about the current job market? Need career or project guidance? Lets connect on <a href="https://www.linkedin.com/in/joydeep-bhattacharjee-934a1157/">linkedin </a>or <a href="https://topmate.io/joydeep_bhattacharjee">topmate</a>.</p>
+<table><tr><td>![img-19.jpeg](/images/posts/llm-quantization-explained/img-19.jpeg)<br><em>Image 18</em></td><td>![img-20.png](/images/posts/llm-quantization-explained/img-20.png)<br><em>Image 19</em></td></tr></table>
+
+<h2 id="references">References:<a class="headerlink" href="#references" title="Link to this section">#</a></h2>
+<ul>
+<li>CPU vs GPU: <a href="https://aerospike.com/blog/cpu-vs-gpu/">https://aerospike.com/blog/cpu-vs-gpu/</a></li>
+<li>Number of cores in GPU: <a href="https://en.wikipedia.org/wiki/Hopper_%28microarchitecture%29#H100_accelerator_and_DGX_H100">https://en.wikipedia.org/wiki/Hopper_(microarchitecture)#H100_accelerator_and_DGX_H100</a></li>
+<li>FP8: <a href="https://arxiv.org/abs/2303.17951">https://arxiv.org/abs/2303.17951</a></li>
+<li>Tensors: <a href="https://www.avni.sh/posts/linear-algebra/tensors/">https://www.avni.sh/posts/linear-algebra/tensors/</a></li>
+<li>Deepseek: <a href="https://www.youtube.com/watch?v=2IRLJbTXWmI">https://www.youtube.com/watch?v=2IRLJbTXWmI</a></li>
+<li>Floating Point Format: <a href="https://en.wikipedia.org/wiki/Single-precision_floating-point_format">https://en.wikipedia.org/wiki/Single-precision_floating-point_format</a></li>
+<li>Int2: <a href="https://arxiv.org/abs/2306.08162">https://arxiv.org/abs/2306.08162</a></li>
+<li>Why does model quantization speed up inference discussion: <a href="https://www.reddit.com/r/learnmachinelearning/comments/zgzh6r/whyhow_does_model_quantization_speed_up_inference/">https://www.reddit.com/r/learnmachinelearning/comments/zgzh6r/whyhow_does_model_quantization_speed_up_inference/</a></li>
+<li>Datacamp on Quantization: <a href="https://www.datacamp.com/tutorial/quantization-for-large-language-models">https://www.datacamp.com/tutorial/quantization-for-large-language-models</a></li>
+<li>Block Quantization: <a href="https://www.youtube.com/watch?v=IxrlHAJtqKE">https://www.youtube.com/watch?v=IxrlHAJtqKE</a></li>
+<li>Rounding: <a href="https://en.wikipedia.org/wiki/Rounding">https://en.wikipedia.org/wiki/Rounding</a></li>
+<li>Bfloat 16: <a href="https://en.wikipedia.org/wiki/Bfloat16_floating-point_format">https://en.wikipedia.org/wiki/Bfloat16_floating-point_format</a></li>
+<li>Weight and Activation Quantization showcase: <a href="https://www.catalyzex.com/paper/joint-training-of-low-precision-neural">https://www.catalyzex.com/paper/joint-training-of-low-precision-neural</a></li>
+<li>Linear Quantization Pytorch Blog: <a href="https://pytorch.org/blog/quantization-in-practice/">https://pytorch.org/blog/quantization-in-practice/</a></li>
+<li>LLM.int8 Tim Dettmers paper: <a href="https://arxiv.org/pdf/2208.07339">https://arxiv.org/pdf/2208.07339</a></li>
+<li>Zero Point Quantization: <a href="https://medium.com/@luis.vasquez.work.log/zero-point-quantization-how-do-we-get-those-formulas-4155b51a60d6">https://medium.com/@luis.vasquez.work.log/zero-point-quantization-how-do-we-get-those-formulas-4155b51a60d6</a></li>
+<li>SmoothQuant and challenges with outliers: <a href="https://arxiv.org/html/2211.10438v7">https://arxiv.org/html/2211.10438v7</a></li>
+<li>Outliers: <a href="https://aakashvarma.substack.com/p/smoothquant">https://aakashvarma.substack.com/p/smoothquant</a></li>
+<li>Calibration implementation using AbsMax: <a href="https://github.com/huggingface/optimum-quanto/blob/main/optimum/quanto/calibrate.py#L37">https://github.com/huggingface/optimum-quanto/blob/main/optimum/quanto/calibrate.py#L37</a></li>
+<li>maartengrootendorst blog: <a href="https://newsletter.maartengrootendorst.com/p/a-visual-guide-to-quantization">https://newsletter.maartengrootendorst.com/p/a-visual-guide-to-quantization</a></li>
+<li>symbl.ai blog: <a href="https://symbl.ai/developers/blog/a-guide-to-quantization-in-llms/">https://symbl.ai/developers/blog/a-guide-to-quantization-in-llms/</a></li>
+<li>Block Quantization: <a href="https://arxiv.org/pdf/2110.02861">https://arxiv.org/pdf/2110.02861</a></li>
+<li>Quantization in GGUF: <a href="https://github.com/ggerganov/llama.cpp/discussions/4068#discussioncomment-7566463">https://github.com/ggerganov/llama.cpp/discussions/4068#discussioncomment-7566463</a></li>
+<li>Dynamic Quantization: <a href="https://arxiv.org/pdf/2306.02316">https://arxiv.org/pdf/2306.02316</a></li>
+<li>Pytorch Dynamic Quantization: <a href="https://pytorch.org/tutorials/recipes/recipes/dynamic_quantization.html">https://pytorch.org/tutorials/recipes/recipes/dynamic_quantization.html</a></li>
+<li>Dynamic Quantization On Bert: <a href="https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads/dynamic_quantization_bert_tutorial.ipynb">https://colab.research.google.com/github/pytorch/tutorials/blob/gh-pages/_downloads/dynamic_quantization_bert_tutorial.ipynb</a></li>
+<li>Quantization Aware Training Methodology: <a href="https://arxiv.org/abs/2411.11038">https://arxiv.org/abs/2411.11038</a></li>
+<li>Straight Through Estimator: <a href="https://arxiv.org/pdf/1308.3432">https://arxiv.org/pdf/1308.3432</a></li>
+<li>Yoshua Bengio: <a href="https://en.wikipedia.org/wiki/Yoshua_Bengio">https://en.wikipedia.org/wiki/Yoshua_Bengio</a></li>
+<li>STE Implementation: <a href="https://hassanaskary.medium.com/intuitive-explanation-of-straight-through-estimators-with-pytorch-implementation-71d99d25d9d0">https://hassanaskary.medium.com/intuitive-explanation-of-straight-through-estimators-with-pytorch-implementation-71d99d25d9d0</a></li>
+<li>QLoRA: <a href="https://arxiv.org/pdf/2305.14314">https://arxiv.org/pdf/2305.14314</a></li>
+<li>QLoRA Explained: <a href="https://medium.com/@dillipprasad60/qlora-explained-a-deep-dive-into-parametric-efficient-fine-tuning-in-large-language-models-llms-c1a4794b1766">https://medium.com/@dillipprasad60/qlora-explained-a-deep-dive-into-parametric-efficient-fine-tuning-in-large-language-models-llms-c1a4794b1766</a></li>
+<li>WanDB on QLoRA: <a href="https://wandb.ai/sauravmaheshkar/QLoRA/reports/What-is-QLoRA---Vmlldzo2MTI2OTc5">https://wandb.ai/sauravmaheshkar/QLoRA/reports/What-is-QLoRA---Vmlldzo2MTI2OTc5</a></li>
+<li>Manal El Aidouni blog: <a href="https://manalelaidouni.github.io/4Bit-Quantization-Models-QLoRa.html">https://manalelaidouni.github.io/4Bit-Quantization-Models-QLoRa.html</a></li>
+</ul>
+            </div>
+
+            <footer class="post-footer">
+                <a href="/blog/" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> All posts</a>
+            </footer>
+
+        </div>
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <p class="footer-text">Copyright &copy; Joydeep Bhattacharjee 2026 &middot; Bengaluru, India</p>
+        </div>
+    </footer>
+
+    <script src="/assets/js/site.js"></script>
+    
+    <script>
+        const bar = document.getElementById('reading-progress');
+        window.addEventListener('scroll', () => {
+            const doc = document.documentElement;
+            const pct = doc.scrollTop / (doc.scrollHeight - doc.clientHeight);
+            bar.style.width = (pct * 100) + '%';
+        });
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    {left: "\\[", right: "\\]", display: true},
+                    {left: "\\(", right: "\\)", display: false}
+                ],
+                throwOnError: false
+            });
+
+            document.querySelectorAll(".arithmatex").forEach(function(block) {
+                var katexDisplay = block.querySelector(".katex-display");
+                if (!katexDisplay) return;
+                var tag = katexDisplay.querySelector(".katex-html > .tag");
+                if (!tag) return;
+
+                var text = tag.textContent.trim();
+                tag.style.display = "none";
+
+                // auto-render wraps each math segment in its own <span>, so
+                // katex-display is never a direct child of block — rebuild
+                // block's children instead of assuming a fixed depth.
+                var wrapper = document.createElement("div");
+                wrapper.className = "eq-scroll-wrapper";
+                wrapper.appendChild(katexDisplay);
+
+                var label = document.createElement("span");
+                label.className = "eq-tag-label";
+                label.textContent = text;
+
+                block.replaceChildren(wrapper, label);
+                block.classList.add("eq-tagged");
+            });
+        });
+    </script>
+
+</body>
+</html>

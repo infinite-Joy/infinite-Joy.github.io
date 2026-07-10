@@ -19,5 +19,19 @@
     <pubDate>2025-09-21</pubDate>
     <description>The goal of AI is to learn from data, adapt to new and complex situations and solve problems without the need for human interventions. This…</description>
   </item>
+  <item>
+    <title>LLM Quantization Techniques</title>
+    <link>https://infinite-joy.github.io/blog/llm-quantization-techniques/</link>
+    <guid>https://infinite-joy.github.io/blog/llm-quantization-techniques/</guid>
+    <pubDate>2025-08-12</pubDate>
+    <description>GGUF GPTQ AWQ BitNet</description>
+  </item>
+  <item>
+    <title>LLM Quantization Explained</title>
+    <link>https://infinite-joy.github.io/blog/llm-quantization-explained/</link>
+    <guid>https://infinite-joy.github.io/blog/llm-quantization-explained/</guid>
+    <pubDate>2025-04-30</pubDate>
+    <description>Shrinking AI models from feast to fit without starving their intelligence.</description>
+  </item>
   </channel>
 </rss>
