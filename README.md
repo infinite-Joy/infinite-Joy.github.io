@@ -58,3 +58,5 @@ templates/          # Jinja2 templates (blog pipeline)
 blog/               # generated blog HTML — do not hand-edit
 feed.xml            # generated RSS feed
 ```
+
+# Blogs
